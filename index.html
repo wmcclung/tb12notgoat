@@ -2461,6 +2461,7 @@ window._buildFace = buildFace;
 
 /* Create/recreate the ScrollTrigger pin (also called by global replay) */
 function _createIntroPinTrigger() {
+  _setStageHeight();
   ScrollTrigger.getAll().filter(t=>t.vars&&t.vars.id==='intro-pin').forEach(t=>t.kill());
   ScrollTrigger.create({
     id:'intro-pin',
@@ -2484,14 +2485,24 @@ window._introReinit = _createIntroPinTrigger;
 /* Init on load (same timing as chart section) */
 window.addEventListener('load', _createIntroPinTrigger);
 
+/* Explicit pixel height for the pinned stage — browser-agnostic fix.
+   CSS dvh units don't update reliably on all mobile browsers during
+   URL-bar transitions, so instead we force stage-height = innerHeight
+   via inline style. This guarantees the pinned container always matches
+   the actual visible viewport regardless of unit support quirks. */
+function _setStageHeight() {
+  if (stageEl) stageEl.style.height = window.innerHeight + 'px';
+}
+_setStageHeight();
+
 /* Resize: re-drive animation at current scroll position.
    Mobile URL bar show/hide fires resize constantly with height changes
-   but unchanged width — only genuine viewport changes (rotation, window
-   resize) should trigger a full ScrollTrigger.refresh, which is expensive
-   and can snap scroll position. Height-only resizes just re-drive the
-   current scroll progress. */
+   but unchanged width — only genuine width changes (rotation, window
+   resize) should trigger a full ScrollTrigger.refresh. Height-only
+   resizes just update stage height + re-drive current scroll progress. */
 let _lastW = window.innerWidth, _refreshTimer;
 window.addEventListener('resize',()=>{
+  _setStageHeight();
   const total=section.offsetHeight-window.innerHeight;
   if(total>0) onProgress(clamp(-section.getBoundingClientRect().top/total,0,1));
   if (window.innerWidth !== _lastW) {

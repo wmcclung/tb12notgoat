@@ -601,17 +601,18 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 .accolade[data-idx="4"] { --x: 80%; --y: 74%; --rot:  5deg; }
 @media (max-width: 620px) {
   /* Narrower cards + tighter padding so they fit inside the viewport
-     without clipping on either side at 320-430px wide screens. Card
-     centers moved closer to horizontal midline (32%/68%) for the same
-     reason — half-width now stays inside viewport bounds. */
-  .accolade { width:min(215px, 58vw); padding:12px 14px 14px; }
-  .accolade .a-stat  { font-size:clamp(40px, 11vw, 58px); }
-  .accolade .a-label { font-size:11px; letter-spacing:.22em; }
-  .accolade .a-note  { font-size:9px;  letter-spacing:.16em; }
-  .accolade[data-idx="1"] { --x: 32%; --y: 16%; }
-  .accolade[data-idx="2"] { --x: 68%; --y: 18%; }
-  .accolade[data-idx="3"] { --x: 32%; --y: 84%; }
-  .accolade[data-idx="4"] { --x: 68%; --y: 82%; }
+     without clipping. Vertical positions pulled in from 16/84 → 20/76
+     so the bottom row clears the viewport edge with comfortable margin
+     (card 4 "286 MOST WINS ALL TIME · 251 REGULAR SEASON · 35 PLAYOFF"
+     has 2+ lines of note text and was overflowing at --y:82 before). */
+  .accolade { width:min(200px, 55vw); padding:10px 12px 12px; }
+  .accolade .a-stat  { font-size:clamp(38px, 10.5vw, 54px); }
+  .accolade .a-label { font-size:10px; letter-spacing:.2em; }
+  .accolade .a-note  { font-size:9px;  letter-spacing:.16em; line-height:1.35; }
+  .accolade[data-idx="1"] { --x: 28%; --y: 20%; }
+  .accolade[data-idx="2"] { --x: 72%; --y: 22%; }
+  .accolade[data-idx="3"] { --x: 28%; --y: 76%; }
+  .accolade[data-idx="4"] { --x: 72%; --y: 74%; }
   .party-spot { width:40vw; filter:blur(38px); opacity:.55; }
   .party-spot.pink { margin-left:-48vw; }
   .party-spot.cyan { margin-left:-20vw; }
@@ -703,14 +704,20 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 /* Mobile word-slot type scale \u2014 widen the IS peak so hierarchy survives.
    Reader feedback: font was reading "thin" on mobile. Bumped sizes up
    10\u201315% and added font-weight:900 + stretched letter-spacing to make
-   the stamp feel heavier in each word. */
+   the stamp feel heavier in each word.
+
+   Padding overrides pull THEN and GOAT further from the viewport edges
+   so the larger mobile type doesn't get clipped at top/bottom. Without
+   these, the inherited padding clamps stayed desktop-scale while the
+   font jumped up, and GOAT's descenders were hitting the viewport
+   bottom (only fixed itself after scrolling past + back). */
 @media (max-width: 480px) {
   .word-slot { font-weight: 900; font-stretch: 110%; }
-  #w-then { font-size: clamp(54px, 13vw, 96px);  }
+  #w-then { font-size: clamp(54px, 13vw, 96px);  padding-top:    clamp(48px, 8vh, 88px);  }
   #w-who  { font-size: clamp(86px, 20vw, 140px); }
   #w-is   { font-size: clamp(128px,30vw, 210px); }
   #w-the  { font-size: clamp(68px, 15vw, 116px); }
-  #w-goat { font-size: clamp(64px, 14vw, 112px); }
+  #w-goat { font-size: clamp(60px, 13vw, 104px); padding-bottom: clamp(64px, 10vh, 120px); }
 }
 .word-slot .ltr      { display:inline-block; will-change:transform,opacity; }
 .word-slot .wipe-wrap{ display:inline-block; will-change:clip-path; }
@@ -2278,14 +2285,12 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile pin duration — bumped to +=2400 (was +=1500). Reader
-         feedback: even +=1500 was immediately transitioning into the
-         puppet section the moment the impact animation ended.
-         +=2400 gives the whole choreography (NOT fall → crown drop →
-         shocked cross-fade → zoom) room to complete AND leaves a solid
-         ~1000px of dwell where the shocked face just sits there before
-         the pin releases and you scroll into the puppet. */
-      end:                 window.innerWidth <= 767 ? '+=2400' : '+=1800',
+      /* Mobile pin duration — bumped hard to +=5000 (was +=2400). A
+         mobile thumb-flick carries ~2000-3500px of inertia; at +=3800
+         a firm flick still reached the pin end. +=5000 pushes the
+         dwell zone past typical flick inertia so the user reliably
+         stops inside the hold phase instead of rocketing past. */
+      end:                 window.innerWidth <= 767 ? '+=5000' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,

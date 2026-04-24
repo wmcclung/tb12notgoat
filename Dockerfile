@@ -17,6 +17,9 @@ RUN rm -f /usr/share/nginx/html/Dockerfile \
 # require a code change to match.
 COPY default.conf.template /etc/nginx/templates/default.conf.template
 
-# Fallback for local docker-run where $PORT isn't injected by Railway.
-ENV PORT=80
-EXPOSE 3000 80
+# Default matches Railway's current edge routing for www.tb12notgoat.com.
+# If Railway does inject $PORT at runtime it overrides this; if not, we
+# still land on the right port. Previously defaulted to 80 which Railway
+# wasn't routing to, producing a 502 even though nginx was up.
+ENV PORT=3000
+EXPOSE 3000

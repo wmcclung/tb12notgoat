@@ -4304,6 +4304,69 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 })();
 </script>
 
+<!-- ═══════════════════════════════════════════
+     DIAGNOSTIC OVERLAY — ?debug=1 adds visible borders + a live
+     dimensions panel so we can see exactly what the pinned stage,
+     rive-clip, and card columns look like on a real device.
+     Disabled by default.
+════════════════════════════════════════════ -->
+<script>
+(function(){
+  if (new URLSearchParams(location.search).get('debug') !== '1') return;
+  /* Visible outlines on the key boxes */
+  var style = document.createElement('style');
+  style.textContent = [
+    '#section-stage   { outline: 3px solid #FF2D9E !important; outline-offset: -3px; }',
+    '.intro-section   { outline: 2px dashed #1EE4FF !important; outline-offset: -2px; }',
+    '#rive-clip       { outline: 2px solid #FFC700 !important; outline-offset: -2px; }',
+    '#rive-dance-party, #rive-rocking-party { outline: 1px dashed #00FF00 !important; }',
+    '.cards-col       { outline: 2px dotted #FF4D5E !important; }',
+    '.center-card     { outline: 1px dashed #FFFFFF !important; }',
+  ].join('\n');
+  document.head.appendChild(style);
+
+  /* Live readout panel — pinned bottom-left, always on top */
+  var panel = document.createElement('div');
+  panel.style.cssText =
+    'position:fixed; left:6px; bottom:6px; z-index:99999;'+
+    'background:rgba(0,0,0,.86); color:#0F0;'+
+    'font:11px/1.35 ui-monospace,monospace; padding:8px 10px;'+
+    'border:1px solid #0F0; border-radius:4px; max-width:76vw;'+
+    'pointer-events:none; white-space:pre;';
+  document.body.appendChild(panel);
+
+  function fmt(el, label) {
+    if (!el) return label + ': (missing)';
+    var r = el.getBoundingClientRect();
+    var cs = getComputedStyle(el);
+    return label + ' ' + Math.round(r.width) + '×' + Math.round(r.height) +
+           '  top=' + Math.round(r.top) + '  pos=' + cs.position;
+  }
+
+  function update() {
+    var vhPx  = getComputedStyle(document.documentElement).getPropertyValue('--vh-px').trim();
+    var stage = document.getElementById('section-stage');
+    var clip  = document.getElementById('rive-clip');
+    var col   = document.getElementById('col-fl');
+    var intro = document.getElementById('intro-section');
+    panel.textContent = [
+      'innerH: ' + window.innerHeight + '  innerW: ' + window.innerWidth,
+      '--vh-px: ' + (vhPx || '(unset)'),
+      'intro.offsetH: ' + (intro ? intro.offsetHeight : '-'),
+      fmt(stage, 'stage'),
+      fmt(clip,  'rive '),
+      fmt(col,   'col-fl'),
+      'scrollY: ' + window.scrollY,
+    ].join('\n');
+  }
+  update();
+  window.addEventListener('scroll',  update, {passive:true});
+  window.addEventListener('resize',  update, {passive:true});
+  window.addEventListener('orientationchange', update, {passive:true});
+  setInterval(update, 500);  /* catch GSAP-driven changes */
+})();
+</script>
+
 <!-- ── Rive runtime (shared — was loaded by the old single-canvas init
      which is now gone; the dual-canvas init below needs it) ── -->
 <script src="https://unpkg.com/@rive-app/canvas@latest/rive.js"></script>

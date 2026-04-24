@@ -2189,9 +2189,13 @@ ScrollTrigger.normalizeScroll(true);
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile: shorter pin so 2–3 swipes trigger the crown drop and shocked zoom;
-         desktop keeps the longer hold for mouse users. */
-      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
+      /* Mobile pin duration — +=900 was too short: a single thumb swipe
+         (~600-800px) carried users past the impact AND the shocked-face
+         hold before they could register it. +=1500 gives the impact beat
+         (crown drop) room to land, then ~800px of "hold" where the
+         shocked face sits on screen before the pin releases. Desktop
+         scrolling is slower and can stay longer. */
+      end:                 window.innerWidth <= 767 ? '+=1500' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,
@@ -3538,6 +3542,18 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        the full celebration. */
     var isMobile = window.matchMedia('(max-width: 767px)').matches;
     transitionTo(isMobile ? 'results' : 'celebration');
+    /* Auto-scroll so the results viewport is fully in view on mobile —
+       without this, the user ends up mid-section with the sticker
+       filling the screen and the leaderboard below the fold, unable to
+       scroll further because the page was already at its bottom. */
+    if (isMobile) {
+      requestAnimationFrame(function() {
+        var sec = document.getElementById('vote-section');
+        if (!sec) return;
+        var y = sec.offsetTop;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      });
+    }
   }
 
   // ── State machine ──

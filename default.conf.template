@@ -1,0 +1,25 @@
+server {
+    listen       ${PORT};
+    server_name  _;
+
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    # Long-cache static art + fonts — these don't change between deploys
+    location ~* \.(?:riv|png|jpg|jpeg|svg|webp|gif|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        try_files $uri =404;
+    }
+
+    # SPA-style fallback for the main document
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Silence favicon probes in the access log
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+}

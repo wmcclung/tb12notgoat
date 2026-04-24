@@ -4354,12 +4354,22 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     var clip  = document.getElementById('rive-clip');
     var col   = document.getElementById('col-fl');
     var intro = document.getElementById('intro-section');
+    var danceC= document.getElementById('rive-dance-party');
+    var stgH  = stage ? getComputedStyle(stage).height : '-';
+    var stgIn = stage ? stage.style.height : '-';
+    var canvasLine = '-';
+    if (danceC) {
+      canvasLine = 'cvs  el:' + danceC.offsetWidth + '×' + danceC.offsetHeight +
+                   '  buf:' + danceC.width + '×' + danceC.height;
+    }
     panel.textContent = [
       'innerH: ' + window.innerHeight + '  innerW: ' + window.innerWidth,
       '--vh-px: ' + (vhPx || '(unset)'),
       'intro.offsetH: ' + (intro ? intro.offsetHeight : '-'),
+      'stage CSS-h: ' + stgH + '  inline:' + stgIn,
       fmt(stage, 'stage'),
       fmt(clip,  'rive '),
+      canvasLine,
       fmt(col,   'col-fl'),
       'scrollY: ' + window.scrollY,
     ].join('\n');
@@ -4524,13 +4534,32 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
      the browser compositor to cache a scaled-down rasterization of the
      canvas, producing blur when the user scrolls back up past the chart
      and the puppet grows back to full size. Re-initializing Rive's
-     drawing surface forces a crisp re-render. Called surgically on
-     direction reversal from the intro's onProgress. */
+     drawing surface forces a crisp re-render. */
   window._puppetResync = function() {
     sizeCanvas(danceCanvas); sizeCanvas(rockCanvas);
     if (danceInst) danceInst.resizeDrawingSurfaceToCanvas();
     if (rockInst)  rockInst.resizeDrawingSurfaceToCanvas();
   };
+
+  /* Cheap auto-resync — checks canvas backing store size vs element
+     size on a throttled interval. Rewrites + resizes only when they
+     drift (e.g. after mobile URL-bar transitions leave Rive's internal
+     drawing surface stuck at the pre-transition dimensions, producing
+     the "shoes only visible at top of clip" bug). */
+  var _lastCanvasW = 0, _lastCanvasH = 0;
+  setInterval(function() {
+    if (!danceCanvas) return;
+    var dpr = window.devicePixelRatio || 1;
+    var targetW = Math.round((danceCanvas.offsetWidth  || 0) * dpr);
+    var targetH = Math.round((danceCanvas.offsetHeight || 0) * dpr);
+    if (!targetW || !targetH) return;
+    if (targetW !== _lastCanvasW || targetH !== _lastCanvasH) {
+      _lastCanvasW = targetW; _lastCanvasH = targetH;
+      sizeCanvas(danceCanvas); sizeCanvas(rockCanvas);
+      if (danceInst) danceInst.resizeDrawingSurfaceToCanvas();
+      if (rockInst)  rockInst.resizeDrawingSurfaceToCanvas();
+    }
+  }, 400);
 
   /* Expose to the intro's onProgress. */
   window._partyUpdate = partyUpdate;

@@ -15,6 +15,51 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Tom Brady Is Not The GOAT</title>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   MOBILE VIEWPORT SHIM — runs before any CSS is painted.
+   Android URL-bar transitions make svh/dvh/vh resolve short on
+   first scroll-in, causing the pinned .section-stage to lock at
+   a too-short height. The .cards-col elements (height:110vh)
+   and .rive-clip (70svh) then float inside a shrunken stage,
+   producing the "4 tiny avatars in corners" and "shoes only"
+   symptoms. Fix: publish --vh-px from window.innerHeight and
+   keep a grow-only high-water mark so URL-bar retract never
+   shrinks the pinned viewport. Orientation change resets it.
+──────────────────────────────────────────────────────────────*/
+(function(){
+  var lastH = 0;
+  function setVH(){
+    var h = window.innerHeight || document.documentElement.clientHeight || 0;
+    if (!h) return;
+    if (h > lastH) lastH = h;
+    document.documentElement.style.setProperty('--vh-px', lastH + 'px');
+    document.documentElement.style.setProperty('--vh',   (lastH/100) + 'px');
+  }
+  setVH();
+  window.addEventListener('resize', setVH, {passive:true});
+  window.addEventListener('orientationchange', function(){
+    lastH = 0;                       /* new orientation = new universe */
+    setTimeout(setVH, 150);
+    setTimeout(setVH, 400);
+  }, {passive:true});
+  /* Debounced ScrollTrigger refresh when viewport meaningfully changes. */
+  var refreshT = null, refreshLast = 0;
+  function debouncedRefresh(){
+    var h = window.innerHeight || 0;
+    if (Math.abs(h - refreshLast) < 40) return;
+    refreshLast = h;
+    clearTimeout(refreshT);
+    refreshT = setTimeout(function(){
+      if (window.ScrollTrigger && typeof window.ScrollTrigger.refresh === 'function') {
+        window.ScrollTrigger.refresh();
+      }
+    }, 220);
+  }
+  window.addEventListener('resize', debouncedRefresh, {passive:true});
+  window.addEventListener('orientationchange', debouncedRefresh, {passive:true});
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -268,6 +313,10 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   width: min(700px, 80vw);
   height: 88vh;
   height: 88svh;
+  /* Pixel fallback from the JS shim — fixes the "shoes only visible"
+     symptom on Android where 88svh resolves short during URL-bar
+     animation, cropping the puppet to just its feet. */
+  height: calc(var(--vh-px, 88vh) * 0.88);
   flex-shrink: 0;
   position: relative;
 }
@@ -278,11 +327,12 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .rive-clip {
     width: min(520px, 96vw);
     height: 70svh;
+    height: calc(var(--vh-px, 70vh) * 0.70);
     max-height: 560px;
   }
 }
 @media (max-width: 768px) and (orientation: landscape) {
-  .rive-clip { width: 70svw; height: 82svh; }
+  .rive-clip { width: 70svw; height: 82svh; height: calc(var(--vh-px, 82vh) * 0.82); }
 }
 
 /* ═══════════════════════════════════════════
@@ -544,15 +594,12 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 }
 .section-stage {
   position:relative; top:0; width:100%;
-  /* Cascading height fallback: browsers pick the last supported unit.
-     100dvh tracks the visible viewport as the mobile URL bar hides/
-     reveals, so GSAP's pinned container always matches what the user
-     actually sees — without this, scrolling down lets the URL bar hide,
-     viewport grows, but the pinned element stays at the old (smaller)
-     100svh size and content ends up shifted off-screen. */
+  /* Pixel-based height from JS shim (--vh-px) — grows-only high-water
+     mark so Android URL bar transitions can't lock us at a short value.
+     Falls back to svh/vh if the shim didn't execute yet. */
   height:100vh;
   height:100svh;
-  height:100dvh;
+  height:var(--vh-px, 100svh);
   overflow:hidden;
   background:#F5F1EB;
 }
@@ -568,7 +615,12 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 }
 .cards-col {
   position:absolute; top:0; display:flex; flex-direction:column;
-  justify-content:space-around; height:110vh;
+  justify-content:space-around;
+  /* Pixel-based height via --vh-px — without this, the 4 corner columns
+     float inside a short stage on Android (the "tiny avatars clinging to
+     corners" bug) because 110vh resolves against the wrong viewport. */
+  height:110vh;
+  height:calc(var(--vh-px, 100vh) * 1.10);
   padding:clamp(16px,2.5vh,40px) 0; gap:clamp(14px,2vh,30px);
   z-index:5; will-change:transform;
 }
@@ -2485,21 +2537,23 @@ window._introReinit = _createIntroPinTrigger;
 /* Init on load (same timing as chart section) */
 window.addEventListener('load', _createIntroPinTrigger);
 
-/* Explicit pixel height for the pinned stage — browser-agnostic fix.
-   CSS dvh units don't update reliably on all mobile browsers during
-   URL-bar transitions, so instead we force stage-height = innerHeight
-   via inline style. This guarantees the pinned container always matches
-   the actual visible viewport regardless of unit support quirks. */
+/* Explicit pixel height for the pinned stage, with a grow-only high-
+   water mark so mobile URL bar retract never shrinks the pinned
+   viewport underneath us (the root cause of the "shoes only" / "tiny
+   avatars in corners" bugs on Android). */
+let _stageMaxH = 0;
 function _setStageHeight() {
-  if (stageEl) stageEl.style.height = window.innerHeight + 'px';
+  if (!stageEl) return;
+  const h = window.innerHeight || 0;
+  if (h > _stageMaxH) _stageMaxH = h;
+  if (_stageMaxH) stageEl.style.height = _stageMaxH + 'px';
 }
 _setStageHeight();
 
-/* Resize: re-drive animation at current scroll position.
-   Mobile URL bar show/hide fires resize constantly with height changes
-   but unchanged width — only genuine width changes (rotation, window
-   resize) should trigger a full ScrollTrigger.refresh. Height-only
-   resizes just update stage height + re-drive current scroll progress. */
+/* Resize: re-drive animation at current scroll position. Height-only
+   resizes update stage (grow-only) + re-drive onProgress; only width
+   changes trigger a full ScrollTrigger.refresh (expensive + can snap
+   scroll position). */
 let _lastW = window.innerWidth, _refreshTimer;
 window.addEventListener('resize',()=>{
   _setStageHeight();
@@ -2510,6 +2564,13 @@ window.addEventListener('resize',()=>{
     clearTimeout(_refreshTimer);
     _refreshTimer = setTimeout(()=>ScrollTrigger.refresh(), 180);
   }
+},{passive:true});
+/* Orientation change = new viewport universe. Reset the high-water
+   mark so landscape → portrait picks up the correct (smaller) height
+   instead of locking at the previous orientation. */
+window.addEventListener('orientationchange',()=>{
+  _stageMaxH = 0;
+  setTimeout(()=>{ _setStageHeight(); ScrollTrigger.refresh(); }, 200);
 },{passive:true});
 
 /* Set initial column positions immediately so entry is correct */

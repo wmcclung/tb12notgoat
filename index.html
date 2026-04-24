@@ -543,7 +543,16 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   background:#F5F1EB;
 }
 .section-stage {
-  position:relative; top:0; height:100vh; height:100svh; width:100%;
+  position:relative; top:0; width:100%;
+  /* Cascading height fallback: browsers pick the last supported unit.
+     100dvh tracks the visible viewport as the mobile URL bar hides/
+     reveals, so GSAP's pinned container always matches what the user
+     actually sees — without this, scrolling down lets the URL bar hide,
+     viewport grows, but the pinned element stays at the old (smaller)
+     100svh size and content ends up shifted off-screen. */
+  height:100vh;
+  height:100svh;
+  height:100dvh;
   overflow:hidden;
   background:#F5F1EB;
 }
@@ -653,12 +662,15 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 .chart-section { position:relative; background:#07090C; }
 .table-header {
   position:sticky; top:0; z-index:50;
-  background:rgba(7,9,12,.97); border-bottom:1px solid rgba(242,237,228,.05);
-  backdrop-filter:blur(8px);
+  /* No background — reader feedback was that the opaque fill clipped
+     the tops of the rows scrolling under it. The portraits are large
+     and high-contrast on their own, they read fine against the rows. */
+  background:transparent;
   padding:clamp(14px,2.2vh,24px) clamp(20px,4vw,64px);
   display:grid; grid-template-columns:clamp(130px,16vw,210px) repeat(5,1fr);
   gap:0 6px; align-items:center;
   /* sticky works because .table-body is the scroll container */
+  pointer-events:none;
 }
 .player-head { display:flex; flex-direction:column; align-items:center; gap:5px; }
 .portrait-ring {
@@ -2458,6 +2470,10 @@ function _createIntroPinTrigger() {
     pin:stageEl,
     pinSpacing:false,
     invalidateOnRefresh:true,
+    /* Force position:fixed pinning on touch devices. Default on touch
+       is transform-based, which interacts badly with mobile URL bar
+       show/hide and can shift content off-screen during scroll-down. */
+    pinType:'fixed',
     onUpdate:self=>onProgress(self.progress),
     onRefresh:self=>onProgress(self.progress),
   });
@@ -2468,10 +2484,21 @@ window._introReinit = _createIntroPinTrigger;
 /* Init on load (same timing as chart section) */
 window.addEventListener('load', _createIntroPinTrigger);
 
-/* Resize: re-drive animation at current scroll position */
+/* Resize: re-drive animation at current scroll position.
+   Mobile URL bar show/hide fires resize constantly with height changes
+   but unchanged width — only genuine viewport changes (rotation, window
+   resize) should trigger a full ScrollTrigger.refresh, which is expensive
+   and can snap scroll position. Height-only resizes just re-drive the
+   current scroll progress. */
+let _lastW = window.innerWidth, _refreshTimer;
 window.addEventListener('resize',()=>{
   const total=section.offsetHeight-window.innerHeight;
   if(total>0) onProgress(clamp(-section.getBoundingClientRect().top/total,0,1));
+  if (window.innerWidth !== _lastW) {
+    _lastW = window.innerWidth;
+    clearTimeout(_refreshTimer);
+    _refreshTimer = setTimeout(()=>ScrollTrigger.refresh(), 180);
+  }
 },{passive:true});
 
 /* Set initial column positions immediately so entry is correct */

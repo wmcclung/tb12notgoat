@@ -1349,15 +1349,48 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .vote-state.active { justify-content: flex-start; gap: clamp(24px, 5vh, 60px); }
   .vote-grid .vote-face-ring { width: clamp(100px, 28vw, 150px); height: clamp(100px, 28vw, 150px); }
   .vote-card-name { font-size: clamp(12px, 2.4vw, 14px); margin-top: clamp(8px, 1.5vh, 14px); }
-  /* Shrink the results sticker on mobile so the leaderboard is visible
-     in the same viewport — was too tall before, user had to zoom out
-     to see vote counts. */
-  .vote-results-sticker-top .sticker-placeholder {
-    width:  clamp(140px, 40vw, 220px);
-    height: clamp(180px, 52vw, 300px);
+  /* Results layout — sticker + leaderboard both fit inside 100dvh
+     without scrolling. Tight fixed sizes instead of viewport-based
+     clamps so the math is predictable across phone sizes. */
+  .results-state {
+    padding-top: clamp(12px, 2vh, 24px);
+    padding-bottom: clamp(12px, 2vh, 24px);
+    justify-content: flex-start;
   }
-  .vote-results-sticker-top { margin-bottom: clamp(8px, 1.5vh, 18px); }
-  .results-state { padding-top: clamp(18px, 3vh, 32px); padding-bottom: clamp(16px, 3vh, 28px); }
+  .vote-section {
+    /* Override the base .vote-section padding on mobile specifically
+       for the results state — default (up to 80px bottom) stole space
+       the leaderboard needed. */
+    padding-top: clamp(8px, 2vh, 24px);
+    padding-bottom: clamp(8px, 2vh, 24px);
+  }
+  .vote-results-sticker-top {
+    margin-bottom: clamp(6px, 1vh, 14px);
+  }
+  .vote-results-sticker-top .sticker-placeholder {
+    /* Hard cap so sticker never takes more than ~32vh on any phone. */
+    width:  clamp(120px, 38vw, 200px);
+    height: clamp(150px, 30vh, 260px);
+  }
+  .vote-results-sticker-name { margin-top: 4px; }
+  .vote-leaderboard {
+    /* Cancel the desktop margin-top:auto (which pushed the leaderboard
+       to the bottom of a 100vh flex column — on mobile that created a
+       big gap between sticker and leaderboard and sometimes pushed
+       the leaderboard off the bottom edge). Stack naturally instead. */
+    margin-top: 0;
+    margin-bottom: 0;
+    gap: clamp(6px, 1vh, 12px);
+  }
+  .vote-lb-row {
+    grid-template-columns: 36px 1fr 36px;
+    gap: 10px;
+  }
+  .vote-lb-face { width: 36px; height: 36px; border-width: 1.5px; }
+  .vote-lb-name { font-size: 11px; letter-spacing: .1em; }
+  .vote-lb-pill { font-size: 8px; padding: 2px 6px; letter-spacing: .1em; }
+  .vote-bar-track { height: 5px; }
+  .vote-lb-count { font-size: 12px; }
 }
 
 .vote-center-preview {
@@ -3537,23 +3570,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     chosenPlayer = pid;
     /* On mobile, skip the celebration animation and drop straight into
        results — reader feedback was that the animation blocks the
-       leaderboard (which is the actually-useful screen after voting)
-       and doesn't center well on phone viewports. Desktop still gets
-       the full celebration. */
+       leaderboard and doesn't center well on phone viewports. Desktop
+       still gets the full celebration. Layout (below in CSS) is sized
+       so sticker + leaderboard both fit inside 100dvh naturally, no
+       auto-scrolling needed. */
     var isMobile = window.matchMedia('(max-width: 767px)').matches;
     transitionTo(isMobile ? 'results' : 'celebration');
-    /* Auto-scroll so the results viewport is fully in view on mobile —
-       without this, the user ends up mid-section with the sticker
-       filling the screen and the leaderboard below the fold, unable to
-       scroll further because the page was already at its bottom. */
-    if (isMobile) {
-      requestAnimationFrame(function() {
-        var sec = document.getElementById('vote-section');
-        if (!sec) return;
-        var y = sec.offsetTop;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      });
-    }
   }
 
   // ── State machine ──

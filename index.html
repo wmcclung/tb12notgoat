@@ -28,9 +28,19 @@
    shrinks the pinned viewport. Orientation change resets it.
 ──────────────────────────────────────────────────────────────*/
 (function(){
+  /* Prefer visualViewport.height when available — it returns the actual
+     visible viewport height, unaffected by mobile URL bar animation
+     intermediate states the way window.innerHeight is. innerHeight is
+     only used as a fallback. Test 1 of the mobile-pin investigation. */
+  function currentVH() {
+    if (window.visualViewport && window.visualViewport.height) {
+      return Math.round(window.visualViewport.height);
+    }
+    return window.innerHeight || document.documentElement.clientHeight || 0;
+  }
   var lastH = 0;
   function setVH(){
-    var h = window.innerHeight || document.documentElement.clientHeight || 0;
+    var h = currentVH();
     if (!h) return;
     if (h > lastH) lastH = h;
     document.documentElement.style.setProperty('--vh-px', lastH + 'px');
@@ -38,6 +48,9 @@
   }
   setVH();
   window.addEventListener('resize', setVH, {passive:true});
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setVH, {passive:true});
+  }
   window.addEventListener('orientationchange', function(){
     lastH = 0;                       /* new orientation = new universe */
     setTimeout(setVH, 150);
@@ -46,7 +59,7 @@
   /* Debounced ScrollTrigger refresh when viewport meaningfully changes. */
   var refreshT = null, refreshLast = 0;
   function debouncedRefresh(){
-    var h = window.innerHeight || 0;
+    var h = currentVH();
     if (Math.abs(h - refreshLast) < 40) return;
     refreshLast = h;
     clearTimeout(refreshT);
@@ -57,6 +70,9 @@
     }, 220);
   }
   window.addEventListener('resize', debouncedRefresh, {passive:true});
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', debouncedRefresh, {passive:true});
+  }
   window.addEventListener('orientationchange', debouncedRefresh, {passive:true});
 })();
 </script>
@@ -1914,7 +1930,16 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 ══════════════════════════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-<script>gsap.registerPlugin(ScrollTrigger);</script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+/* GSAP's mobile scroll normalization — shields ScrollTrigger from the
+   URL-bar animation jitter on touch devices. Without this, innerHeight
+   returns intermediate values during URL bar retract, GSAP measures at
+   one of them, and the pin locks at the wrong size until the user
+   scrolls back (which forces a re-measure). Works best with pinType:
+   'transform' (default on touch) — see GSAP docs "normalizeScroll". */
+ScrollTrigger.normalizeScroll(true);
+</script>
 
 <!-- ── 01 HERO JS ── -->
 <script>
@@ -2523,10 +2548,10 @@ function _createIntroPinTrigger() {
     pin:stageEl,
     pinSpacing:false,
     invalidateOnRefresh:true,
-    /* Force position:fixed pinning on touch devices. Default on touch
-       is transform-based, which interacts badly with mobile URL bar
-       show/hide and can shift content off-screen during scroll-down. */
-    pinType:'fixed',
+    /* Default pinType (transform on touch, fixed on desktop) — paired
+       with ScrollTrigger.normalizeScroll(true) in the head script,
+       which is GSAP's purpose-built fix for mobile URL-bar-driven
+       scroll measurement drift. */
     onUpdate:self=>onProgress(self.progress),
     onRefresh:self=>onProgress(self.progress),
   });
@@ -2539,16 +2564,26 @@ window.addEventListener('load', _createIntroPinTrigger);
 
 /* Explicit pixel height for the pinned stage, with a grow-only high-
    water mark so mobile URL bar retract never shrinks the pinned
-   viewport underneath us (the root cause of the "shoes only" / "tiny
-   avatars in corners" bugs on Android). */
+   viewport underneath us. Prefers visualViewport.height (stable during
+   URL bar animations) over window.innerHeight (returns intermediate
+   values mid-animation, the root cause of the scroll-down asymmetry). */
 let _stageMaxH = 0;
+function _currentVH() {
+  if (window.visualViewport && window.visualViewport.height) {
+    return Math.round(window.visualViewport.height);
+  }
+  return window.innerHeight || 0;
+}
 function _setStageHeight() {
   if (!stageEl) return;
-  const h = window.innerHeight || 0;
+  const h = _currentVH();
   if (h > _stageMaxH) _stageMaxH = h;
   if (_stageMaxH) stageEl.style.height = _stageMaxH + 'px';
 }
 _setStageHeight();
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', _setStageHeight, {passive:true});
+}
 
 /* Resize: re-drive animation at current scroll position. Height-only
    resizes update stage (grow-only) + re-drive onProgress; only width
@@ -4362,8 +4397,14 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       canvasLine = 'cvs  el:' + danceC.offsetWidth + '×' + danceC.offsetHeight +
                    '  buf:' + danceC.width + '×' + danceC.height;
     }
+    var vv = window.visualViewport;
+    var vvStr = vv ? ('vv: ' + Math.round(vv.height) + '×' + Math.round(vv.width) +
+                      '  offY:' + Math.round(vv.offsetTop) +
+                      '  scale:' + vv.scale.toFixed(2))
+                   : 'vv: (unsupported)';
     panel.textContent = [
       'innerH: ' + window.innerHeight + '  innerW: ' + window.innerWidth,
+      vvStr,
       '--vh-px: ' + (vhPx || '(unset)'),
       'intro.offsetH: ' + (intro ? intro.offsetHeight : '-'),
       'stage CSS-h: ' + stgH + '  inline:' + stgIn,

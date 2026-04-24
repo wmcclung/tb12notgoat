@@ -4312,7 +4312,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 ════════════════════════════════════════════ -->
 <script>
 (function(){
-  if (new URLSearchParams(location.search).get('debug') !== '1') return;
+  /* Two opt-in paths so redirects that strip the query string (apex→www)
+     can't lock the user out: either ?debug=1 in the URL OR #debug in the
+     hash works. */
+  var q = new URLSearchParams(location.search).get('debug') === '1';
+  var h = location.hash === '#debug' || location.hash === '#debug=1';
+  if (!q && !h) return;
   /* Visible outlines on the key boxes */
   var style = document.createElement('style');
   style.textContent = [

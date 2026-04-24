@@ -182,6 +182,17 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   width:min(90vw,900px);
   height:clamp(240px, 48dvh, 720px);
   border:none; border-radius:0; overflow:visible;
+  /* Pre-promote to a compositor layer so the first hero impact runs
+     smoothly. Without this, GSAP's first scale+translate tween pays a
+     one-time cost to create the layer (~100-200ms stall), which showed
+     up as a visible stutter on first scroll. Subsequent plays are
+     smooth because the layer persists. */
+  will-change:transform, opacity;
+  transform:translateZ(0);
+}
+#hero-brady-img, #hero-brady-img-shocked {
+  will-change:opacity;
+  backface-visibility:hidden;
 }
 .headline-lower {
   position:relative; z-index:10; text-align:center; line-height:.88;
@@ -2013,12 +2024,27 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 <script>
 gsap.registerPlugin(ScrollTrigger);
 /* GSAP's mobile scroll normalization — shields ScrollTrigger from the
-   URL-bar animation jitter on touch devices. Without this, innerHeight
-   returns intermediate values during URL bar retract, GSAP measures at
-   one of them, and the pin locks at the wrong size until the user
-   scrolls back (which forces a re-measure). Works best with pinType:
-   'transform' (default on touch) — see GSAP docs "normalizeScroll". */
+   URL-bar animation jitter on touch devices during the scroll-driven
+   intro pin. Without this, innerHeight returns intermediate values
+   during URL bar retract, GSAP measures at one of them, and the pin
+   locks at the wrong size until the user scrolls back (which forces
+   a re-measure). */
 ScrollTrigger.normalizeScroll(true);
+/* BUT: normalizeScroll also blocks native scrolling past the last
+   trigger on the page, which was trapping mobile users inside the
+   vote section (couldn't reach the full leaderboard). Release it
+   once the user scrolls into the vote section; re-enable if they
+   scroll back up past it. */
+window.addEventListener('load', function() {
+  var vote = document.getElementById('vote-section');
+  if (!vote) return;
+  ScrollTrigger.create({
+    trigger: vote,
+    start: 'top 85%',
+    onEnter:     function() { ScrollTrigger.normalizeScroll(false); },
+    onLeaveBack: function() { ScrollTrigger.normalizeScroll(true);  }
+  });
+});
 </script>
 
 <!-- ── 01 HERO JS ── -->
@@ -2252,13 +2278,14 @@ ScrollTrigger.normalizeScroll(true);
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile pin duration — +=900 was too short: a single thumb swipe
-         (~600-800px) carried users past the impact AND the shocked-face
-         hold before they could register it. +=1500 gives the impact beat
-         (crown drop) room to land, then ~800px of "hold" where the
-         shocked face sits on screen before the pin releases. Desktop
-         scrolling is slower and can stay longer. */
-      end:                 window.innerWidth <= 767 ? '+=1500' : '+=1800',
+      /* Mobile pin duration — bumped to +=2400 (was +=1500). Reader
+         feedback: even +=1500 was immediately transitioning into the
+         puppet section the moment the impact animation ended.
+         +=2400 gives the whole choreography (NOT fall → crown drop →
+         shocked cross-fade → zoom) room to complete AND leaves a solid
+         ~1000px of dwell where the shocked face just sits there before
+         the pin releases and you scroll into the puppet. */
+      end:                 window.innerWidth <= 767 ? '+=2400' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,

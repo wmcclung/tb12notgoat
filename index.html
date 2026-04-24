@@ -1369,46 +1369,53 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .vote-state.active { justify-content: flex-start; gap: clamp(24px, 5vh, 60px); }
   .vote-grid .vote-face-ring { width: clamp(100px, 28vw, 150px); height: clamp(100px, 28vw, 150px); }
   .vote-card-name { font-size: clamp(12px, 2.4vw, 14px); margin-top: clamp(8px, 1.5vh, 14px); }
-  /* Results layout — sticker + leaderboard both fit inside 100dvh
-     without scrolling. Tight fixed sizes instead of viewport-based
-     clamps so the math is predictable across phone sizes. */
-  .results-state {
-    padding-top: clamp(12px, 2vh, 24px);
-    padding-bottom: clamp(12px, 2vh, 24px);
+
+  /* Results layout on mobile — remove the min-height:100vh floor on
+     BOTH the vote-section and the results-state container so the
+     section's actual height = content height. Without this, the
+     container was always at least 100vh tall, which combined with
+     the browser's URL-bar dynamic viewport math sometimes pushed the
+     bottom of the leaderboard past the viewport edge and scroll
+     would lock at the last section boundary before you could reach
+     it. Letting content drive height ensures the whole thing fits. */
+  .results-state.active {
+    min-height: 0;
+    padding-top: clamp(6px, 1vh, 14px);
+    padding-bottom: clamp(10px, 1.5vh, 20px);
     justify-content: flex-start;
   }
   .vote-section {
-    /* Override the base .vote-section padding on mobile specifically
-       for the results state — default (up to 80px bottom) stole space
-       the leaderboard needed. */
-    padding-top: clamp(8px, 2vh, 24px);
-    padding-bottom: clamp(8px, 2vh, 24px);
+    padding-top: clamp(4px, 1vh, 12px);
+    padding-bottom: clamp(8px, 1.5vh, 20px);
   }
+  /* Close up the gap between the chart-summary (graph above) and the
+     vote-section — previously ~120px of combined padding on mobile. */
+  .chart-summary { padding: clamp(16px, 3vh, 36px) 16px clamp(8px, 1.5vh, 18px); min-height: auto; }
+
   .vote-results-sticker-top {
-    margin-bottom: clamp(6px, 1vh, 14px);
+    margin-bottom: 2px;
   }
   .vote-results-sticker-top .sticker-placeholder {
-    /* Hard cap at ~24vh so the Brady row at the bottom of the
-       leaderboard stays on-screen without zooming out. Previous
-       clamp at 30vh was clipping the last row on ~667px phones. */
-    width:  clamp(110px, 34vw, 180px);
-    height: clamp(140px, 24vh, 220px);
+    /* Hard cap at ~22vh so the Brady row at the bottom of the
+       leaderboard stays on-screen without zooming out. Each 2vh taken
+       off the sticker gains the leaderboard a row of breathing room. */
+    width:  clamp(100px, 30vw, 160px);
+    height: clamp(130px, 22vh, 200px);
   }
-  .vote-results-sticker-name { margin-top: 4px; }
+  .vote-results-sticker-name { margin-top: 2px; font-size: 9px; }
   .vote-leaderboard {
     /* Cancel the desktop margin-top:auto (which pushed the leaderboard
        to the bottom of a 100vh flex column — on mobile that created a
-       big gap between sticker and leaderboard and sometimes pushed
-       the leaderboard off the bottom edge). Stack naturally instead. */
+       big gap between sticker and leaderboard). Stack naturally. */
     margin-top: 0;
     margin-bottom: 0;
-    gap: clamp(6px, 1vh, 12px);
+    gap: 6px;
   }
   .vote-lb-row {
-    grid-template-columns: 36px 1fr 36px;
-    gap: 10px;
+    grid-template-columns: 32px 1fr 28px;
+    gap: 8px;
   }
-  .vote-lb-face { width: 36px; height: 36px; border-width: 1.5px; }
+  .vote-lb-face { width: 32px; height: 32px; border-width: 1.5px; }
   .vote-lb-name { font-size: 11px; letter-spacing: .1em; }
   .vote-lb-pill { font-size: 8px; padding: 2px 6px; letter-spacing: .1em; }
   .vote-bar-track { height: 5px; }
@@ -1839,6 +1846,11 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   </div>
   <div class="illo-wrap" id="illo-wrap">
     <img id="hero-brady-img" src="Assets/tom-brady.png" alt="Tom Brady" style="width:100%;height:100%;object-fit:contain;display:block;">
+    <!-- Shocked variant pre-rendered at opacity:0. Cross-fading between
+         two <img> elements is much smoother than swapping .src on a
+         single element (which forces a layout recalc / first-paint
+         stall on first trigger even with the image cached). -->
+    <img id="hero-brady-img-shocked" src="Assets/tom-brady-shocked.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;opacity:0;will-change:opacity;">
     <img id="crown-svg" src="Assets/crown.png" alt="crown">
     <img id="hero-goat" src="Assets/goat.svg" alt="goat">
   </div>
@@ -2141,13 +2153,12 @@ ScrollTrigger.normalizeScroll(true);
       duration: 0.9, ease: 'power2.in'
     }, 0);
 
-    /* 2 — Brady crossfades to shocked */
-    _impactTl.to('#hero-brady-img', { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.05);
-    _impactTl.call(function() {
-      var bi = document.getElementById('hero-brady-img');
-      if (bi) bi.src = 'Assets/tom-brady-shocked.png';
-    }, null, 0.17);
-    _impactTl.to('#hero-brady-img', { opacity: 1, duration: 0.18, ease: 'power1.out' }, 0.17);
+    /* 2 — Brady crossfades to shocked via opacity on a pre-rendered
+       duplicate img element. No .src swap → no layout recalc, no
+       first-play stutter. Both images are rendered in the DOM at
+       load time; only opacity changes. */
+    _impactTl.to('#hero-brady-img',         { opacity: 0, duration: 0.22, ease: 'power1.inOut' }, 0.05);
+    _impactTl.to('#hero-brady-img-shocked', { opacity: 1, duration: 0.22, ease: 'power1.inOut' }, 0.05);
 
     /* 3 — Illustration zooms into shocked face after NOT lands */
     _impactTl.to('#illo-wrap', {
@@ -2174,18 +2185,13 @@ ScrollTrigger.normalizeScroll(true);
     gsap.to('#illo-wrap', { y: 0, scale: 1, transformOrigin: '50% 28%', duration: DUR, ease: 'power2.out' });
     gsap.set('#hero-goat', { x: 0, opacity: 0 });
 
-    gsap.to('#hero-brady-img', {
-      opacity: 0, duration: 0.12, ease: 'power1.in',
-      onComplete: function() {
-        var bi = document.getElementById('hero-brady-img');
-        if (bi) bi.src = 'Assets/tom-brady.png';
-        positionCrownOnHead();
-        positionGoatOnImage();
-        gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1, opacity: 0 });
-        gsap.to('#hero-brady-img', { opacity: 1, duration: 0.2, ease: 'power1.out' });
-        gsap.to('#crown-svg',      { opacity: 1, duration: 0.3, ease: 'power2.out' });
-      }
-    });
+    /* Cross-fade back: shocked img out, normal img in. No src swap. */
+    gsap.to('#hero-brady-img-shocked', { opacity: 0, duration: DUR, ease: 'power1.inOut' });
+    gsap.to('#hero-brady-img',         { opacity: 1, duration: DUR, ease: 'power1.inOut' });
+    positionCrownOnHead();
+    positionGoatOnImage();
+    gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1 });
+    gsap.to('#crown-svg',  { opacity: 1, duration: 0.3, ease: 'power2.out' });
   }
 
   function showInitial() {
@@ -2209,9 +2215,11 @@ ScrollTrigger.normalizeScroll(true);
     gsap.set('#line-bottom', {y:0});
     gsap.set('#hero-goat',   {x:0, scaleX:1, opacity:0});
     gsap.set('#crown-svg',   {x:0, y:0, rotation:CROWN_ROT, opacity:1, scale:1});
+    /* Both Brady images visible state: normal=opaque, shocked=transparent.
+       Cross-fade approach replaces the old src-swap. */
+    gsap.set('#hero-brady-img',         {opacity:1});
+    gsap.set('#hero-brady-img-shocked', {opacity:0});
     positionCrownOnHead();
-    const _bi = document.getElementById('hero-brady-img');
-    if (_bi) _bi.src = 'Assets/tom-brady.png';
     gsap.set('#subtext',       {opacity:0});
     gsap.set('#scroll-hint',   {opacity:1});
     gsap.to('#scroll-hint',    {opacity:1, duration:0.3, ease:'power2.out'});
@@ -4593,15 +4601,16 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        0.84-0.88  EXIT      cards glitch out
        0.88-1.00  WIND-DOWN lights fade, cross-fade back to dance, cream returns */
   /* Spaced out to ~11% between pop-ins (was 8%) so each card reads as
-     its own beat instead of a rapid cascade. Exits still bunched tightly
-     at the end because the glitch-out wants to feel like a single moment. */
+     its own beat instead of a rapid cascade. Card 4 (the 286-wins
+     finale) holds on its own for a longer beat before everyone exits
+     — gives the reader time to register it as the payoff stat. */
   var CARD_SCHED = [
     { in:0.43, out:0.82 },
     { in:0.55, out:0.83 },
     { in:0.67, out:0.85 },
-    { in:0.78, out:0.86 },
+    { in:0.78, out:0.91 },  /* 286 card holds nearly all the way to wind-down */
   ];
-  var PARTY_START = 0.42, PARTY_END = 0.88;
+  var PARTY_START = 0.42, PARTY_END = 0.92;
   var lightningFired = false;
 
   /* Called by the intro's onProgress each scroll tick. gpLocal is the

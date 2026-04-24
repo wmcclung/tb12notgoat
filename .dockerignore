@@ -1,0 +1,15 @@
+.git
+.gitignore
+.claude
+node_modules
+audit
+site
+riversgoat
+uploads
+index.original.backup.html
+riv-test.html
+*.bak
+.DS_Store
+Thumbs.db
+.vscode
+.idea

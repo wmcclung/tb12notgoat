@@ -1,0 +1,24 @@
+server {
+    listen       ${PORT};
+    server_name  _;
+
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    # Sensible cache headers for the static art files
+    location ~* \.(?:riv|png|jpg|jpeg|svg|webp|gif|ico|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Don't spam the log with favicon probes
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+}

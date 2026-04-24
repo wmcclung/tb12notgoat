@@ -78,6 +78,13 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Preload hero impact assets so first-scroll transition is smooth.
+     Without these, the browser starts fetching tom-brady-shocked.png
+     (3.2 MB) only when the impact fires, producing a visible stutter
+     on first play. Subsequent plays are smooth because the image is
+     cached. Preload moves that fetch to initial page load. -->
+<link rel="preload" as="image" href="Assets/tom-brady-shocked.png">
+<link rel="preload" as="image" href="Assets/goat.svg">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
@@ -649,6 +656,15 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 .col-near-right{ right:clamp(9%,15vw,210px); }
 .col-far-right { right:clamp(6px,1.8vw,28px); }
 @media (max-width:899px) { .col-near-left,.col-near-right { display:none; } }
+/* On mobile pull the far-L / far-R columns inward and scale up the
+   player-cards so they don't look lost hugging the viewport edges
+   while the words animate. Reader feedback: too much empty space
+   between the card columns and the center text. */
+@media (max-width:480px) {
+  .col-far-left  { left:  clamp(14px, 4vw, 32px); }
+  .col-far-right { right: clamp(14px, 4vw, 32px); }
+  .player-card   { width: clamp(92px, 24vw, 130px); height: clamp(92px, 24vw, 130px); }
+}
 .player-card {
   width:clamp(68px,10vw,128px); height:clamp(68px,10vw,128px);
   border-radius:50%; background:#07090C;
@@ -673,13 +689,17 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   font-family:Impact,Haettenschweiler,'Arial Narrow',sans-serif;
 }
 
-/* Mobile word-slot type scale \u2014 widen the IS peak so hierarchy survives */
+/* Mobile word-slot type scale \u2014 widen the IS peak so hierarchy survives.
+   Reader feedback: font was reading "thin" on mobile. Bumped sizes up
+   10\u201315% and added font-weight:900 + stretched letter-spacing to make
+   the stamp feel heavier in each word. */
 @media (max-width: 480px) {
-  #w-then { font-size: clamp(46px, 10vw, 80px); }
-  #w-who  { font-size: clamp(72px, 16vw, 120px); }
-  #w-is   { font-size: clamp(110px, 24vw, 180px); }
-  #w-the  { font-size: clamp(58px, 12vw, 100px); }
-  #w-goat { font-size: clamp(54px, 11vw, 96px); }
+  .word-slot { font-weight: 900; font-stretch: 110%; }
+  #w-then { font-size: clamp(54px, 13vw, 96px);  }
+  #w-who  { font-size: clamp(86px, 20vw, 140px); }
+  #w-is   { font-size: clamp(128px,30vw, 210px); }
+  #w-the  { font-size: clamp(68px, 15vw, 116px); }
+  #w-goat { font-size: clamp(64px, 14vw, 112px); }
 }
 .word-slot .ltr      { display:inline-block; will-change:transform,opacity; }
 .word-slot .wipe-wrap{ display:inline-block; will-change:clip-path; }
@@ -1368,9 +1388,11 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
     margin-bottom: clamp(6px, 1vh, 14px);
   }
   .vote-results-sticker-top .sticker-placeholder {
-    /* Hard cap so sticker never takes more than ~32vh on any phone. */
-    width:  clamp(120px, 38vw, 200px);
-    height: clamp(150px, 30vh, 260px);
+    /* Hard cap at ~24vh so the Brady row at the bottom of the
+       leaderboard stays on-screen without zooming out. Previous
+       clamp at 30vh was clipping the last row on ~667px phones. */
+    width:  clamp(110px, 34vw, 180px);
+    height: clamp(140px, 24vh, 220px);
   }
   .vote-results-sticker-name { margin-top: 4px; }
   .vote-leaderboard {
@@ -3561,7 +3583,9 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     if (pid === 'brady') {
       if (window.dataLayer) window.dataLayer.push({ event: 'brady_click', section: 'vote' });
-      window.location.href = 'https://riversgoat.com';
+      /* Using www variant because the apex (riversgoat.com) currently
+         has a DNS configuration issue; www resolves correctly. */
+      window.location.href = 'https://www.riversgoat.com/';
       return;
     }
 
@@ -4568,11 +4592,14 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        0.42-0.84  PARTY     rocking puppet, lights on, cards pop in
        0.84-0.88  EXIT      cards glitch out
        0.88-1.00  WIND-DOWN lights fade, cross-fade back to dance, cream returns */
+  /* Spaced out to ~11% between pop-ins (was 8%) so each card reads as
+     its own beat instead of a rapid cascade. Exits still bunched tightly
+     at the end because the glitch-out wants to feel like a single moment. */
   var CARD_SCHED = [
-    { in:0.48, out:0.84 },
-    { in:0.56, out:0.85 },
-    { in:0.64, out:0.86 },
-    { in:0.72, out:0.87 },
+    { in:0.43, out:0.82 },
+    { in:0.55, out:0.83 },
+    { in:0.67, out:0.85 },
+    { in:0.78, out:0.86 },
   ];
   var PARTY_START = 0.42, PARTY_END = 0.88;
   var lightningFired = false;

@@ -582,14 +582,18 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 .accolade[data-idx="3"] { --x: 20%; --y: 76%; --rot: -3deg; }
 .accolade[data-idx="4"] { --x: 80%; --y: 74%; --rot:  5deg; }
 @media (max-width: 620px) {
-  .accolade { width:min(300px, 72vw); padding:16px 18px 18px; }
-  .accolade .a-stat  { font-size:clamp(48px, 13vw, 72px); }
-  .accolade .a-label { font-size:12px; letter-spacing:.24em; }
-  .accolade .a-note  { font-size:10px; letter-spacing:.18em; }
-  .accolade[data-idx="1"] { --x: 28%; --y: 16%; }
-  .accolade[data-idx="2"] { --x: 72%; --y: 18%; }
-  .accolade[data-idx="3"] { --x: 28%; --y: 84%; }
-  .accolade[data-idx="4"] { --x: 72%; --y: 82%; }
+  /* Narrower cards + tighter padding so they fit inside the viewport
+     without clipping on either side at 320-430px wide screens. Card
+     centers moved closer to horizontal midline (32%/68%) for the same
+     reason — half-width now stays inside viewport bounds. */
+  .accolade { width:min(215px, 58vw); padding:12px 14px 14px; }
+  .accolade .a-stat  { font-size:clamp(40px, 11vw, 58px); }
+  .accolade .a-label { font-size:11px; letter-spacing:.22em; }
+  .accolade .a-note  { font-size:9px;  letter-spacing:.16em; }
+  .accolade[data-idx="1"] { --x: 32%; --y: 16%; }
+  .accolade[data-idx="2"] { --x: 68%; --y: 18%; }
+  .accolade[data-idx="3"] { --x: 32%; --y: 84%; }
+  .accolade[data-idx="4"] { --x: 68%; --y: 82%; }
   .party-spot { width:40vw; filter:blur(38px); opacity:.55; }
   .party-spot.pink { margin-left:-48vw; }
   .party-spot.cyan { margin-left:-20vw; }
@@ -1345,6 +1349,15 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .vote-state.active { justify-content: flex-start; gap: clamp(24px, 5vh, 60px); }
   .vote-grid .vote-face-ring { width: clamp(100px, 28vw, 150px); height: clamp(100px, 28vw, 150px); }
   .vote-card-name { font-size: clamp(12px, 2.4vw, 14px); margin-top: clamp(8px, 1.5vh, 14px); }
+  /* Shrink the results sticker on mobile so the leaderboard is visible
+     in the same viewport — was too tall before, user had to zoom out
+     to see vote counts. */
+  .vote-results-sticker-top .sticker-placeholder {
+    width:  clamp(140px, 40vw, 220px);
+    height: clamp(180px, 52vw, 300px);
+  }
+  .vote-results-sticker-top { margin-bottom: clamp(8px, 1.5vh, 18px); }
+  .results-state { padding-top: clamp(18px, 3vh, 32px); padding-bottom: clamp(16px, 3vh, 28px); }
 }
 
 .vote-center-preview {
@@ -2184,6 +2197,8 @@ ScrollTrigger.normalizeScroll(true);
       scrub:               true,
       animation:           _notDropTl,
       invalidateOnRefresh: true,
+      /* Smooths the pin release into the intro section below. */
+      anticipatePin:       1,
       onUpdate: self => {
         if (self.progress >= IMPACT && !_impactFired) fireImpact();
         else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();
@@ -2548,6 +2563,11 @@ function _createIntroPinTrigger() {
     pin:stageEl,
     pinSpacing:false,
     invalidateOnRefresh:true,
+    /* anticipatePin engages the pin slightly before the trigger line,
+       so the hero→intro handoff glides instead of snapping. 1 is a
+       whole-beat of anticipation — GSAP's recommended value for
+       scroll-driven pin sequences. */
+    anticipatePin:1,
     /* Default pinType (transform on touch, fixed on desktop) — paired
        with ScrollTrigger.normalizeScroll(true) in the head script,
        which is GSAP's purpose-built fix for mobile URL-bar-driven
@@ -3511,7 +3531,13 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     writeVote(pid);
     setSession({ voted: true, choice: pid });
     chosenPlayer = pid;
-    transitionTo('celebration');
+    /* On mobile, skip the celebration animation and drop straight into
+       results — reader feedback was that the animation blocks the
+       leaderboard (which is the actually-useful screen after voting)
+       and doesn't center well on phone viewports. Desktop still gets
+       the full celebration. */
+    var isMobile = window.matchMedia('(max-width: 767px)').matches;
+    transitionTo(isMobile ? 'results' : 'celebration');
   }
 
   // ── State machine ──

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tom Brady Is Not The GOAT</title>
+  <style>
+    :root {
+      --cream: #F2EDE4;
+      --red:   #C8102E;
+      --gold:  #D4AF37;
+      --bg:    #07090C;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow-x: hidden; background: var(--bg); }
+    body { font-family: Impact, Haettenschweiler, 'Arial Narrow', Arial, sans-serif; }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 75% 55% at 50% 52%, #1F0B09 0%, var(--bg) 68%);
+    }
+
+    .hero-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 100% 40% at 50% 0%,   rgba(0,0,0,0.6) 0%, transparent 100%),
+        radial-gradient(ellipse 100% 30% at 50% 100%,  rgba(0,0,0,0.5) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* thin scanlines — comment out if too heavy */
+    .hero-scanlines {
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* ── HEADLINE ─────────────────────────────── */
+    .headline {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      line-height: 0.88;
+      user-select: none;
+    }
+
+    .line-preamble {
+      font-size: clamp(22px, 5vw, 68px);
+      letter-spacing: 0.16em;
+      color: var(--cream);
+      text-transform: uppercase;
+      opacity: 0.82;
+    }
+
+    .line-not-wrap {
+      display: block;
+      overflow: visible;
+      position: relative;
+    }
+
+    .line-not {
+      font-size: clamp(80px, 19vw, 256px);
+      letter-spacing: -0.03em;
+      color: var(--red);
+      text-transform: uppercase;
+      display: inline-block;
+      position: relative;
+      text-shadow:
+        0 0 60px  rgba(200,16,46,0.5),
+        0 0 120px rgba(200,16,46,0.2),
+        0 2px 0   rgba(0,0,0,0.6);
+    }
+
+    /* underline strike — reveals after drop */
+    .line-not::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      left: -2px; right: -2px;
+      height: 5px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .line-not.struck::after {
+      transform: scaleX(1);
+      transition: transform 0.25s ease-out 0.05s;
+    }
+
+    .line-bottom {
+      font-size: clamp(22px, 5vw, 68px);
+      letter-spacing: 0.16em;
+      color: var(--cream);
+      text-transform: uppercase;
+      opacity: 0.82;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 1.2vw, 18px);
+      position: relative;
+    }
+
+    /* ── CROWN ────────────────────────────────── */
+    #crown-anchor { position: relative; display: inline-flex; align-items: center; }
+
+    #crown-svg {
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%);
+      width: clamp(36px, 6.5vw, 80px);
+      margin-bottom: clamp(-6px, -0.5vw, -2px);
+      transform-origin: 50% 100%;
+      filter: drop-shadow(0 0 10px rgba(212,175,55,0.7))
+              drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    }
+
+    /* ── ILLUSTRATION PLACEHOLDER ─────────────── */
+    .illo-wrap {
+      position: relative;
+      z-index: 8;
+      margin-top: clamp(20px, 3.5vh, 44px);
+      width: clamp(180px, 28vw, 340px);
+      height: clamp(140px, 20vh, 260px);
+      border: 1px dashed rgba(242,237,228,0.15);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .illo-icon {
+      font-size: clamp(28px, 4vw, 48px);
+      opacity: 0.12;
+      line-height: 1;
+    }
+
+    .illo-label {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(9px, 1vw, 11px);
+      letter-spacing: 0.14em;
+      color: rgba(242,237,228,0.28);
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .illo-label em {
+      display: block;
+      font-style: normal;
+      color: rgba(212,175,55,0.45);
+      font-size: clamp(10px, 1.1vw, 12px);
+      letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+
+    /* ── SUBTEXT ──────────────────────────────── */
+    .subtext {
+      position: relative;
+      z-index: 10;
+      margin-top: clamp(14px, 2vh, 24px);
+      font-family: 'Courier New', monospace;
+      font-size: clamp(9px, 1.1vw, 13px);
+      letter-spacing: 0.32em;
+      color: rgba(242,237,228,0.3);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── SCROLL HINT ──────────────────────────── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .scroll-label {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      letter-spacing: 0.38em;
+      color: rgba(242,237,228,0.22);
+      text-transform: uppercase;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, rgba(242,237,228,0.28), transparent);
+      animation: scrollDrop 2.4s ease-in-out infinite;
+    }
+
+    @keyframes scrollDrop {
+      0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+      35%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+      75%  { opacity: 0; transform: scaleY(1); transform-origin: top; }
+      100% { opacity: 0; }
+    }
+
+    /* ── REPLAY HINT ──────────────────────────── */
+    .replay-hint {
+      position: fixed;
+      bottom: 18px;
+      right: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(242,237,228,0.18);
+      text-transform: uppercase;
+      z-index: 999;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .replay-hint:hover { color: rgba(242,237,228,0.5); }
+
+    /* ── NEXT SECTION STUB ────────────────────── */
+    .next-section {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+    }
+
+    .next-label {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: rgba(242,237,228,0.12);
+      text-transform: uppercase;
+    }
+
+    /* ── PARTICLE ─────────────────────────────── */
+    .particle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-scanlines"></div>
+
+  <div class="headline" id="headline">
+
+    <div class="line-preamble" id="line-preamble">Tom Brady is</div>
+
+    <div class="line-not-wrap">
+      <span class="line-not" id="not-text">NOT</span>
+    </div>
+
+    <div class="line-bottom" id="line-bottom">
+      <span>The</span>
+      <span id="crown-anchor">
+        GOAT
+        <svg id="crown-svg" viewBox="0 0 80 52" xmlns="http://www.w3.org/2000/svg">
+          <!-- base band -->
+          <rect x="4" y="39" width="72" height="10" rx="2.5" fill="#C9991A"/>
+          <rect x="4" y="39" width="72" height="5"  rx="2.5" fill="#D4AF37"/>
+          <!-- crown body shadow -->
+          <path d="M 6 40 L 6 26 L 21 35 L 40 6 L 59 35 L 74 26 L 74 40 Z"
+                fill="#A07810" opacity="0.45"/>
+          <!-- crown body -->
+          <path d="M 5 40 L 5 24 L 20 34 L 40 4 L 60 34 L 75 24 L 75 40 Z"
+                fill="#D4AF37" stroke="#C09020" stroke-width="1.2" stroke-linejoin="round"/>
+          <!-- highlight face -->
+          <path d="M 5 36 L 5 28 L 19 36 L 40 10 L 61 36 L 75 28 L 75 36 Z"
+                fill="#F0CC50" opacity="0.35"/>
+          <!-- center gem — Patriots red -->
+          <circle cx="40" cy="5"  r="5"   fill="#9B0020" stroke="#700015" stroke-width="1"/>
+          <circle cx="40" cy="5"  r="2.8" fill="#FF3050" opacity="0.55"/>
+          <!-- side gems — blue -->
+          <circle cx="6.5"  cy="23" r="3.2" fill="#1A3080" stroke="#0A1845" stroke-width="0.8"/>
+          <circle cx="73.5" cy="23" r="3.2" fill="#1A3080" stroke="#0A1845" stroke-width="0.8"/>
+          <!-- band rivets -->
+          <circle cx="18" cy="43.5" r="2.2" fill="#E8C040"/>
+          <circle cx="40" cy="43.5" r="2.2" fill="#E8C040"/>
+          <circle cx="62" cy="43.5" r="2.2" fill="#E8C040"/>
+          <!-- inner band line -->
+          <line x1="4" y1="44" x2="76" y2="44" stroke="#B08010" stroke-width="0.8" opacity="0.6"/>
+        </svg>
+      </span>
+    </div>
+
+  </div>
+
+  <!-- Illustration placeholder — Casey's art goes here -->
+  <div class="illo-wrap" id="illo-wrap">
+    <div class="illo-icon">🏈</div>
+    <div class="illo-label">
+      <em>Casey's illustration</em>
+      Brady on throne — crown removed<br>
+      Goat expression, cool but inhuman
+    </div>
+  </div>
+
+  <p class="subtext" id="subtext">A data-driven case for someone else</p>
+
+  <div class="scroll-hint" id="scroll-hint">
+    <span class="scroll-label">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<section class="next-section">
+  <p class="next-label">↓ 02 — The case begins here</p>
+</section>
+
+<div class="replay-hint" onclick="replay()" title="Press R to replay">[ R ] replay</div>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+
+  // ── PARTICLES ────────────────────────────────────
+  function spawnParticles() {
+    const crown = document.getElementById('crown-svg');
+    const rect  = crown.getBoundingClientRect();
+    const cx    = rect.left + rect.width  * 0.5;
+    const cy    = rect.top  + rect.height * 0.5;
+    const count = 10;
+
+    for (let i = 0; i < count; i++) {
+      const p   = document.createElement('div');
+      const sz  = 3 + Math.random() * 4;
+      const isGold = Math.random() > 0.4;
+      p.className = 'particle';
+      p.style.cssText = `left:${cx}px; top:${cy}px; width:${sz}px; height:${sz}px;
+        background:${isGold ? '#D4AF37' : '#F2EDE4'}; opacity:1;`;
+      document.body.appendChild(p);
+
+      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.8;
+      const dist  = 50 + Math.random() * 90;
+
+      gsap.to(p, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist - 50,
+        opacity: 0,
+        duration: 0.6 + Math.random() * 0.5,
+        ease: 'power2.out',
+        onComplete: () => p.remove()
+      });
+    }
+  }
+
+  // ── SCREEN SHAKE ─────────────────────────────────
+  function shake() {
+    const hl = document.getElementById('headline');
+    gsap.fromTo(hl,
+      { x: 0, y: 0 },
+      { x: 'random(-7,7)', y: 'random(-3,3)',
+        duration: 0.055, repeat: 6, yoyo: true, ease: 'none',
+        onComplete: () => gsap.set(hl, { x: 0, y: 0 }) }
+    );
+  }
+
+  // ── MAIN SEQUENCE ────────────────────────────────
+  function runSequence() {
+    // Reset
+    const notEl = document.getElementById('not-text');
+    notEl.classList.remove('struck');
+    gsap.set('#line-preamble',  { opacity: 0, y: 22 });
+    gsap.set('#line-bottom',    { opacity: 0, y: 22 });
+    gsap.set('#not-text',       { y: -420, opacity: 1 });
+    gsap.set('#crown-svg',      { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1 });
+    gsap.set('#illo-wrap',      { opacity: 0, y: 14 });
+    gsap.set('#subtext',        { opacity: 0 });
+    gsap.set('#scroll-hint',    { opacity: 0 });
+
+    const tl = gsap.timeline({ delay: 0.5 });
+
+    // 1 — "Tom Brady is" drifts up
+    tl.to('#line-preamble', { opacity: 0.82, y: 0,
+      duration: 0.75, ease: 'power3.out' })
+
+    // 2 — "The GOAT" with crown sitting proud
+    .to('#line-bottom', { opacity: 0.82, y: 0,
+      duration: 0.7, ease: 'power3.out' }, '-=0.3')
+
+    // 3 — pause, crown just sits there
+    .to({}, { duration: 0.7 })
+
+    // 4 — NOT CRASHES DOWN
+    .to('#not-text', { y: 0, duration: 0.48, ease: 'bounce.out' })
+
+    // 5 — crown flies off on impact
+    .to('#crown-svg', {
+      x: gsap.utils.random(160, 220),
+      y: gsap.utils.random(-160, -100),
+      rotation: gsap.utils.random(260, 320),
+      scale: 0.7,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.in'
+    }, '-=0.06')
+
+    // 6 — impact effects fire together
+    .add(() => {
+      spawnParticles();
+      shake();
+      notEl.classList.add('struck');
+    }, '<')
+
+    // 7 — illustration fades in
+    .to('#illo-wrap', { opacity: 1, y: 0,
+      duration: 0.65, ease: 'power2.out' }, '+=0.18')
+
+    // 8 — subtext
+    .to('#subtext', { opacity: 1,
+      duration: 0.5, ease: 'power2.out' }, '-=0.3')
+
+    // 9 — scroll hint
+    .to('#scroll-hint', { opacity: 1, duration: 0.5 }, '+=0.5');
+  }
+
+  function replay() { runSequence(); }
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if (e.key === 'r' || e.key === 'R') runSequence();
+  });
+
+  window.addEventListener('load', runSequence);
+
+</script>
+</body>
+</html>

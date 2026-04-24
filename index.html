@@ -1,0 +1,4452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Intercept #vote-section hash before browser's native scroll fires.
+   GSAP pin spacers don't exist yet, so we kill the jump here and replay
+   it after ScrollTrigger.refresh() runs (~500 ms into load). */
+(function(){
+  if(window.location.hash==='#vote-section'){
+    history.replaceState(null,'',window.location.pathname+window.location.search);
+    window.__scrollToVote=true;
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tom Brady Is Not The GOAT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ═══ GLOBAL ═══ */
+* { margin:0; padding:0; box-sizing:border-box; }
+html { background:#07090C; }
+body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
+
+/* ── Global focus-visible (keyboard affordance) ── */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(242,237,228,.65);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+
+/* ═══════════════════════════════════════════
+   SECTION 01 — HERO
+═══════════════════════════════════════════ */
+.hero {
+  position:relative; height:100dvh; min-height:520px; max-height:1100px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  padding-top:max(clamp(10px,2vh,28px), env(safe-area-inset-top));
+  padding-bottom:clamp(48px,10dvh,120px);
+  /* overflow:visible so the shocked Brady illo can zoom past the hero's
+     bottom edge during the impact phase without being clipped.
+     The background layers (.hero-bg, .hero-vignette, .hero-scanlines)
+     are absolutely positioned with inset:0 so they still stay contained. */
+  overflow:visible;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse 75% 55% at 50% 52%, #1F0B09 0%, #07090C 68%);
+}
+.hero-vignette {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 0%,  rgba(0,0,0,.6) 0%, transparent 100%),
+    radial-gradient(ellipse 100% 30% at 50% 100%, rgba(0,0,0,.5) 0%, transparent 100%);
+  pointer-events:none;
+}
+.hero-scanlines {
+  position:absolute; inset:0;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
+  pointer-events:none;
+}
+.headline { position:relative; z-index:10; text-align:center; line-height:.88; user-select:none; }
+/* Proportional type: min is readable floor, preferred scales with viewport height + width, max keeps desktop sane */
+.line-preamble {
+  font-family:'Germania One',cursive;
+  font-size:clamp(22px, min(5vw, 8vh), 84px);
+  letter-spacing:.14em; color:#F2EDE4; text-transform:uppercase; opacity:.82;
+  line-height:1;
+}
+.line-not-wrap  { display:block; overflow:visible; position:relative; }
+.line-not {
+  font-family:'Shrikhand',cursive;
+  /* Sized so NOT lands within the bottom third of the silhouette, not
+     over Brady's torso. Capped shorter than the illo-wrap height. */
+  font-size:clamp(90px, min(20vw, 28dvh), 280px);
+  letter-spacing:-.01em; color:#C8102E;
+  text-transform:uppercase; display:inline-block; position:relative; line-height:.9;
+  text-shadow:0 0 60px rgba(200,16,46,.5),0 0 120px rgba(200,16,46,.2),0 2px 0 rgba(0,0,0,.6);
+}
+.line-not::after {
+  content:''; position:absolute; bottom:6px; left:-2px; right:-2px;
+  height:5px; background:#C8102E; transform:scaleX(0); transform-origin:left;
+}
+.line-not.struck::after { transform:scaleX(1); transition:transform .25s ease-out .05s; }
+.line-bottom {
+  font-family:'Germania One',cursive;
+  font-size:clamp(22px, min(5vw, 8vh), 84px);
+  letter-spacing:.14em; color:#F2EDE4;
+  text-transform:uppercase; opacity:.82;
+  display:flex; align-items:center; justify-content:center; gap:clamp(4px,1vw,16px);
+  position:relative;
+  margin-top:clamp(4px,1vh,16px);
+  line-height:1;
+}
+/* Ensure both children inherit Germania One (was falling back to body Impact) */
+.line-bottom > span { font-family:inherit; }
+#crown-anchor { position:relative; display:inline-flex; align-items:center; }
+#crown-svg {
+  position:absolute;
+  left:0; top:0; /* JS overrides via positionCrownOnHead() */
+  width:clamp(30px,9.7%,400px);
+  filter:brightness(1.4) drop-shadow(0 2px 8px rgba(0,0,0,.9)) drop-shadow(0 0 18px rgba(212,175,55,.6));
+  z-index:10;
+  opacity:0;
+}
+.illo-wrap {
+  position:relative; z-index:8; margin-top:clamp(2px,1vh,12px);
+  /* Illustration height keys to dynamic viewport height so NOT always has room to drop */
+  width:min(90vw,900px);
+  height:clamp(240px, 48dvh, 720px);
+  border:none; border-radius:0; overflow:visible;
+}
+.headline-lower {
+  position:relative; z-index:10; text-align:center; line-height:.88;
+  user-select:none; margin-top:2px;
+}
+#hero-goat {
+  position:absolute;
+  left:0; top:0; /* JS overrides via positionGoatOnImage() */
+  width:clamp(30px,27.6%,400px);
+  transform-origin:right center;
+  opacity:0;
+}
+.illo-icon { font-size:clamp(28px,4vw,48px); opacity:.12; line-height:1; }
+.illo-label {
+  font-family:'JetBrains Mono',ui-monospace,monospace; font-size:clamp(9px,1vw,11px);
+  letter-spacing:.14em; color:rgba(242,237,228,.28); text-transform:uppercase;
+  text-align:center; line-height:1.7;
+}
+.illo-label em {
+  display:block; font-style:normal; color:rgba(212,175,55,.45);
+  font-size:clamp(10px,1.1vw,12px); letter-spacing:.1em; margin-bottom:2px;
+}
+.subtext, .scroll-hint { display: none !important; }
+.particle { position:fixed; border-radius:50%; pointer-events:none; z-index:100; }
+
+/* Scroll cue — hidden by default, enabled on mobile via media query */
+.hero-scroll-cue { display: none; }
+.hero-scroll-cue .cue-chev {
+  width: 26px; height: 26px;
+  color: rgba(242,237,228,.55);
+  animation: cueBob 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+}
+.hero-scroll-cue .cue-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: .24em; text-transform: uppercase;
+  color: rgba(242,237,228,.38);
+  margin-right: 10px; align-self: center;
+}
+@keyframes cueBob {
+  0%,100% { transform: translateY(0); opacity: .55; }
+  50%     { transform: translateY(6px); opacity: .95; }
+}
+
+/* ── NOT text is hidden until JS fires (prevents FOUC) ── */
+#not-text { opacity:0; }
+
+/* ═══════════════════════════════════════════
+   HERO — RESPONSIVE
+   Mobile-first: base styles = mobile, scale up at md/lg.
+   Clamps key from dvh so browser chrome doesn't throw off sizing.
+═══════════════════════════════════════════ */
+
+/* Tablet landscape */
+@media (max-width: 1024px) {
+  .illo-wrap { width: min(90vw, 680px); }
+}
+
+/* Narrow desktop + tablet portrait (481–900px):
+   Prevents NOT from dominating the silhouette on thin browser windows —
+   cap it so Brady remains visible behind/around the word. */
+@media (min-width: 481px) and (max-width: 900px) {
+  .line-not {
+    font-size: clamp(90px, min(18vw, 26dvh), 240px);
+  }
+  .line-preamble, .line-bottom {
+    font-size: clamp(22px, min(4.2vw, 6.5vh), 64px);
+  }
+  .illo-wrap {
+    height: clamp(280px, 52dvh, 540px);
+  }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
+  .line-preamble { letter-spacing: .12em; }
+  .line-bottom   { letter-spacing: .12em; }
+  .illo-wrap     { width: min(94vw, 560px); }
+}
+
+/* ── Mobile (≤ 480px) — intentional mobile layout, not scaled desktop ── */
+@media (max-width: 480px) {
+  .hero {
+    /* Center the composition vertically so there's no big gap beneath "THE GOAT".
+       Also shrink the bottom padding — the scroll cue handles wayfinding. */
+    justify-content: center;
+    padding-top:  max(8px, env(safe-area-inset-top));
+    padding-bottom: clamp(48px, 9dvh, 80px);
+  }
+  /* Larger text floors so headlines read at arm's length */
+  .line-preamble {
+    font-size: clamp(28px, 7.5vw, 84px);
+    letter-spacing: .10em;
+  }
+  .line-not {
+    /* Bigger floor — "NOT" should feel like a physical impact on small screens */
+    font-size: clamp(100px, 26vw, 360px);
+  }
+  .line-bottom {
+    font-size: clamp(28px, 7.5vw, 84px);
+    letter-spacing: .10em;
+    gap: clamp(4px, 2vw, 10px);
+  }
+  /* Tighter illo — pairs with centered hero so composition fills viewport
+     without leaving a big gap under "THE GOAT". */
+  .illo-wrap {
+    width: min(98vw, 440px);
+    height: clamp(240px, 44dvh, 420px);
+    margin-top: clamp(4px, 1dvh, 10px);
+  }
+  /* Tighten gap between illo and lower headline */
+  .headline-lower { margin-top: 0; }
+
+  /* Scroll cue — small pulsing chevron anchored to the hero bottom so users
+     know there's more below, since the centered composition no longer fills
+     the full viewport. */
+  .hero-scroll-cue {
+    display: flex !important;
+    position: absolute;
+    left: 0; right: 0;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    justify-content: center;
+    pointer-events: none;
+    z-index: 11;
+  }
+}
+
+/* Short viewports (laptops 540–720px tall) — tighten stacking */
+@media (max-height: 720px) {
+  .hero { padding-bottom: clamp(16px, 4dvh, 48px); }
+  .illo-wrap { margin-top: 0; }
+  .line-bottom { margin-top: clamp(2px, 0.5dvh, 8px); }
+}
+
+/* Landscape phones — minimal padding, shorter illo */
+@media (max-height: 500px) and (orientation: landscape) {
+  .scroll-hint { display: none; }
+  .hero { padding-top: 8px; padding-bottom: 12px; }
+  .illo-wrap { height: clamp(160px, 42dvh, 260px); }
+}
+
+/* ═══════════════════════════════════════════
+   RIVE PUPPET — inside .center-card
+   center-card is position:absolute full-screen flex-centered.
+   .rive-clip is landscape-ish so Rive's Cover+TopCenter
+   fills to width and clips off the legs naturally.
+═══════════════════════════════════════════ */
+/* Desktop: landscape-ish clip so Cover+TopCenter fills width and crops legs.
+   Mobile: taller portrait clip anchored so the puppet's head/torso lands
+   in the center-visible band instead of way up top or cropped weird. */
+.rive-clip {
+  width: min(700px, 80vw);
+  height: 88vh;
+  height: 88svh;
+  flex-shrink: 0;
+  position: relative;
+}
+@media (max-width: 768px) {
+  /* Use svh (small viewport height — excludes browser chrome) so the puppet
+     doesn't jump around when the mobile URL bar shows/hides. Width is wider
+     relative to height so Cover+TopCenter crops legs but keeps torso visible. */
+  .rive-clip {
+    width: min(520px, 96vw);
+    height: 70svh;
+    max-height: 560px;
+  }
+}
+@media (max-width: 768px) and (orientation: landscape) {
+  .rive-clip { width: 70svw; height: 82svh; }
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 02 — INTRO
+   position:relative only — GSAP ScrollTrigger
+   handles pinning (replaces position:sticky for
+   cross-browser reliability in multi-section pages)
+═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   SECTION 01b — BRADY PARTY PAYOFF
+   Sits between hero and intro. Cream bg matches intro's starting state
+   so the hand-off is seamless. Pinned 500vh of scroll. Phases: DANCE →
+   LIGHTNING → PARTY → WIND-DOWN. Timeline driven by ScrollTrigger scrub.
+═══════════════════════════════════════════ */
+/* Party choreography lives inside the intro section. These background
+   layers (cream ↔ club cross-fade) sit behind everything else; the
+   .party-on class toggled on #section-stage drives the transitions. */
+.bg-cream { position:absolute; inset:0; background:#F5F1EB; z-index:0; transition:opacity .6s ease; }
+.bg-club  {
+  position:absolute; inset:0; z-index:1; opacity:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 35%, rgba(255,190,120,.55) 0%, rgba(255,190,120,0) 60%),
+    #0B0C0E;
+  transition:opacity .6s ease;
+}
+.bg-scanlines {
+  position:absolute; inset:0; z-index:2; opacity:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, transparent 1px 3px);
+  mix-blend-mode:overlay;
+  transition:opacity .6s ease;
+}
+/* Rive canvases inside .rive-clip — stacked for cross-fade between the
+   idle dance puppet and the rocking puppet. Rocker starts invisible. */
+#rive-clip canvas {
+  position:absolute; inset:0; width:100%; height:100%; display:block;
+  transition:opacity .45s ease;
+  /* Promote to own compositor layer so parent center-card's shrink
+     transform can't cache a low-res raster of these canvases — without
+     this, the puppet renders blurry when you scroll back up past the
+     chart because the browser reuses the scaled-down rasterization. */
+  will-change:transform;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
+#rive-rocking-party { opacity:0; }
+#rive-dance-party   { opacity:1; }
+/* Lights: ambient CSS animations (NOT scroll-driven) — turned on via
+   .party-on class when the timeline enters the party phase. */
+.party-lights {
+  position:absolute; inset:0; z-index:4; opacity:0; pointer-events:none;
+  transition:opacity .5s ease;
+}
+/* Three colored stage spotlights — narrow at the source (top of frame),
+   widening and fading as they descend to where Brady stands. Each beam
+   is a clipped linear-gradient box; heavy blur softens the edges, and
+   each sways slowly on its own offset schedule so they sweep/converge
+   around the puppet instead of sitting static. */
+.party-spot {
+  position:absolute;
+  top:-10vh; left:50%;
+  width:24vw; height:140vh;
+  margin-left:-12vw;
+  transform-origin:50% 0%;
+  mix-blend-mode:screen;
+  pointer-events:none;
+  will-change:transform;
+  /* Slightly more trapezoidal than before, plus a heavy blur + reduced
+     opacity so the beams read as diffuse light rather than rigid bars. */
+  clip-path:polygon(46% 0%, 54% 0%, 86% 100%, 14% 100%);
+  filter:blur(56px);
+  opacity:.62;
+}
+.party-spot.pink {
+  background:linear-gradient(to bottom,
+    rgba(255,45,158,.70)  0%,
+    rgba(255,45,158,.32) 48%,
+    rgba(255,45,158,.08) 82%,
+    rgba(255,45,158,0)   100%);
+  margin-left:-36vw;
+  transform:rotate(22deg);
+  animation:spotSwayA 9s ease-in-out infinite;
+}
+.party-spot.cyan {
+  background:linear-gradient(to bottom,
+    rgba(30,228,255,.65) 0%,
+    rgba(30,228,255,.30) 48%,
+    rgba(30,228,255,.07) 82%,
+    rgba(30,228,255,0)   100%);
+  margin-left:-12vw;
+  transform:rotate(-3deg);
+  animation:spotSwayB 11.5s ease-in-out -3s infinite;
+}
+.party-spot.gold {
+  background:linear-gradient(to bottom,
+    rgba(255,199,0,.65) 0%,
+    rgba(255,199,0,.30) 48%,
+    rgba(255,199,0,.07) 82%,
+    rgba(255,199,0,0)   100%);
+  margin-left:12vw;
+  transform:rotate(-18deg);
+  animation:spotSwayC 13s ease-in-out -7s infinite;
+}
+@keyframes spotSwayA {
+  0%,100% { transform:rotate(22deg); }
+  50%     { transform:rotate(30deg); }
+}
+@keyframes spotSwayB {
+  0%,100% { transform:rotate(-6deg); }
+  50%     { transform:rotate( 4deg); }
+}
+@keyframes spotSwayC {
+  0%,100% { transform:rotate(-18deg); }
+  50%     { transform:rotate(-26deg); }
+}
+.party-strobe {
+  position:absolute; inset:0; background:#FFFFFF; opacity:0;
+  mix-blend-mode:overlay; animation:strobeFlicker 1.1s steps(1) infinite;
+}
+@keyframes strobeFlicker { 0%,88%,94%,100%{opacity:0} 90%{opacity:.3} 96%{opacity:.18} }
+
+/* Starfield — 60-80 tiny blurred dots seeded by JS with random positions,
+   staggered twinkle durations and delays. "Distant lights in a club" feel. */
+.party-specks { position:absolute; inset:0; pointer-events:none; }
+.speck {
+  position:absolute; width:5px; height:5px; border-radius:50%;
+  background:#FFFFFF;
+  filter:blur(.7px);
+  mix-blend-mode:screen;
+  opacity:0;
+  animation:speckTwinkle var(--dur,1.4s) ease-in-out var(--delay,0s) infinite;
+}
+@keyframes speckTwinkle {
+  0%,100% { opacity:0;              transform:scale(.85); }
+  50%     { opacity:var(--peak,.7); transform:scale(1);   }
+}
+/* One-shot lightning flash — opacity driven by JS */
+.party-lightning {
+  position:absolute; inset:0; z-index:6;
+  background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.95) 45%, transparent 90%);
+  opacity:0; mix-blend-mode:screen; pointer-events:none;
+  transform:translateX(-100%);
+}
+.party-lightning.flash {
+  animation:lightningSweep .42s cubic-bezier(.2,.8,.3,1) 1;
+}
+@keyframes lightningSweep {
+  0%   { opacity:0; transform:translateX(-100%); }
+  30%  { opacity:1; }
+  60%  { opacity:.85; transform:translateX(0%); }
+  100% { opacity:0; transform:translateX(100%); }
+}
+/* Party-on state — toggled by JS at progress >= 0.20 */
+.party-on .bg-cream           { opacity:0; }
+.party-on .bg-club            { opacity:1; }
+.party-on .bg-scanlines       { opacity:.45; }
+.party-on .party-lights       { opacity:1; }
+.party-on #rive-rocking-party { opacity:1; }
+.party-on #rive-dance-party   { opacity:0; }
+/* Accolade cards — 4 corners, rotated, pop-in via .in / glitch-out via .out */
+.accolades { position:absolute; inset:0; z-index:8; pointer-events:none; }
+.accolade {
+  position:absolute; left:var(--x); top:var(--y);
+  width:min(340px, 68vw); max-width:86vw;
+  padding:20px 24px 22px;
+  background:#0B0C0E; color:#FFFFFF;
+  border:1.5px solid #FFFFFF;
+  box-shadow:0 22px 48px rgba(0,0,0,.48);
+  transform:translate(-50%,-50%) rotate(var(--rot)) scale(.2);
+  opacity:0;
+  transform-origin:50% 50%;
+}
+/* Colored-card variants keep the default black background + white text
+   from the base .accolade style — only the border (and matching glow +
+   stat color) changes, so every card shares the same dark treatment
+   and the color reads as an accent rather than a fill. */
+.accolade.blue { border-color:#1EE4FF; box-shadow:0 22px 48px rgba(30,228,255,.30); }
+.accolade.pink { border-color:#FF2D9E; box-shadow:0 22px 48px rgba(255,45,158,.32); }
+.accolade.gold { border-color:#FFC700; box-shadow:0 22px 48px rgba(255,199,0,.28); }
+.accolade.blue .a-stat { color:#1EE4FF; }
+.accolade.pink .a-stat { color:#FF2D9E; }
+.accolade.gold .a-stat { color:#FFC700; }
+.accolade .a-stat {
+  font-family:'Shrikhand', cursive;
+  font-size:clamp(56px, 9vw, 92px);
+  line-height:.9; letter-spacing:-.02em;
+  display:inline-block; position:relative;
+}
+.accolade.bungee .a-stat {
+  font-family:'Bungee', 'Shrikhand', cursive;
+  font-size:clamp(50px, 8vw, 82px);
+}
+.accolade .a-stat::before,
+.accolade .a-stat::after {
+  content:attr(data-val); position:absolute; inset:0;
+  pointer-events:none; mix-blend-mode:screen;
+}
+.accolade .a-stat::before { color:#FF2D9E; transform:translate(-2px, 0); }
+.accolade .a-stat::after  { color:#1EE4FF; transform:translate(2px, 0);  }
+.accolade.gold .a-stat::before,
+.accolade.gold .a-stat::after,
+.accolade.blue .a-stat::before,
+.accolade.blue .a-stat::after,
+.accolade.pink .a-stat::before,
+.accolade.pink .a-stat::after { display:none; }
+.accolade .a-label {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:14px; letter-spacing:.32em; font-weight:700;
+  text-transform:uppercase;
+  margin-top:8px; display:block;
+}
+.accolade .a-note {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:11px; letter-spacing:.22em; font-weight:400;
+  text-transform:uppercase; color:#9A8F82;
+  margin-top:10px; display:block; line-height:1.5;
+}
+.accolade.in {
+  opacity:1;
+  transform:translate(-50%,-50%) rotate(var(--rot)) scale(1);
+  transition:opacity .35s ease-out, transform .55s cubic-bezier(.2,1.8,.35,1);
+}
+.accolade.out {
+  opacity:0;
+  transform:translate(-50%,-50%) rotate(calc(var(--rot) + 4deg)) scale(1.08) skewX(12deg);
+  filter:blur(1.5px);
+  transition:opacity .25s ease-in, transform .35s cubic-bezier(.7,0,.9,.3), filter .3s;
+}
+/* Card corner placements (desktop). --x/--y are center points. */
+.accolade[data-idx="1"] { --x: 18%; --y: 24%; --rot: -6deg; }
+.accolade[data-idx="2"] { --x: 82%; --y: 26%; --rot:  4deg; }
+.accolade[data-idx="3"] { --x: 20%; --y: 76%; --rot: -3deg; }
+.accolade[data-idx="4"] { --x: 80%; --y: 74%; --rot:  5deg; }
+@media (max-width: 620px) {
+  .accolade { width:min(300px, 72vw); padding:16px 18px 18px; }
+  .accolade .a-stat  { font-size:clamp(48px, 13vw, 72px); }
+  .accolade .a-label { font-size:12px; letter-spacing:.24em; }
+  .accolade .a-note  { font-size:10px; letter-spacing:.18em; }
+  .accolade[data-idx="1"] { --x: 28%; --y: 16%; }
+  .accolade[data-idx="2"] { --x: 72%; --y: 18%; }
+  .accolade[data-idx="3"] { --x: 28%; --y: 84%; }
+  .accolade[data-idx="4"] { --x: 72%; --y: 82%; }
+  .party-spot { width:40vw; filter:blur(38px); opacity:.55; }
+  .party-spot.pink { margin-left:-48vw; }
+  .party-spot.cyan { margin-left:-20vw; }
+  .party-spot.gold { margin-left:  8vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .party-spot, .speck, .party-strobe { animation:none !important; }
+  .party-strobe { opacity:0 !important; }
+  .speck       { opacity:.5 !important; }
+}
+
+.intro-section {
+  position:relative;
+  /* 2300vh = ~700vh for the party phase + 1600vh for the original intro
+     choreography (dwell, shrink, words, chart handoff). */
+  height:2300vh;
+  background:#F5F1EB;
+}
+.section-stage {
+  position:relative; top:0; height:100vh; height:100svh; width:100%;
+  overflow:hidden;
+  background:#F5F1EB;
+}
+.center-card {
+  /* Background is transparent so the party-phase bg-club / scanline
+     layers behind it show through during the party. The shrunk-card
+     "inside" look that used to come from this element's #EEEBE4 fill
+     is now provided by .bg-cream (shown once the party winds down and
+     the center-card clips into its small rounded-rect state). */
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  will-change:transform,clip-path; transform-origin:center center;
+  background:transparent; display:flex; align-items:center; justify-content:center; z-index:3;
+}
+.cards-col {
+  position:absolute; top:0; display:flex; flex-direction:column;
+  justify-content:space-around; height:110vh;
+  padding:clamp(16px,2.5vh,40px) 0; gap:clamp(14px,2vh,30px);
+  z-index:5; will-change:transform;
+}
+.col-far-left  { left: clamp(6px,1.8vw,28px); }
+.col-near-left { left: clamp(9%,15vw,210px); }
+.col-near-right{ right:clamp(9%,15vw,210px); }
+.col-far-right { right:clamp(6px,1.8vw,28px); }
+@media (max-width:899px) { .col-near-left,.col-near-right { display:none; } }
+.player-card {
+  width:clamp(68px,10vw,128px); height:clamp(68px,10vw,128px);
+  border-radius:50%; background:#07090C;
+  box-shadow:0 3px 16px rgba(26,22,20,.10);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative; flex-shrink:0;
+  transition:box-shadow .25s,transform .25s;
+}
+.player-card:hover {
+  box-shadow:0 10px 32px rgba(26,22,20,.18);
+  transform:scale(1.05);
+}
+.face-wrap { width:100%; height:100%; border-radius:50%; overflow:hidden; }
+.face-svg  { width:100%; height:100%; display:block; }
+.word-slot {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; white-space:nowrap; line-height:1;
+  letter-spacing:-.025em; text-transform:uppercase;
+  opacity:0; z-index:20; pointer-events:none; overflow:hidden;
+  padding:0 clamp(14px,5vw,80px);
+  font-family:Impact,Haettenschweiler,'Arial Narrow',sans-serif;
+}
+
+/* Mobile word-slot type scale \u2014 widen the IS peak so hierarchy survives */
+@media (max-width: 480px) {
+  #w-then { font-size: clamp(46px, 10vw, 80px); }
+  #w-who  { font-size: clamp(72px, 16vw, 120px); }
+  #w-is   { font-size: clamp(110px, 24vw, 180px); }
+  #w-the  { font-size: clamp(58px, 12vw, 100px); }
+  #w-goat { font-size: clamp(54px, 11vw, 96px); }
+}
+.word-slot .ltr      { display:inline-block; will-change:transform,opacity; }
+.word-slot .wipe-wrap{ display:inline-block; will-change:clip-path; }
+#w-then { font-size:clamp(52px,10vw,140px);  color:#1A1614; align-items:flex-start; padding-top:clamp(32px,5vh,64px);       transform-origin:50% 5%;  }
+#w-who  { font-size:clamp(68px,13vw,185px);  color:#1A1614; align-items:flex-start; padding-top:clamp(120px,27vh,280px);    transform-origin:50% 27%; }
+#w-is   { font-size:clamp(88px,17vw,240px);  color:#1A1614;                          transform-origin:50% 50%; }
+#w-the  { font-size:clamp(60px,11vw,155px);  color:#1A1614; align-items:flex-start; padding-top:clamp(400px,68vh,700px);   transform-origin:50% 68%; }
+#w-goat { font-size:clamp(56px,10vw,145px);  color:#C9920A; align-items:flex-end;   padding-bottom:clamp(32px,5vh,64px);   transform-origin:50% 95%; }
+
+/* ═══════════════════════════════════════════
+   KEEP-SCROLLING HINT
+   One global hint pinned to the viewport bottom. mix-blend-mode:
+   difference auto-flips it between dark-on-cream and light-on-dark
+   so it stays legible across every section's background (hero cream,
+   intro cream↔club, chart dark). Hidden via JS once the vote
+   section enters the viewport (the bottom of the experience).
+═══════════════════════════════════════════ */
+.keep-scrolling {
+  position:fixed;
+  bottom:clamp(14px, 2.5vh, 28px);
+  left:50%;
+  transform:translateX(-50%);
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:10px;
+  letter-spacing:.26em;
+  font-weight:600;
+  text-transform:uppercase;
+  color:#FFFFFF;
+  mix-blend-mode:difference;
+  opacity:.72;
+  z-index:9999;
+  pointer-events:none;
+  white-space:nowrap;
+  transition:opacity .3s ease;
+}
+.keep-scrolling.hide { opacity:0; }
+
+/* ═══════════════════════════════════════════
+   BRIDGE — #F5F1EB → #07090C
+═══════════════════════════════════════════ */
+.section-bridge {
+  height:12vh;
+  background:linear-gradient(to bottom, #F5F1EB 0%, #07090C 100%);
+  position:relative; z-index:1;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 03 — CHART
+   All var() references replaced with direct hex.
+   No :root, no html/body height, no body font-family.
+═══════════════════════════════════════════ */
+.chart-section { position:relative; background:#07090C; }
+.table-header {
+  position:sticky; top:0; z-index:50;
+  background:rgba(7,9,12,.97); border-bottom:1px solid rgba(242,237,228,.05);
+  backdrop-filter:blur(8px);
+  padding:clamp(14px,2.2vh,24px) clamp(20px,4vw,64px);
+  display:grid; grid-template-columns:clamp(130px,16vw,210px) repeat(5,1fr);
+  gap:0 6px; align-items:center;
+  /* sticky works because .table-body is the scroll container */
+}
+.player-head { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.portrait-ring {
+  width:clamp(44px,5.5vw,68px); height:clamp(44px,5.5vw,68px);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  border:2px solid rgba(242,237,228,.1);
+  transition:border-color .6s ease,box-shadow .6s ease; overflow:hidden; position:relative;
+}
+.initials { font-size:clamp(12px,1.3vw,15px); letter-spacing:.04em; position:relative; z-index:1; }
+.player-name-label {
+  font-family:'Space Grotesk',system-ui,sans-serif; font-size:clamp(13px,1vw,15px);
+  font-weight:600; letter-spacing:.1em; color:rgba(242,237,228,.72); text-transform:uppercase; text-align:center;
+}
+.phead-rivers.lit .portrait-ring { border-color:rgba(0,133,202,.75); box-shadow:0 0 14px rgba(0,133,202,.4),0 0 32px rgba(0,133,202,.15); }
+.trace-beam { position:absolute; left:clamp(20px,4vw,64px); top:0; bottom:0; width:1px; pointer-events:none; z-index:1; }
+.trace-fill { position:absolute; top:0; left:0; width:1px; height:0%; background:linear-gradient(to bottom,transparent 0%,rgba(200,16,46,.55) 8%,rgba(200,16,46,.32) 85%,transparent 100%); }
+.table-body { padding:clamp(24px,4vh,48px) clamp(20px,4vw,64px); position:relative; }
+.cat-row {
+  display:grid; grid-template-columns:clamp(130px,16vw,210px) repeat(5,1fr);
+  gap:0 6px; padding:clamp(36px,6vh,72px) 0;
+  border-bottom:1px solid rgba(242,237,228,.04); position:relative; align-items:start;
+}
+
+/* Tablet — allow title wrapping + hyphenation on long labels */
+@media (max-width: 768px) {
+  .cat-title-el { hyphens:auto; -webkit-hyphens:auto; }
+}
+
+/* Mobile — drop the label column; row eyebrow ("01") still identifies each row.
+   Reclaims ~130px for the 5 player cells. */
+@media (max-width: 480px) {
+  .table-header {
+    grid-template-columns: repeat(5,1fr);
+    padding:clamp(10px,2vh,16px) clamp(10px,3vw,16px);
+  }
+  .table-header > div:first-child { display:none; }
+  .portrait-ring { width:clamp(44px,11vw,56px); height:clamp(44px,11vw,56px); }
+  .initials { font-size:clamp(12px,3vw,16px); }
+  .player-name-label { font-size:12px; letter-spacing:.08em; }
+  .cat-row {
+    grid-template-columns: repeat(5,1fr);
+    padding: clamp(20px,3vh,36px) 0;
+  }
+  .cat-label-col {
+    grid-column: 1 / -1;
+    padding: 0 10px 10px;
+  }
+  .cat-eyebrow { font-size:12px; letter-spacing:.2em; }
+  .cat-title-el { font-size: 15px; letter-spacing:.04em; }
+  .table-body { padding: clamp(12px,2vh,20px) clamp(10px,3vw,16px); }
+}
+.cat-row::before {
+  content:''; position:absolute; left:-4px; top:clamp(40px,6vh,68px);
+  width:8px; height:8px; border-radius:50%;
+  background:#C8102E; box-shadow:0 0 8px rgba(200,16,46,.65);
+  opacity:0; transition:opacity .3s ease;
+}
+.cat-row.dotted::before { opacity:1; }
+.cat-label-col { padding-right:14px; padding-top:2px; }
+.cat-eyebrow { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:clamp(12px,.82vw,13px); letter-spacing:.18em; color:#C8102E; text-transform:uppercase; opacity:.75; margin-bottom:6px; font-weight:500; }
+.cat-title-el { font-family:'Space Grotesk',system-ui,sans-serif; font-weight:700; font-size:clamp(15px,1.45vw,19px); letter-spacing:.04em; color:#F2EDE4; text-transform:uppercase; line-height:1.2; min-height:clamp(22px,2.6vw,38px); word-break:break-word; }
+.cat-cursor { display:inline-block; width:2px; height:.8em; background:#C8102E; margin-left:3px; vertical-align:middle; animation:blink .7s step-end infinite; }
+@keyframes blink { 50%{opacity:0;} }
+.cat-sub-el { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:clamp(10px,.82vw,11px); letter-spacing:.08em; color:rgba(242,237,228,.5); text-transform:uppercase; margin-top:7px; line-height:1.55; font-weight:400; }
+.p-cell {
+  border:1px solid rgba(242,237,228,.06); border-radius:3px;
+  padding:clamp(10px,1.5vh,18px) clamp(6px,.9vw,12px); min-height:clamp(76px,10vh,120px);
+  display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+  position:relative; overflow:hidden; background:transparent;
+  transition:background .55s ease,border-color .55s ease,box-shadow .55s ease;
+  opacity:0;
+}
+.cell-val { font-family:'Space Grotesk',system-ui,sans-serif; font-weight:700; font-size:clamp(22px,2.9vw,46px); letter-spacing:-.01em; color:rgba(242,237,228,.92); line-height:1.05; transition:color .45s ease; max-width:100%; }
+.cell-val.sm { font-weight:600; font-size:clamp(15px,1.8vw,26px); letter-spacing:.02em; max-width:100%; }
+.cell-val.xs { font-family:'Space Grotesk',system-ui,sans-serif; font-weight:500; font-size:clamp(13px,1.15vw,15px); letter-spacing:.01em; line-height:1.4; overflow-wrap:break-word; max-width:100%; text-transform:none; }
+.cell-flavor { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:clamp(11px,1vw,12px); letter-spacing:.06em; color:rgba(242,237,228,.72); text-transform:uppercase; margin-top:6px; line-height:1.55; font-weight:400; opacity:0; transition:opacity .4s ease; overflow-wrap:break-word; max-width:100%; }
+/* Hairline-separated list for rich cells (Page's life-after-football).
+   Reader feedback: bullets read as clutter; plain lines separated by a
+   thin rule are easier to scan. Matches the mobile treatment. */
+.cell-flavor-list {
+  list-style:none; padding:0; margin:8px 0 0 0;
+  display:flex; flex-direction:column; gap:0;
+  opacity:0; transition:opacity 1.2s ease;
+  max-width:100%;
+}
+.cell-flavor-list.in { opacity:1; }
+.cell-flavor-list li {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(10px,.9vw,11px); letter-spacing:.04em;
+  color:rgba(242,237,228,.72); text-transform:uppercase;
+  line-height:1.45; font-weight:400;
+  padding:5px 0;
+  border-bottom:1px solid rgba(242,237,228,.14);
+}
+.cell-flavor-list li:last-child { border-bottom:none; }
+.cell-flavor-list li::before { content:none; }
+.cg-gold .cell-flavor-list li { color:rgba(255,250,230,.95); }
+.cg-gold .cell-flavor-list li::before { color:rgba(255,250,230,.8); }
+.cg-gold   { background:rgba(168,120,0,.95)!important;  border-color:rgba(255,200,40,.85)!important; }
+.cg-gold   .cell-val { color:#FFFDF5; text-shadow:0 1px 2px rgba(0,0,0,.35); } .cg-gold .cell-flavor { color:rgba(255,250,230,.88); }
+.cg-faint  { background:rgba(34,140,60,.13)!important;  border-color:rgba(34,160,65,.2)!important; }
+.cg-faint  .cell-val { color:rgba(242,237,228,.78); } .cg-faint .cell-flavor { color:rgba(242,237,228,.35); }
+.cg-mid    { background:rgba(30,160,60,.26)!important;  border-color:rgba(30,160,60,.38)!important; }
+.cg-mid    .cell-val { color:#A8EDBA; } .cg-mid .cell-flavor { color:rgba(168,237,186,.5); }
+.cg-strong { background:rgba(18,180,60,.4)!important;   border-color:rgba(18,180,60,.55)!important; }
+.cg-strong .cell-val { color:#6FEEA0; } .cg-strong .cell-flavor { color:rgba(111,238,160,.5); }
+.cg-deep   { background:rgba(8,210,70,.46)!important;   border-color:rgba(8,220,80,.62)!important; box-shadow:0 0 20px rgba(8,220,80,.14)!important; }
+.cg-deep   .cell-val { color:#3DFFAA; } .cg-deep .cell-flavor { color:rgba(61,255,170,.58); }
+.cr-faint  { background:rgba(200,16,46,.09)!important;  border-color:rgba(200,16,46,.2)!important; }
+.cr-faint  .cell-val { color:rgba(242,237,228,.42); }
+.cr-deep   { background:rgba(200,16,46,.42)!important;  border-color:rgba(200,16,46,.62)!important; box-shadow:0 0 18px rgba(200,16,46,.12)!important; }
+.cr-deep   .cell-val { color:#FF8080; } .cr-deep .cell-flavor { color:rgba(255,128,128,.55); }
+@keyframes greenPulse   { 0%{box-shadow:0 0 20px rgba(8,220,80,.14);}  45%{box-shadow:0 0 55px rgba(8,220,80,.55),0 0 100px rgba(8,220,80,.22);}  100%{box-shadow:0 0 20px rgba(8,220,80,.14);} }
+@keyframes greenBreathe { 0%,100%{box-shadow:0 0 20px rgba(8,220,80,.14);} 50%{box-shadow:0 0 42px rgba(8,220,80,.48),0 0 72px rgba(8,220,80,.18);} }
+@keyframes redPulse     { 0%{box-shadow:0 0 18px rgba(200,16,46,.12);}  45%{box-shadow:0 0 50px rgba(200,16,46,.6),0 0 90px rgba(200,16,46,.22);}  100%{box-shadow:0 0 18px rgba(200,16,46,.12);} }
+@keyframes goldPulse    { 0%{opacity:1;} 50%{opacity:.88;} 100%{opacity:1;} }
+.cg-deep.pulse   { animation:greenPulse   1.5s ease-in-out; }
+.cg-deep.breathe { animation:greenBreathe 3.2s ease-in-out infinite; }
+.cg-gold.pulse   { animation:goldPulse 2.8s ease-in-out infinite; }
+.cr-deep.pulse   { animation:redPulse     1.5s ease-in-out; }
+.cell-late-label { font-family:'JetBrains Mono',ui-monospace,monospace; font-size:clamp(11px,.9vw,12px); letter-spacing:.08em; text-transform:uppercase; margin-top:7px; line-height:1.4; color:#FF4D5E; font-weight:500; opacity:0; transition:opacity 1.6s ease; }
+.cell-late-label.in { opacity:1; }
+
+/* ─────────────────────────────────────────────
+   MOBILE CHART LAYOUT (<= 768px)
+   Switches .cat-row from 5-col grid to a vertical stack.
+   Each .p-cell becomes a full-width row: [portrait] [name] [value+flavor].
+   Color grading still applies — gold/green backgrounds now paint the
+   whole row so readability wins over cramped-cell comparison.
+───────────────────────────────────────────── */
+
+/* Mobile-cell inner elements — hidden on desktop, shown on mobile */
+.m-cell-header, .m-cell-body { display: contents; }
+.m-cell-portrait, .m-cell-name, .m-cell-face { display: none; }
+
+@media (max-width: 768px) {
+  /* Hide the sticky 5-portrait header (we put portraits inline in each row) */
+  .table-header { display: none; }
+
+  /* Vertical row */
+  .cat-row {
+    display: flex !important;
+    flex-direction: column;
+    gap: 7px;
+    padding: 18px 0 20px !important;
+    border-bottom: 1px solid rgba(242,237,228,.08);
+  }
+  .cat-row::before { left: -2px; top: 24px; }
+  .cat-label-col {
+    padding: 0 4px 6px;
+    /* Mobile: force the row title to render first (before any cells) */
+    order: -1;
+  }
+  .cat-eyebrow { font-size: 11px; letter-spacing:.28em; margin-bottom: 4px; }
+  .cat-title-el {
+    font-size: 18px !important;
+    letter-spacing: .04em !important;
+    color: #F2EDE4;
+    line-height: 1.25;
+    min-height: 0 !important;
+  }
+  .cat-sub-el { font-size: 10px !important; margin-top: 4px; }
+
+  /* Each cell becomes a horizontal row — portrait on left, name+body stacked to right */
+  .p-cell {
+    display: grid !important;
+    grid-template-columns: 52px 1fr;
+    align-items: center;
+    gap: 12px;
+    min-height: 0 !important;
+    padding: 14px 14px !important;
+    border-radius: 8px;
+    border-width: 1px;
+    text-align: left !important;
+    position: relative;
+    /* Mobile-only reorder: renderTable stamps --m-order per cell, and flex's
+       `order` sorts them within the row. Default 99 keeps any unstamped cell
+       at the bottom. Desktop ignores this (cells use grid-template-columns). */
+    order: var(--m-order, 99);
+  }
+
+  /* Reveal inline portrait + name on mobile */
+  .m-cell-header {
+    display: contents;
+  }
+  .m-cell-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    min-width: 0;
+    gap: 2px;
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .m-cell-portrait {
+    display: block;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 44px; height: 44px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .m-cell-face {
+    display: flex;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    overflow: hidden;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+  }
+  .m-cell-face > svg,
+  .m-cell-face > div,
+  .m-cell-face > div > svg { width: 100%; height: 100%; display: block; }
+  .m-cell-name {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: .92;
+    margin-bottom: 2px;
+  }
+
+  /* Value + flavor: stacked on the right side of the portrait, left-justified */
+  .cell-val {
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+    letter-spacing: -.005em;
+    text-align: left;
+    max-width: 62vw;
+    word-break: break-word;
+  }
+  .cell-val.sm { font-size: 15px !important; letter-spacing: .01em; }
+  .cell-val.xs {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 13px !important;
+    letter-spacing: .01em;
+    line-height: 1.3 !important;
+    text-transform: none;
+  }
+  .cell-flavor {
+    font-size: 11px !important;
+    letter-spacing: .04em;
+    margin-top: 3px !important;
+    text-align: left;
+    line-height: 1.45;
+    max-width: 62vw;
+    color: rgba(242,237,228,.78) !important;
+  }
+  /* Flavor list (Page's life-after accolades, and any future row) —
+     each entry on its own line with a subtle bullet marker. Right-aligned
+     so it reads with the rest of the mobile-body. */
+  /* Page's life-after-football accolades — each on its own line, separated
+     by a hairline rule so they read as distinct facts, not a bullet dump. */
+  .cell-flavor-list {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+    text-align: left;
+    max-width: 64vw;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .cell-flavor-list li {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: .03em;
+    color: rgba(255,240,180,.92);
+    line-height: 1.4;
+    text-transform: uppercase;
+    font-weight: 400;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,215,0,.28);
+  }
+  .cell-flavor-list li:last-child { border-bottom: none; }
+  .cell-flavor-list li::before { content: none; }
+  .cell-late-label {
+    font-size: 11px !important;
+    letter-spacing: .08em;
+    margin-top: 5px;
+    text-align: left;
+  }
+
+  /* On mobile the cell is pre-revealed (opacity:1) — no scroll-scrub
+     clip-path. revealRowMobile() handles entry via GSAP. */
+  .p-cell { opacity: 0; }
+
+  /* Gold cards: deep amber background + light cream text. An earlier pass
+     used dark text on bright yellow, which reader feedback flagged as hard
+     to scan. Inverting to light-on-amber gives a premium, clearly legible
+     treatment with a consistent hierarchy against the dark page. */
+  .cg-gold   { background:rgba(168,120,0,.95)!important; border-color:rgba(255,200,40,.85)!important; box-shadow: inset 3px 0 0 rgba(255,215,0,1); }
+  .cg-gold .m-cell-name { color: #FFF7CC !important; opacity: .95; }
+  .cg-gold .cell-val    { color: #FFFDF5 !important; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
+  .cg-gold .cell-flavor { color: rgba(255,250,230,.88) !important; }
+  .cg-gold .cell-flavor-list li { color: rgba(255,250,230,.95); border-bottom-color: rgba(255,240,200,.25); }
+  .cg-deep   { box-shadow: inset 3px 0 0 rgba(8,220,80,.85), 0 0 20px rgba(8,220,80,.14)!important; }
+  .cg-strong { box-shadow: inset 3px 0 0 rgba(18,180,60,.7); }
+  .cg-mid    { box-shadow: inset 3px 0 0 rgba(30,160,60,.5); }
+  .cg-faint  { box-shadow: inset 3px 0 0 rgba(34,160,65,.3); }
+  .cr-deep   { box-shadow: inset 3px 0 0 rgba(200,16,46,.85), 0 0 18px rgba(200,16,46,.12)!important; }
+
+  /* Gold pulse: subtle opacity breathe, no box-shadow flicker */
+  .cg-gold.pulse { animation: goldPulse 2.8s ease-in-out infinite; }
+
+  /* Trace beam removed on mobile to free horizontal space */
+  .trace-beam { display: none; }
+
+  /* Body padding on mobile — tighter */
+  .table-body { padding: 16px 14px !important; }
+}
+
+/* Logan-Paul-past reveal state: cell goes black with a subtle red accent,
+   and the late label (Logan Paul Podcast Guest) fades in red.
+   Works on both desktop + mobile (triggered by scroll-past). */
+.p-cell.lp-reveal {
+  background: #0B0C0E !important;
+  border-color: rgba(200,16,46,.32) !important;
+  box-shadow: inset 3px 0 0 rgba(200,16,46,.6) !important;
+  transition: background .7s ease, border-color .7s ease, box-shadow .7s ease;
+}
+.p-cell.lp-reveal .cell-val { color: rgba(242,237,228,.6) !important; transition: color .7s ease; }
+.p-cell.lp-reveal .cell-flavor { color: rgba(242,237,228,.35) !important; transition: color .7s ease; }
+.p-cell.lp-reveal .cell-late-label {
+  color: #FF4D5E;
+  letter-spacing: .14em;
+}
+
+/* Keep the <=480px header fallback (since header is now display:none, but
+   override the old grid rules that tried to squash into 5-col). */
+@media (max-width: 480px) {
+  .cat-row { grid-template-columns: none !important; }
+  .cat-label-col { grid-column: auto !important; }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 03b — CHART SUMMARY
+   Highlight-only grid that sits between the chart and the vote.
+   Portraits on top row, colored dots below showing only the
+   gold / strong-green / deep-red / Brady-red cells.
+───────────────────────────────────────────── */
+.chart-summary {
+  background: #07090C;
+  position: relative;
+  min-height: 80vh;
+  min-height: 80svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 8vh, 96px) clamp(16px, 4vw, 64px);
+  overflow: hidden;
+  /* Top-fade separator from the chart above */
+  border-top: 1px solid rgba(242,237,228,.05);
+}
+.csum-inner {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vh, 40px);
+}
+.csum-portraits {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(8px, 2vw, 18px);
+  align-items: end;
+}
+.csum-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-14px);
+  will-change: opacity, transform;
+}
+.csum-portrait.in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1);
+}
+.csum-portrait-ring {
+  width: clamp(44px, 11vw, 76px);
+  height: clamp(44px, 11vw, 76px);
+  border-radius: 50%;
+  border: 1.5px solid;
+  overflow: hidden;
+  position: relative;
+  background: #07090C;
+}
+.csum-portrait-ring > div,
+.csum-portrait-ring > div > svg,
+.csum-portrait-ring > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.csum-portrait-name {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(9px, 1.1vw, 11px);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(242,237,228,.55);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Grid: one column per player, one row per chart-row, with only highlight
+   cells rendered as visible dots. Empty rows stay as quiet spacers. */
+.csum-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(6px, 1.2vw, 10px);
+}
+.csum-cell {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: clamp(30px, 7vw, 56px);
+  border-radius: 3px;
+  justify-self: center;
+  background: transparent;
+  border: 1px solid rgba(242,237,228,.04);
+  opacity: 0;
+  transform: scale(.6);
+  transition: opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1),
+              background-color .45s ease, border-color .45s ease, box-shadow .45s ease;
+  will-change: opacity, transform;
+}
+.csum-cell.empty {
+  border-color: rgba(242,237,228,.03);
+}
+.csum-cell.in {
+  opacity: 1;
+  transform: scale(1);
+}
+.csum-cell.empty.in { opacity: .35; }
+
+/* FLIGHT state: summary cell is parked at its chart-cell origin via inline
+   transform. While .flight is set (and .in is not) we keep it visible so
+   the viewer sees it as the chart's own cell that's about to travel.
+   Once .in is added, the transform is cleared and the cell animates home. */
+.csum-cell.flight {
+  opacity: 1;
+  /* transition is controlled from JS (transition:none during setup, then
+     the release transition). z-index raises it over neighboring cells so
+     flight paths don't clip behind. */
+  z-index: 10;
+  position: relative;
+}
+.csum-cell.flight.in { z-index: 1; }
+
+/* Chart cell that has "handed off" its identity to the summary — dims on
+   the donor side so the summary cell looks like the one that traveled. */
+.p-cell.csum-handed {
+  transition: opacity .5s ease, filter .5s ease;
+  opacity: .35;
+  filter: saturate(.5);
+}
+/* Brief flash at launch — even off-screen, any visible tail of the chart
+   gives a quick visual cue that something just left that cell. */
+@keyframes csumFlashPulse {
+  0%   { box-shadow: inset 0 0 0 1px rgba(255,215,0,0); }
+  40%  { box-shadow: inset 0 0 0 1px rgba(255,215,0,.85), 0 0 22px rgba(255,215,0,.55); }
+  100% { box-shadow: inset 0 0 0 1px rgba(255,215,0,0); }
+}
+.p-cell.csum-flash {
+  animation: csumFlashPulse .22s ease-out 1;
+}
+
+/* Portrait "landed" — subtle vertical squish/bounce when it reaches its spot */
+@keyframes csumPortraitLand {
+  0%   { transform: translateY(0) scaleY(1) scaleX(1); }
+  25%  { transform: translateY(3px) scaleY(.92) scaleX(1.05); }
+  55%  { transform: translateY(-2px) scaleY(1.04) scaleX(.98); }
+  100% { transform: translateY(0) scaleY(1) scaleX(1); }
+}
+.csum-portrait.landed .csum-portrait-ring {
+  animation: csumPortraitLand .5s cubic-bezier(.3,1.3,.5,1) 1;
+  transform-origin: 50% 100%;
+}
+
+/* Highlight color variants — echo the chart's color grading */
+.csum-cell.is-gold   { background: rgba(255,200,0,.78);  border-color: rgba(255,210,40,.95); box-shadow: 0 0 14px rgba(255,215,0,.22); }
+.csum-cell.is-deep   { background: rgba(8,210,70,.55);   border-color: rgba(8,220,80,.72); box-shadow: 0 0 14px rgba(8,220,80,.2); }
+.csum-cell.is-strong { background: rgba(18,180,60,.55);  border-color: rgba(18,180,60,.75); box-shadow: 0 0 10px rgba(18,180,60,.18); }
+.csum-cell.is-mid    { background: rgba(30,180,75,.42);  border-color: rgba(30,180,75,.6);  box-shadow: 0 0 8px rgba(30,180,75,.14); }
+.csum-cell.is-faint  { background: rgba(34,160,65,.22);  border-color: rgba(34,160,65,.4); }
+.csum-cell.is-red    { background: rgba(200,16,46,.48);  border-color: rgba(200,16,46,.68); box-shadow: 0 0 14px rgba(200,16,46,.2); }
+
+/* Subtle gold breathe on the GOLD cells only — matches the chart vocabulary */
+@keyframes csumGoldBreathe { 0%,100%{box-shadow:0 0 14px rgba(255,215,0,.18);} 50%{box-shadow:0 0 30px rgba(255,215,0,.5);} }
+.csum-cell.is-gold.in { animation: csumGoldBreathe 3s ease-in-out infinite; animation-delay: .6s; }
+
+@media (max-width: 480px) {
+  .chart-summary { padding: 40px 16px 56px; min-height: 70svh; }
+  .csum-inner { gap: 18px; }
+  .csum-grid { gap: 4px; }
+  .csum-cell { max-width: 38px; }
+}
+
+.replay-hint {
+  position:fixed; bottom:18px; right:20px;
+  font-family:'JetBrains Mono',ui-monospace,monospace; font-size:11px; letter-spacing:.18em;
+  color:rgba(242,237,228,.55); text-transform:uppercase;
+  z-index:999; cursor:pointer; transition:color .2s, background .2s;
+  padding:12px 16px; min-height:44px; min-width:44px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(7,9,12,.4); border:1px solid rgba(242,237,228,.15); border-radius:4px;
+  backdrop-filter:blur(6px);
+}
+.replay-hint:hover { color:rgba(242,237,228,.9); background:rgba(7,9,12,.7); }
+.replay-hint:focus-visible { outline:2px solid rgba(242,237,228,.7); outline-offset:3px; }
+
+
+/* ═══════════════════════════════════════════
+   SECTION 04 — VOTE
+═══════════════════════════════════════════ */
+.vote-section {
+  background:#07090C;
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ── State containers ── */
+.vote-state, .celebration-state, .results-state {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  min-height:100vh;
+}
+.vote-state.active, .celebration-state.active, .results-state.active { display:flex; }
+
+/* ── VOTE STATE ── */
+.vote-header {
+  text-align:center;
+  padding:clamp(40px,7vh,80px) clamp(16px,4vw,48px) clamp(16px,2.5vh,30px);
+  z-index:2;
+}
+.vote-title {
+  font-size:clamp(42px,9vw,120px);
+  letter-spacing:.06em;
+  color:#F2EDE4;
+  text-transform:uppercase;
+  line-height:1;
+}
+.vote-subhead {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(12px,1.1vw,13px);
+  letter-spacing:.18em;
+  color:rgba(242,237,228,.42);
+  text-transform:uppercase;
+  margin-top:clamp(8px,1.5vh,16px);
+}
+
+/* Circle layout container (landscape/wide) — height set by JS */
+.vote-orbit-wrap {
+  position:relative;
+  width:100%;
+  flex-shrink:0;
+  display:none;
+}
+.vote-orbit-center { position:absolute; inset:0; }
+
+/* Grid layout (portrait/mobile)
+   5 players in a 6-cell grid: row 1 = Rivers, Alexander, Payton (3 cols)
+   row 2 = Page, Brady (2 cells, centered). We use 6 columns and span 2
+   per card so the 2nd row naturally centers via start/end offsets.
+   The scrollable vote section fills available height with centered content
+   and a large portrait up top so the layout feels intentional on tall
+   phones rather than leaving a big empty area below Brady. */
+.vote-grid {
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:clamp(14px, 3.5vw, 28px);
+  padding:clamp(14px,3vh,32px) clamp(20px,6vw,56px);
+  width:100%;
+  max-width:560px;
+  align-content:center;
+}
+.vote-grid .vote-card-grid { grid-column: span 2; justify-self:center; }
+/* Row 2 — Page (col 2-4) and Brady (col 4-6): centers the pair under row 1 */
+.vote-grid .vote-card-grid:nth-child(4) { grid-column: 2 / span 2; }
+.vote-grid .vote-card-grid:nth-child(5) { grid-column: 4 / span 2; }
+/* When vote section is active on mobile, let it grow tall enough to center */
+@media (max-width: 767px), (orientation: portrait) {
+  .vote-section { min-height: 100dvh; padding-top: clamp(20px, 5vh, 60px); padding-bottom: clamp(40px, 10vh, 80px); justify-content: flex-start; }
+  .vote-state.active { justify-content: flex-start; gap: clamp(24px, 5vh, 60px); }
+  .vote-grid .vote-face-ring { width: clamp(100px, 28vw, 150px); height: clamp(100px, 28vw, 150px); }
+  .vote-card-name { font-size: clamp(12px, 2.4vw, 14px); margin-top: clamp(8px, 1.5vh, 14px); }
+}
+
+.vote-center-preview {
+  /* Image-based hover preview: on hover, a large stylized illustration of
+     the focused player appears at the orbit center with an accent-colored
+     radial halo. Names live on the orbit cards themselves — this element
+     is purely the hero portrait. */
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%, -50%) scale(0.92);
+  width:clamp(240px,36vmin,460px);
+  height:clamp(240px,36vmin,460px);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.25s ease, transform 0.35s cubic-bezier(.2,.8,.2,1);
+  z-index:10;
+  display:flex; align-items:center; justify-content:center;
+}
+.vote-center-preview::before {
+  /* Accent-color radial glow behind the portrait */
+  content:'';
+  position:absolute; inset:-8%;
+  background: radial-gradient(circle at 50% 50%,
+    var(--preview-accent,rgba(255,255,255,.45)) 0%,
+    transparent 62%);
+  opacity:.55;
+  filter:blur(8px);
+  z-index:0;
+}
+.vote-center-preview img {
+  position:relative; z-index:1;
+  width:100%; height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 12px 28px rgba(0,0,0,.55));
+}
+.vote-center-preview.visible {
+  opacity:1;
+  transform:translate(-50%, -50%) scale(1);
+}
+
+/* Show orbit on wide/landscape */
+@media (min-width:1024px) {
+  .vote-orbit-wrap { display:block; }
+  .vote-grid       { display:none;  }
+}
+@media (min-width:768px) and (orientation:landscape) {
+  .vote-orbit-wrap { display:block; }
+  .vote-grid       { display:none;  }
+}
+
+/* Brady is a secret option — treated like the others visually. Click handler
+   silently routes to riversgoat.com (see handleVoteClick). */
+
+/* Vote card */
+.vote-card {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(6px,1vh,12px);
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1);
+  min-width:44px;
+  min-height:44px;
+  padding:6px;
+}
+.vote-card:hover  { transform:scale(1.08); }
+.vote-card:active { transform:scale(0.95); }
+.vote-card:focus-visible {
+  outline: 2px solid var(--vote-accent, rgba(242,237,228,.8));
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
+/* Circle card — upright, no rotation ever */
+.vote-card-orbit {
+  transition:transform .2s ease;
+}
+.vote-card-orbit:hover {
+  transform:scale(1.12) !important;
+}
+
+/* Face ring */
+.vote-face-ring {
+  border-radius:50%;
+  overflow:hidden;
+  border:3px solid rgba(255,255,255,.15);
+  transition:border-color .25s,box-shadow .25s;
+  flex-shrink:0;
+}
+.vote-face-ring .face-svg { display:block; width:100%; height:100%; }
+
+/* Orbit face size */
+.vote-card-orbit .vote-face-ring {
+  width:clamp(72px,10vmin,120px);
+  height:clamp(72px,10vmin,120px);
+}
+/* Grid — tablet */
+@media (min-width:600px) {
+  .vote-card-grid .vote-face-ring {
+    width:clamp(72px,15vw,108px);
+    height:clamp(72px,15vw,108px);
+  }
+}
+/* Grid — mobile: larger faces, fill available width */
+@media (max-width:599px) {
+  .vote-card-grid .vote-face-ring {
+    width:clamp(80px, 22vw, 130px);
+    height:clamp(80px, 22vw, 130px);
+  }
+}
+.vote-card:hover .vote-face-ring {
+  border-color:var(--vote-accent);
+  box-shadow:0 0 18px var(--vote-accent),0 0 40px var(--vote-accent);
+}
+.vote-card-name {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(12px,1.1vw,13px);
+  letter-spacing:.2em;
+  color:rgba(242,237,228,.65);
+  text-transform:uppercase;
+  text-align:center;
+}
+
+/* ── CELEBRATION STATE ── */
+.celebration-state { justify-content:center; align-items:center; perspective: 900px; }
+
+/* Base sticker-placeholder (shared by celebration + results) */
+.sticker-placeholder {
+  border-radius:0;
+  overflow:visible;
+  background:none !important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  flex-shrink:0;
+  width:clamp(200px,38vmin,380px);
+  height:clamp(260px,50vmin,500px);
+}
+
+.vote-celeb-wrap {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(14px,2.5vh,30px);
+  position: relative;
+}
+
+/* Sticker shell hosts sweep + image + particles. Applies 3D tilt via custom
+   props (set by JS mousemove on desktop only). */
+.celeb-sticker-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+  width: clamp(200px,38vmin,380px);
+  height: clamp(260px,50vmin,500px);
+}
+.celeb-sticker-shell .sticker-placeholder {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+/* Radial team-color sweep — behind the sticker. On .burst, expands and fades
+   twice (ripple). Uses the --accent custom prop set by JS. */
+.celeb-sweep {
+  --accent: #FFB612;
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 40px; height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.celeb-sweep.burst {
+  animation: celebSweep 1.1s cubic-bezier(.2,.7,.2,1) 1;
+}
+.celeb-sweep.burst::before,
+.celeb-sweep.burst::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+}
+.celeb-sweep.burst::before { animation: celebSweep 1.4s cubic-bezier(.2,.7,.2,1) .18s 1; }
+.celeb-sweep.burst::after  { animation: celebSweep 1.7s cubic-bezier(.2,.7,.2,1) .36s 1; }
+@keyframes celebSweep {
+  0%   { transform: scale(1);    opacity: .8; }
+  60%  { opacity: .3; }
+  100% { transform: scale(22);   opacity: 0; }
+}
+
+/* Particles burst — each particle reads its own --dx/--dy/--sz/--dur/--delay */
+.celeb-particles {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 0; height: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.celeb-particle {
+  position: absolute;
+  left: 0; top: 0;
+  width: var(--sz, 4px);
+  height: var(--sz, 4px);
+  margin-left: calc(var(--sz,4px) / -2);
+  margin-top:  calc(var(--sz,4px) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: celebParticle var(--dur, .7s) cubic-bezier(.15,.85,.35,1) var(--delay, 0s) 1 forwards;
+  box-shadow: 0 0 6px currentColor;
+}
+@keyframes celebParticle {
+  0%   { transform: translate(0,0) scale(1);    opacity: 1; }
+  85%  { opacity: .9; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}
+
+/* Name — letters animate in individually. GSAP handles the actual tween;
+   the span needs transform-style + backface for rotateX to look clean. */
+.vote-celeb-name {
+  font-size:clamp(28px,6vw,72px);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#F2EDE4;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  perspective: 600px;
+}
+.celeb-letter {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Counter — subtle, sits between name and timer */
+.celeb-counter {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(11px, 1.3vw, 14px);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(242,237,228,.55);
+  opacity: 0;
+}
+.celeb-counter-num {
+  color: rgba(242,237,228,.9);
+  font-weight: 700;
+  margin-right: .35em;
+}
+
+/* Timer bar — hairline at bottom of the celebration wrap */
+.celeb-timer {
+  width: clamp(120px, 20vw, 220px);
+  height: 2px;
+  background: rgba(242,237,228,.08);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: clamp(10px, 1.5vh, 18px);
+}
+.celeb-timer-fill {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: .85;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* Kill the old shine on the celebration sticker — we're using the richer
+   sweep + particles now. Still allow it on results sticker. */
+.celebration-state .sticker-placeholder::after { display: none !important; }
+
+/* ── RESULTS STATE ── */
+.results-state {
+  justify-content:flex-start;
+  align-items:center;
+  padding:clamp(28px,5vh,64px) clamp(16px,5vw,48px);
+}
+.vote-results-sticker-top {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:clamp(16px,3vh,36px);
+}
+.vote-results-sticker-top .sticker-placeholder {
+  /* Larger than before so the winning player's image dominates the
+     top of the results screen. Pairs with the leaderboard below being
+     pushed toward the bottom of the viewport (margin-top:auto on the
+     leaderboard) for a cleaner visual split. */
+  width:clamp(220px,36vmin,460px);
+  height:clamp(300px,48vmin,600px);
+}
+.vote-results-sticker-name {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(8px,1vw,11px);
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:rgba(242,237,228,.45);
+  margin-top:clamp(6px,1vh,12px);
+}
+
+/* Leaderboard */
+.vote-leaderboard {
+  width:100%;
+  max-width:560px;
+  display:flex;
+  flex-direction:column;
+  gap:clamp(8px,1.5vh,16px);
+  /* Push to bottom of the results-state flex column so the sticker
+     gets the top half of the screen and the chart sits near the
+     bottom edge — more visually balanced on both desktop and mobile. */
+  margin-top:auto;
+  margin-bottom:clamp(24px,5vh,60px);
+}
+.vote-lb-row {
+  display:grid;
+  grid-template-columns:clamp(34px,5vmin,48px) 1fr clamp(28px,3.5vw,44px);
+  gap:clamp(8px,1.5vw,16px);
+  align-items:center;
+  opacity:0;
+  transform:translateY(18px);
+}
+.vote-lb-face {
+  width:clamp(34px,5vmin,48px);
+  height:clamp(34px,5vmin,48px);
+  border-radius:50%;
+  overflow:hidden;
+  flex-shrink:0;
+  border:2px solid rgba(255,255,255,.1);
+}
+.vote-lb-info { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.vote-lb-name-row { display:flex; align-items:center; gap:8px; }
+.vote-lb-name {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(11px,1.1vw,13px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(242,237,228,.8);
+}
+.vote-lb-pill {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(7px,.85vw,9px);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:30px;
+  white-space:nowrap;
+  line-height:1.6;
+}
+.vote-bar-track {
+  height:clamp(5px,.7vh,8px);
+  background:rgba(242,237,228,.07);
+  border-radius:4px;
+  overflow:hidden;
+}
+.vote-bar-fill { height:100%; border-radius:4px; width:0%; }
+.vote-lb-count {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(11px,1.3vw,15px);
+  letter-spacing:.08em;
+  color:rgba(242,237,228,.55);
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
+/* Reset button (kiosk only) */
+.vote-reset-btn {
+  display:none;
+  margin-top:clamp(24px,4vh,48px);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(9px,1vw,11px);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:rgba(242,237,228,.28);
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:8px 12px;
+  transition:color .2s;
+}
+.vote-reset-btn:hover { color:rgba(242,237,228,.6); }
+.vote-reset-btn:focus-visible {
+  outline: 2px solid rgba(242,237,228,.6);
+  outline-offset: 3px;
+  color: rgba(242,237,228,.6);
+}
+.vote-reset-btn.visible { display:block; }
+
+/* Vote header — tighter on landscape phones */
+@media (orientation: landscape) and (max-height: 500px) {
+  .vote-header {
+    padding: 24px 16px 12px;
+  }
+  .vote-title { font-size: clamp(36px, 7vw, 72px); }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SECTION 01 — HERO
+══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-scanlines"></div>
+  <div class="headline" id="headline">
+    <div class="line-preamble" id="line-preamble">Tom Brady is</div>
+  </div>
+  <div class="illo-wrap" id="illo-wrap">
+    <img id="hero-brady-img" src="Assets/tom-brady.png" alt="Tom Brady" style="width:100%;height:100%;object-fit:contain;display:block;">
+    <img id="crown-svg" src="Assets/crown.png" alt="crown">
+    <img id="hero-goat" src="Assets/goat.svg" alt="goat">
+  </div>
+  <div class="headline-lower" id="headline-lower">
+    <div class="line-not-wrap">
+      <span class="line-not" id="not-text">NOT</span>
+    </div>
+    <div class="line-bottom" id="line-bottom">
+      <span>The</span>
+      <span id="crown-anchor">GOAT</span>
+    </div>
+  </div>
+  <div class="hero-scroll-cue" aria-hidden="true">
+    <span class="cue-label">SCROLL</span>
+    <svg class="cue-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 02 — INTRO (w/ integrated BRADY PARTY PAYOFF)
+     A single pinned section. The scroll timeline runs the party
+     choreography (dance → lightning → rocker + cards + lights → wind-down)
+     in its first ~30%, then hands off into the existing intro choreography
+     (puppet shrinks into card, THEN WHO IS THE GOAT words reveal, chart
+     transition fires). One puppet throughout — same DOM elements, same
+     animation — so the party and the shrink feel continuous.
+══════════════════════════════════════════ -->
+<div class="intro-section" id="intro-section">
+  <div class="section-stage" id="section-stage">
+
+    <!-- Background layers (cream ↔ club cross-fade during party phase) -->
+    <div class="bg-cream"></div>
+    <div class="bg-club"></div>
+    <div class="bg-scanlines"></div>
+
+    <!-- Puppet: dual canvas (dance + rocking) inside the existing rive-clip
+         so the intro's shrink/clipPath choreography still acts on it. -->
+    <div class="center-card" id="center-card">
+      <div class="rive-clip" id="rive-clip">
+        <canvas id="rive-dance-party"></canvas>
+        <canvas id="rive-rocking-party"></canvas>
+      </div>
+    </div>
+
+    <!-- Party lights + specks (gated by .party-on on section-stage) -->
+    <div class="party-lights" id="party-lights">
+      <div class="party-spot pink"></div>
+      <div class="party-spot cyan"></div>
+      <div class="party-spot gold"></div>
+      <div class="party-strobe"></div>
+      <div class="party-specks" id="party-specks"></div>
+    </div>
+    <div class="party-lightning" id="party-lightning"></div>
+
+    <!-- Accolade cards (visible only during party phase) -->
+    <div class="accolades" id="accolades">
+      <div class="accolade blue" data-idx="1">
+        <span class="a-stat" data-val="7×">7×</span>
+        <span class="a-label">Super Bowl Champion</span>
+        <span class="a-note">Most in NFL History</span>
+      </div>
+      <div class="accolade pink" data-idx="2">
+        <span class="a-stat" data-val="5×">5×</span>
+        <span class="a-label">Super Bowl MVP</span>
+        <span class="a-note">Most in NFL History</span>
+      </div>
+      <div class="accolade gold" data-idx="3">
+        <span class="a-stat" data-val="3×">3×</span>
+        <span class="a-label">League MVP</span>
+        <span class="a-note">2007 · 2010 · 2017</span>
+      </div>
+      <div class="accolade bungee" data-idx="4">
+        <span class="a-stat" data-val="286">286</span>
+        <span class="a-label">Most Wins All Time</span>
+        <span class="a-note">251 Regular-Season Wins · 35 Playoff Wins</span>
+      </div>
+    </div>
+
+    <!-- Original intro choreography (orbit player-card columns + words) -->
+    <div class="cards-col col-far-left"   id="col-fl"></div>
+    <div class="cards-col col-near-left"  id="col-nl"></div>
+    <div class="cards-col col-near-right" id="col-nr"></div>
+    <div class="cards-col col-far-right"  id="col-fr"></div>
+
+    <div class="word-slot" id="w-then">THEN</div>
+    <div class="word-slot" id="w-who">WHO</div>
+    <div class="word-slot" id="w-is">IS</div>
+    <div class="word-slot" id="w-the">THE</div>
+    <div class="word-slot" id="w-goat">GOAT</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     BRIDGE — warm → dark
+══════════════════════════════════════════ -->
+<div class="section-bridge"></div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 03 — CHART
+══════════════════════════════════════════ -->
+<section class="chart-section" id="chart-section">
+  <div class="trace-beam"><div class="trace-fill" id="trace-fill"></div></div>
+  <div class="table-body" id="table-body">
+    <div class="table-header" id="table-header"><div></div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 03b — CHART SUMMARY
+     Condensed highlight-only grid: 5 player columns (portraits on top) with
+     only the gold/strong/deep cells rendered as colored dots — a silent,
+     compressed visual recap that hands off to the Vote section below.
+══════════════════════════════════════════ -->
+<section class="chart-summary" id="chart-summary">
+  <div class="csum-inner">
+    <div class="csum-portraits" id="csum-portraits"></div>
+    <div class="csum-grid" id="csum-grid"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 04 — VOTE
+══════════════════════════════════════════ -->
+<section class="vote-section" id="vote-section">
+
+  <!-- STATE 1: vote -->
+  <div class="vote-state">
+    <div class="vote-header">
+      <div class="vote-title">Vote Your GOAT</div>
+    </div>
+    <!-- Orbit layout (landscape / wide) — cards injected by JS -->
+    <div class="vote-orbit-wrap">
+      <div class="vote-orbit-center"></div>
+      <div class="vote-center-preview" id="vote-center-preview">
+        <img id="vote-preview-img" alt="" />
+      </div>
+    </div>
+    <!-- Grid layout (portrait / mobile) — cards injected by JS -->
+    <div class="vote-grid"></div>
+  </div>
+
+  <!-- STATE 2: celebration — built by JS on vote -->
+  <div class="celebration-state"></div>
+
+  <!-- STATE 3: results — built by JS after celebration -->
+  <div class="results-state"></div>
+
+</section>
+
+<div class="replay-hint" onclick="replay()" title="Press R to replay" style="display:none">[ R ] replay</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script>gsap.registerPlugin(ScrollTrigger);</script>
+
+<!-- ── 01 HERO JS ── -->
+<script>
+;(function() {
+
+  const notEl   = document.getElementById('not-text');
+  const notWrap = document.querySelector('.line-not-wrap');
+  const heroEl  = document.querySelector('.hero');
+  let _notDropTl = null, _heroST = null, _impactFired = false, _notWrapH = 0, _notStartY = -600;
+
+  /* ── Crown head-tracking ──
+     HEAD_X / HEAD_Y are fractions of the Brady image's own dimensions,
+     pointing at the center of his head. The function converts those into
+     pixel positions inside #illo-wrap by accounting for object-fit:contain
+     letterboxing, so the crown follows his head at every screen size. */
+  var CROWN_HEAD_X = 0.435;
+  var CROWN_HEAD_Y = 0.072;
+  var CROWN_ROT    = -20.4;
+
+  /* Brady SVG intrinsic dimensions — used as fallback when naturalWidth
+     reports 0 (can happen with large SVGs in some browsers during initial load) */
+  var BRADY_NATURAL_W = 301.68;
+  var BRADY_NATURAL_H = 245.76;
+
+  function positionCrownOnHead() {
+    var img   = document.getElementById('hero-brady-img');
+    var crown = document.getElementById('crown-svg');
+    var box   = document.getElementById('illo-wrap');
+    if (!img || !crown || !box) return;
+
+    var nW = img.naturalWidth  || BRADY_NATURAL_W;
+    var nH = img.naturalHeight || BRADY_NATURAL_H;
+    var cW = box.offsetWidth,  cH = box.offsetHeight;
+    if (!cW || !cH) return;
+    var iAR = nW / nH;
+    var cAR = cW / cH;
+    var rW, rH, oX, oY;
+
+    if (iAR > cAR) {               // image wider → letterbox top & bottom
+      rW = cW;  rH = cW / iAR;
+      oX = 0;   oY = (cH - rH) / 2;
+    } else {                       // image taller → letterbox left & right
+      rH = cH;  rW = cH * iAR;
+      oX = (cW - rW) / 2;  oY = 0;
+    }
+
+    var headX = oX + CROWN_HEAD_X * rW;
+    var headY = oY + CROWN_HEAD_Y * rH;
+    crown.style.left = (headX - crown.offsetWidth  / 2) + 'px';
+    crown.style.top  = (headY - crown.offsetHeight * 0.55) + 'px';
+  }
+
+  /* ── Goat image-relative positioning (same letterbox math) ── */
+  var GOAT_X   = 0.589; // fraction across image — goat's left edge
+  var GOAT_Y   = 0.200; // fraction down image  — goat's top edge
+
+  function positionGoatOnImage() {
+    var img  = document.getElementById('hero-brady-img');
+    var goat = document.getElementById('hero-goat');
+    var box  = document.getElementById('illo-wrap');
+    if (!img || !goat || !box) return;
+
+    var nW = img.naturalWidth  || BRADY_NATURAL_W;
+    var nH = img.naturalHeight || BRADY_NATURAL_H;
+    var cW = box.offsetWidth, cH = box.offsetHeight;
+    if (!cW || !cH) return;
+    var iAR = nW / nH, cAR = cW / cH;
+    var rW, rH, oX, oY;
+    if (iAR > cAR) { rW=cW; rH=cW/iAR; oX=0; oY=(cH-rH)/2; }
+    else            { rH=cH; rW=cH*iAR; oX=(cW-rW)/2; oY=0; }
+
+    goat.style.left = (oX + GOAT_X * rW) + 'px';
+    goat.style.top  = (oY + GOAT_Y * rH) + 'px';
+  }
+
+  /* Expose for tuner and resize */
+  window._crownHeadX  = function(v) { CROWN_HEAD_X = v; };
+  window._crownHeadY  = function(v) { CROWN_HEAD_Y = v; };
+  window._crownRot    = function(v) { CROWN_ROT    = v; };
+  window._positionCrown = positionCrownOnHead;
+  window._goatX = function(v) { GOAT_X = v; };
+  window._goatY = function(v) { GOAT_Y = v; };
+  window._positionGoat  = positionGoatOnImage;
+
+  window.addEventListener('resize', function() {
+    positionCrownOnHead();
+    positionGoatOnImage();
+  });
+
+  function spawnParticles() {
+    const crown = document.getElementById('crown-svg');
+    const rect  = crown.getBoundingClientRect();
+    const cx = rect.left + rect.width * .5, cy = rect.top + rect.height * .5;
+    for (let i = 0; i < 10; i++) {
+      const p = document.createElement('div'), sz = 3 + Math.random() * 4;
+      p.className = 'particle';
+      p.style.cssText = `left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${Math.random()>.4?'#D4AF37':'#F2EDE4'};opacity:1;`;
+      document.body.appendChild(p);
+      const angle = (Math.PI*2/10)*i + (Math.random()-.5)*.8, dist = 50 + Math.random()*90;
+      gsap.to(p, { x:Math.cos(angle)*dist, y:Math.sin(angle)*dist-50, opacity:0,
+        duration:.6+Math.random()*.5, ease:'power2.out', onComplete:()=>p.remove() });
+    }
+  }
+
+  function shake() {
+    var targets = ['#headline','#headline-lower'];
+    targets.forEach(function(sel) {
+      gsap.fromTo(sel, {x:0,y:0},
+        {x:'random(-7,7)',y:'random(-3,3)', duration:.055, repeat:6, yoyo:true, ease:'none',
+         onComplete:function(){ gsap.set(sel,{x:0,y:0}); }});
+    });
+  }
+
+  /* ── IMPACT: fires when NOT passes the crown mid-fall ── */
+  var _impactTl = null;
+  function fireImpact() {
+    if (_impactFired) return;
+    _impactFired = true;
+    shake();
+    spawnParticles();
+    notEl.classList.add('struck');
+
+    if (_impactTl) _impactTl.kill();
+    _impactTl = gsap.timeline();
+
+    /* 1 — Crown tumbles bottom-left off screen */
+    _impactTl.to('#crown-svg', {
+      x: -300, y: 500,
+      rotation: CROWN_ROT + 300,
+      scale: 0.2, opacity: 0,
+      duration: 0.9, ease: 'power2.in'
+    }, 0);
+
+    /* 2 — Brady crossfades to shocked */
+    _impactTl.to('#hero-brady-img', { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.05);
+    _impactTl.call(function() {
+      var bi = document.getElementById('hero-brady-img');
+      if (bi) bi.src = 'Assets/tom-brady-shocked.png';
+    }, null, 0.17);
+    _impactTl.to('#hero-brady-img', { opacity: 1, duration: 0.18, ease: 'power1.out' }, 0.17);
+
+    /* 3 — Illustration zooms into shocked face after NOT lands */
+    _impactTl.to('#illo-wrap', {
+      y: 40, scale: 2.2,
+      transformOrigin: '50% 16%',
+      duration: 0.85, ease: 'power2.out'
+    }, 0.55);
+
+    /* 4 — Scroll hint fades out, subtext fades in */
+    _impactTl.to('#scroll-hint', { opacity: 0, duration: 0.2, ease: 'power1.in' }, 0);
+    _impactTl.to('#subtext', { opacity: 1, duration: 0.5, ease: 'power2.out' }, 1.1);
+  }
+
+  /* ── REVERSE IMPACT: user scrolled back — everything eases back smoothly ── */
+  function reverseImpact() {
+    if (!_impactFired) return;
+    _impactFired = false;
+    if (_impactTl) { _impactTl.kill(); _impactTl = null; }
+    notEl.classList.remove('struck');
+    gsap.killTweensOf(['#crown-svg','#subtext','#illo-wrap','#hero-brady-img']);
+
+    var DUR = 0.4;
+    gsap.to('#subtext',   { opacity: 0, duration: DUR * 0.5, ease: 'power1.in' });
+    gsap.to('#illo-wrap', { y: 0, scale: 1, transformOrigin: '50% 28%', duration: DUR, ease: 'power2.out' });
+    gsap.set('#hero-goat', { x: 0, opacity: 0 });
+
+    gsap.to('#hero-brady-img', {
+      opacity: 0, duration: 0.12, ease: 'power1.in',
+      onComplete: function() {
+        var bi = document.getElementById('hero-brady-img');
+        if (bi) bi.src = 'Assets/tom-brady.png';
+        positionCrownOnHead();
+        positionGoatOnImage();
+        gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1, opacity: 0 });
+        gsap.to('#hero-brady-img', { opacity: 1, duration: 0.2, ease: 'power1.out' });
+        gsap.to('#crown-svg',      { opacity: 1, duration: 0.3, ease: 'power2.out' });
+      }
+    });
+  }
+
+  function showInitial() {
+    /* 1. Restore wrapper to measure natural height */
+    gsap.set(notWrap, {clearProps:'height'});
+    _notWrapH = notWrap.offsetHeight || 220;
+
+    /* 2. Measure how far NOT's bottom is from the hero's top edge (at natural y:0),
+          then set startY so NOT's bottom sits exactly at the hero top — fully clipped. */
+    gsap.set(notEl, {y:0, opacity:0});
+    const heroTop  = heroEl.getBoundingClientRect().top;
+    const notBottom = notEl.getBoundingClientRect().bottom;
+    _notStartY = -(notBottom - heroTop + 4); /* 4px gap above top edge */
+
+    notEl.classList.remove('struck');
+    gsap.set('#line-preamble', {opacity:0.82, y:0});
+    gsap.set('#line-bottom',   {opacity:0.82, y:0});
+    gsap.set(notWrap,          {height:0});               /* collapse → "The GOAT" sits under "Tom Brady is" */
+    gsap.set(notEl,            {y:_notStartY, opacity:0}); /* just above hero top edge, invisible */
+    gsap.set('#illo-wrap',   {opacity:1, y:0, scale:1, transformOrigin:'50% 28%'});
+    gsap.set('#line-bottom', {y:0});
+    gsap.set('#hero-goat',   {x:0, scaleX:1, opacity:0});
+    gsap.set('#crown-svg',   {x:0, y:0, rotation:CROWN_ROT, opacity:1, scale:1});
+    positionCrownOnHead();
+    const _bi = document.getElementById('hero-brady-img');
+    if (_bi) _bi.src = 'Assets/tom-brady.png';
+    gsap.set('#subtext',       {opacity:0});
+    gsap.set('#scroll-hint',   {opacity:1});
+    gsap.to('#scroll-hint',    {opacity:1, duration:0.3, ease:'power2.out'});
+    _impactFired = false;
+  }
+
+  /* ── SCROLL-DRIVEN DROP ──
+     Scrubs two things in sync:
+       1. NOT falls from y:-380 (above hero) → y:0 with power2.in (gravity)
+       2. .line-not-wrap height expands 0 → natural, pushing "The GOAT" down
+     On landing (scroll > 350px), crown smacks off. ── */
+  function _createHeroST() {
+    if (_heroST)    { _heroST.kill();    _heroST    = null; }
+    if (_notDropTl) { _notDropTl.kill(); _notDropTl = null; }
+
+    const wrapH = _notWrapH || 220;
+
+    const startY = _notStartY || -window.innerHeight;
+    const LAND   = 0.35; /* progress where NOT fully lands */
+    const IMPACT = 0.18; /* progress where NOT passes the crown — fires impact mid-fall */
+
+    _notDropTl = gsap.timeline({paused:true})
+      /* phase 1 (0 → LAND): NOT falls + wrapper expands */
+      .fromTo(notEl,   {y:startY, opacity:0}, {y:0, opacity:1, ease:'power2.in', duration:LAND},   0)
+      .fromTo(notWrap, {height:0},             {height:wrapH,  ease:'power2.in', duration:LAND},   0)
+      /* phase 2 (LAND → 1.0): hold — hero stays pinned while impact animation
+         (crown drop + shocked crossfade + illo zoom) plays out, then reads */
+      .to({}, {duration:1 - LAND});
+
+    _heroST = ScrollTrigger.create({
+      trigger:             heroEl,
+      start:               'top top',
+      /* Mobile: shorter pin so 2–3 swipes trigger the crown drop and shocked zoom;
+         desktop keeps the longer hold for mouse users. */
+      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
+      pin:                 true,
+      pinSpacing:          true,
+      scrub:               true,
+      animation:           _notDropTl,
+      invalidateOnRefresh: true,
+      onUpdate: self => {
+        if (self.progress >= IMPACT && !_impactFired) fireImpact();
+        else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();
+      },
+    });
+  }
+
+  /* Immediate visual-only reset (hides NOT etc.) without creating the ST */
+  window._heroShowInitial = showInitial;
+
+  /* Full reset: visual + new scroll trigger. Called inside replay's setTimeout
+     so scroll has returned to top before the scrub ST is created. */
+  window._heroReset = function() {
+    showInitial();
+    _createHeroST();
+  };
+
+  window.addEventListener('load', function() {
+    showInitial();
+    _createHeroST();
+  });
+
+})();
+</script>
+
+<!-- ── 02 INTRO JS ── -->
+<script>
+;(function() {
+
+/* Renamed from PLAYERS to avoid conflict with chart's PLAYERS array */
+const FACE_PLAYERS = {
+  rivers:    { bg:'#001B3D', accent:'#FFB612', face:'#FFB612', iris:'#001B3D' },
+  payton:    { bg:'#0B1F4E', accent:'#E87722', face:'#E87722', iris:'#001830' },
+  alexander: { bg:'#002244', accent:'#69BE28', face:'#3A6B1A', iris:'#001830' },
+  page:      { bg:'#3D1E6B', accent:'#B5985A', face:'#3D1E6B', iris:'#B5985A' },
+  brady:     { bg:'#001840', accent:'#C8102E', face:'#C8102E', iris:'#001840' },
+};
+
+const COLUMNS = [
+  { id:'col-fl', players:['rivers','payton','page','brady'],    speed:1.35 },
+  { id:'col-nl', players:['alexander','rivers','payton'],       speed:0.82 },
+  { id:'col-nr', players:['payton','page','alexander'],         speed:0.82 },
+  { id:'col-fr', players:['page','alexander','rivers','brady'], speed:1.35 },
+];
+
+function buildFace(pid) {
+  const profiles = {
+    rivers:    'Assets/Philip-Rivers-Profile.png',
+    alexander: 'Assets/Shaun-Alexandar-Profile.png',
+    payton:    'Assets/Walter-Payton-Profile.png',
+    page:      'Assets/Alan-Page-Profile.png',
+    brady:     'Assets/Tom-Brady-Profile.png',
+  };
+  const src = profiles[pid];
+  if (!src) return '';
+  return `<img src="${src}" alt="${pid}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+}
+
+COLUMNS.forEach(col => {
+  const el = document.getElementById(col.id); if (!el) return;
+  col.players.forEach(pid => {
+    const p = FACE_PLAYERS[pid]; if (!p) return;
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.setProperty('--hov-col', p.accent);
+    card.innerHTML = `<div class="face-wrap">${buildFace(pid)}</div>`;
+    el.appendChild(card);
+  });
+});
+
+document.querySelectorAll('.face-svg').forEach((svg, i) => {
+  const d = i*260 + Math.random()*500;
+  function blink() {
+    const lids = svg.querySelectorAll('.lid-l,.lid-r');
+    lids.forEach(l=>{l.style.transition='transform .07s ease-in';l.style.transform='scaleY(1)';});
+    setTimeout(()=>lids.forEach(l=>{l.style.transition='transform .11s ease-out';l.style.transform='scaleY(0)';}),85);
+    setTimeout(blink, 2700+Math.random()*4200);
+  }
+  setTimeout(blink, d+Math.random()*1600);
+  function look() {
+    const dx=(Math.random()-.5)*5.5, dy=(Math.random()-.5)*2.8, dur=(300+Math.random()*280)+'ms';
+    svg.querySelectorAll('.pupil-l,.iris-l,.pupil-r,.iris-r').forEach(el=>{
+      el.style.transition=`transform ${dur} ease-in-out`; el.style.transform=`translate(${dx}px,${dy}px)`;
+    });
+    if (Math.random()>.7) {
+      const t=(Math.random()-.5)*2.8;
+      svg.style.transition='transform .6s ease-in-out'; svg.style.transform=`rotate(${t}deg)`;
+      setTimeout(()=>{svg.style.transform='rotate(0deg)';},700);
+    }
+    setTimeout(look, 1200+Math.random()*1900);
+  }
+  setTimeout(look, d*.5+Math.random()*800);
+});
+
+/* ── WORD SETUP ── */
+const wordEls = ['w-then','w-who','w-is','w-the','w-goat'].map(id=>document.getElementById(id));
+const scatterCache = {};
+const hasSeen = [false,false,false,false,false];
+
+function getScatter(li) {
+  if (!scatterCache[li]) {
+    const dist=180+Math.random()*220, ang=Math.random()*Math.PI*2;
+    scatterCache[li]={x:Math.cos(ang)*dist,y:Math.sin(ang)*dist*.5,rot:(Math.random()-.5)*280};
+  }
+  return scatterCache[li];
+}
+
+(()=>{ const el=document.getElementById('w-goat'); el.innerHTML=[...'GOAT'].map((ch,li)=>`<span class="ltr" data-li="${li}">${ch}</span>`).join(''); })();
+(()=>{ const el=document.getElementById('w-the');  el.innerHTML=[...'THE'].map((ch,li)=>`<span class="ltr" data-li="${li}">${ch}</span>`).join(''); })();
+
+/* ── SCROLL MATH ── */
+const WORD_START=0.42, WORD_ZONE=0.11, ENTER_END=0.25, SIT_END=0.78, STAMP_SCALE=0.65, STAMP_OPACITY=0.60;
+
+function clamp(v,a,b){return Math.min(Math.max(v,a),b);}
+function eio(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
+function eout3(t){return 1-Math.pow(1-t,3);}
+function bounceOut(t){if(t<0.72)return eout3(t/0.72);const b=(t-0.72)/0.28;return 1+Math.sin(b*Math.PI)*0.10*(1-b*0.5);}
+function wordP(gp,i){return clamp((gp-WORD_START-i*WORD_ZONE)/WORD_ZONE,0,1);}
+
+function animThen(wp,wH) {
+  const el=wordEls[0];
+  if(wp>=SIT_END) hasSeen[0]=true;
+  if(wp>=1){gsap.set(el,{opacity:STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 5%'});return;}
+  if(wp>=SIT_END){const sp=clamp((wp-SIT_END)/0.22,0,1);gsap.set(el,{opacity:1-eio(sp)*(1-STAMP_OPACITY),scaleX:1-eio(sp)*(1-STAMP_SCALE),scaleY:1-eio(sp)*(1-STAMP_SCALE),y:0,filter:'none',transformOrigin:'50% 5%'});return;}
+  if(wp>=ENTER_END){gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none'});return;}
+  if(wp>0){
+    if(hasSeen[0]){const ep=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep/0.15,1)*STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 5%'});}
+    else{const ep=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep/0.2,1),y:-wH*0.18*(1-ep),scaleX:1,scaleY:1,filter:'none'});}
+    return;
+  }
+  gsap.set(el,{opacity:0});
+}
+
+function animWho(wp,wH) {
+  const el=wordEls[1];
+  if(wp>=SIT_END) hasSeen[1]=true;
+  const showFull =()=>gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none',clipPath:'inset(0% 0% 0% 0%)'});
+  const showStamp=()=>gsap.set(el,{opacity:STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 27%',clipPath:'none'});
+  if(wp>=1){showStamp();return;}
+  if(wp>=SIT_END){const sp=clamp((wp-SIT_END)/0.22,0,1);gsap.set(el,{opacity:1-eio(sp)*(1-STAMP_OPACITY),scaleX:1-eio(sp)*(1-STAMP_SCALE),scaleY:1-eio(sp)*(1-STAMP_SCALE),y:0,filter:'none',transformOrigin:'50% 27%',clipPath:'none'});return;}
+  if(wp>=ENTER_END){showFull();return;}
+  if(wp>0){
+    if(hasSeen[1]){const ep=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep/0.15,1)*STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 27%',clipPath:'none'});return;}
+    const ep=wp/ENTER_END, pct=Math.max(100*(1-eio(ep)),0);
+    gsap.set(el,{opacity:Math.min(ep/0.15,1),scaleX:1,scaleY:1,y:0,filter:'none',clipPath:`inset(0% 0% ${pct.toFixed(1)}% 0%)`});return;
+  }
+  gsap.set(el,{opacity:0,clipPath:'inset(0% 0% 100% 0%)'});
+}
+
+function animIs(wp,wH) {
+  const el=wordEls[2];
+  if(wp>=SIT_END) hasSeen[2]=true;
+  const showFull =()=>gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none'});
+  const showStamp=()=>gsap.set(el,{opacity:STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 50%'});
+  if(wp>=1){showStamp();return;}
+  if(wp>=SIT_END){const sp=clamp((wp-SIT_END)/0.22,0,1);gsap.set(el,{opacity:1-eio(sp)*(1-STAMP_OPACITY),scaleX:1-eio(sp)*(1-STAMP_SCALE),scaleY:1-eio(sp)*(1-STAMP_SCALE),y:0,filter:'none',transformOrigin:'50% 50%'});return;}
+  if(wp>=ENTER_END){showFull();return;}
+  if(wp>0){
+    if(hasSeen[2]){const ep=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep/0.15,1)*STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 50%'});}
+    else{
+      const ep=wp/ENTER_END;
+      let sc;
+      if(ep<0.50){sc=1.60-eio(ep/0.50)*0.60;}else{const t=(ep-0.50)/0.50;sc=1.0-Math.sin(t*Math.PI)*0.12;}
+      gsap.set(el,{opacity:Math.min(ep/0.08,1),scaleX:sc,scaleY:sc,y:0,filter:'none',transformOrigin:'50% 50%'});
+    }
+    return;
+  }
+  gsap.set(el,{opacity:0,scaleX:1.35,scaleY:1.35});
+}
+
+function animThe(wp,wH) {
+  const el=wordEls[3], letters=el.querySelectorAll('.ltr');
+  if(wp>=SIT_END) hasSeen[3]=true;
+  const showFull =()=>{gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none'});letters.forEach(l=>gsap.set(l,{x:0,opacity:1}));};
+  const showStamp=()=>{gsap.set(el,{opacity:STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 68%'});letters.forEach(l=>gsap.set(l,{x:0}));};
+  const hideFar  =()=>{gsap.set(el,{opacity:0});letters.forEach((l,li)=>gsap.set(l,{x:li<2?-90:90}));};
+  if(wp>=1){showStamp();return;}
+  if(wp>=SIT_END){const sp=clamp((wp-SIT_END)/0.22,0,1);gsap.set(el,{opacity:1-eio(sp)*(1-STAMP_OPACITY),scaleX:1-eio(sp)*(1-STAMP_SCALE),scaleY:1-eio(sp)*(1-STAMP_SCALE),y:0,filter:'none',transformOrigin:'50% 68%'});letters.forEach(l=>gsap.set(l,{x:0}));return;}
+  if(wp>=ENTER_END){showFull();return;}
+  if(wp>0){
+    if(hasSeen[3]){const ep2=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep2/0.15,1)*STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'50% 68%'});letters.forEach(l=>gsap.set(l,{x:0}));}
+    else{
+      const ep=wp/ENTER_END, dist=160;
+      gsap.set(el,{opacity:Math.min(ep/0.15,1),scaleX:1,scaleY:1,y:0,filter:'none'});
+      letters.forEach((l,li)=>{
+        const lag=li===1?0.12:0, lp=clamp((ep-lag)/(1-lag),0,1), ease=eio(lp);
+        const fromLeft=li<2, os=lp>0.82?Math.sin(((lp-0.82)/0.18)*Math.PI)*18:0;
+        gsap.set(l,{x:(fromLeft?-dist:dist)*(1-ease)+(fromLeft?os:-os),opacity:Math.min(ep/0.10,1)});
+      });
+    }
+    return;
+  }
+  hideFar();
+}
+
+let goatFallTl=null;
+function fireGoatFallApart() {
+  const el=wordEls[4], letters=el.querySelectorAll('.ltr');
+  if(!letters.length) return;
+  if(goatFallTl) goatFallTl.kill();
+  goatFallTl=gsap.timeline();
+  letters.forEach((l,li)=>{
+    const s=getScatter(li), norm=Math.sqrt(s.x*s.x+s.y*s.y)||1, fd=160+li*40;
+    goatFallTl.to(l,{x:(s.x/norm)*fd,y:(s.y/norm)*fd,rotation:s.rot*0.55,opacity:0,duration:.55,ease:'power2.in'},li*.08);
+  });
+  goatFallTl.to(el,{opacity:0,duration:.20},0.45);
+}
+
+function restoreGoat() {
+  if(goatFallTl){goatFallTl.kill();goatFallTl=null;}
+  const el=wordEls[4], letters=el.querySelectorAll('.ltr');
+  gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none'});
+  letters.forEach(l=>gsap.set(l,{x:0,y:0,rotation:0,opacity:1}));
+}
+
+function animGoat(wp,wH) {
+  const el=wordEls[4], letters=el.querySelectorAll('.ltr');
+  if(!letters.length) return;
+  const showFull=()=>{if(goatFallTl&&goatFallTl.isActive()) return;gsap.set(el,{opacity:1,scaleX:1,scaleY:1,y:0,filter:'none'});letters.forEach(l=>gsap.set(l,{x:0,y:0,rotation:0,opacity:1}));};
+  if(wp>=SIT_END) hasSeen[4]=true;
+  if(wp>=1||(wp>=SIT_END)){if(!goatFallTl||!goatFallTl.isActive()) showFull();return;}
+  if(wp<=0){
+    gsap.set(el,{opacity:0});letters.forEach((_,li)=>{const s=getScatter(li);gsap.set(_,{x:s.x,y:s.y,rotation:s.rot,opacity:0});});
+    return;
+  }
+  if(wp>=ENTER_END){showFull();return;}
+  if(hasSeen[4]){const ep=wp/ENTER_END;gsap.set(el,{opacity:Math.min(ep/0.15,1)*STAMP_OPACITY,scaleX:STAMP_SCALE,scaleY:STAMP_SCALE,y:0,filter:'none',transformOrigin:'bottom center'});letters.forEach(l=>gsap.set(l,{x:0,y:0,rotation:0,opacity:1}));return;}
+  gsap.set(el,{opacity:Math.min(wp/ENTER_END/0.15,1),y:0,scaleX:1,scaleY:1,filter:'none'});
+  letters.forEach((l,li)=>{
+    const s=getScatter(li), lag=li*0.06, lp=clamp((wp/ENTER_END-lag*0.3)/0.7,0,1);
+    const e=lp<0.5?4*lp*lp*lp:1-Math.pow(-2*lp+2,3)/2;
+    gsap.set(l,{x:s.x*(1-e),y:s.y*(1-e),rotation:s.rot*(1-e),opacity:Math.min(lp/0.18,1)});
+  });
+}
+
+/* ── DOMINO DROP ── */
+let dropFired=false, dropTl=null;
+
+function fireDropTransition() {
+  if(dropFired) return;
+  dropFired=true;
+
+  const allCards=[...document.querySelectorAll('.cards-col .player-card')];
+  dropTl=gsap.timeline({onComplete:()=>{
+    const stamps=[wordEls[0],wordEls[1],wordEls[2],wordEls[3]];
+    gsap.to(stamps,{opacity:0,y:-30,duration:.35,ease:'power2.in',stagger:.07,onComplete:fireGoatFallApart});
+  }});
+  dropTl.to(allCards,{y:window.innerHeight,opacity:0,duration:0.6,ease:'power2.in',stagger:{amount:0.3,from:'random'}},0);
+}
+
+function reverseDropTransition() {
+  if(!dropFired) return;
+  if(dropTl){dropTl.kill();dropTl=null;}
+  dropFired=false;
+
+  restoreGoat();
+  gsap.to([wordEls[0],wordEls[1],wordEls[2],wordEls[3]],{opacity:STAMP_OPACITY,y:0,duration:.25,ease:'power2.out'});
+
+  const allCards=[...document.querySelectorAll('.cards-col .player-card')];
+  gsap.fromTo(allCards,{y:60,opacity:0},{y:0,opacity:1,duration:0.4,ease:'power2.out',stagger:{amount:0.25,from:'random'}});
+}
+
+/* ── SCROLL DRIVER ── */
+const section=document.getElementById('intro-section');
+const stageEl=document.getElementById('section-stage');
+const centerCard=document.getElementById('center-card');
+const colEls=[
+  {el:document.getElementById('col-fl'),speed:1.35},
+  {el:document.getElementById('col-nl'),speed:0.82},
+  {el:document.getElementById('col-nr'),speed:0.82},
+  {el:document.getElementById('col-fr'),speed:1.35},
+];
+
+/* onProgress drives all animation — called by ScrollTrigger.onUpdate */
+function onProgress(gp) {
+  /* Use the stage element's clientHeight (matches CSS 100vh) rather than
+     window.innerHeight (visual viewport) so clip-path insets are computed
+     relative to the card's actual rendered size. */
+  const wH=stageEl.clientHeight||window.innerHeight, wW=window.innerWidth;
+
+  /* PARTY PHASE: first 30% of intro scroll runs the Brady party payoff
+     (dance → lightning → rocker + cards + lights → wind-down). Past
+     that, effective progress (egp) drives the existing intro
+     choreography (puppet shrink + word reveals + chart handoff). */
+  const DWELL_END=0.30;
+  const egp=clamp((gp-DWELL_END)/(1-DWELL_END),0,1);
+
+  /* Drive the party sub-module (dance/rock scrub, lights, cards,
+     lightning). gpLocal goes 0-1 across the party phase; negative/>1
+     means we're outside the party and the update clears its state. */
+  if (window._partyUpdate) window._partyUpdate(gp / DWELL_END);
+  if (window._danceScrub)  window._danceScrub(gp);
+
+  colEls.forEach(({el,speed})=>{
+    if(!el) return;
+    const startY=wH*1.15*speed, endY=-wH*0.12*speed, eased=eio(clamp(egp*1.1,0,1));
+    el.style.transform=`translateY(${(startY-eased*(startY-endY)).toFixed(1)}px)`;
+  });
+
+  /* Puppet shrinks early (before "THEN" appears) so the words have a
+     clean tiny-card visual to play against. Driven by egp (post-dwell). */
+  const shrinkP=eio(clamp(egp/0.40,0,1)), cardR=clamp(wW*.07,44,96);
+  const scaleT=(cardR*2)/wW, scale=1-shrinkP*(1-scaleT);
+  const insetX=shrinkP*((wW-cardR*2/scale)/2), insetY=shrinkP*((wH-cardR*2/scale)/2), radius=(cardR/scale)*shrinkP;
+  centerCard.style.transform=`scale(${scale.toFixed(4)})`;
+  centerCard.style.clipPath=`inset(${insetY.toFixed(1)}px ${insetX.toFixed(1)}px round ${radius.toFixed(1)}px)`;
+
+  /* Blur-fix: when the user scrolls back UP through the shrink zone
+     (shrinkP transitions from high → low), the compositor may have
+     cached a scaled-down raster. Force a one-shot puppet canvas resync
+     on that transition so the puppet re-renders crisp. */
+  if (typeof onProgress._lastShrink === 'undefined') onProgress._lastShrink = 0;
+  if (onProgress._lastShrink > 0.3 && shrinkP < 0.3 && window._puppetResync) {
+    window._puppetResync();
+  }
+  onProgress._lastShrink = shrinkP;
+
+  /* Rive puppet fade: tied to "IS" word reveal — keep a min opacity so
+     the puppet is always at least partially visible; full-fade only when
+     IS is ~complete. */
+  const riveClip=document.getElementById('rive-clip');
+  if(riveClip){
+    const isP=wordP(egp,2);
+    riveClip.style.opacity=Math.max(0.35, 1-isP).toFixed(3);
+    riveClip.style.pointerEvents=isP>=0.85?'none':'';
+  }
+
+  animThen(wordP(egp,0),wH); animWho(wordP(egp,1),wH);
+  animIs(wordP(egp,2),wH);   animThe(wordP(egp,3),wH); animGoat(wordP(egp,4),wH);
+
+  if(egp>=0.97){ fireDropTransition(); }
+  else if(egp<0.94&&dropFired){ reverseDropTransition(); }
+}
+
+/* Reset intro animation state (called by global replay) */
+window._introReset = function() {
+  hasSeen[0]=hasSeen[1]=hasSeen[2]=hasSeen[3]=hasSeen[4]=false;
+  if(dropTl){dropTl.kill();dropTl=null;}
+  dropFired=false;
+  if(goatFallTl){goatFallTl.kill();goatFallTl=null;}
+  document.querySelectorAll('.player-card').forEach(b=>gsap.set(b,{opacity:1,scale:1}));
+  wordEls.forEach(el=>gsap.set(el,{opacity:0,scaleX:1,scaleY:1,y:0,clipPath:'none',filter:'none'}));
+  const goatLetters=wordEls[4].querySelectorAll('.ltr');
+  goatLetters.forEach((_,li)=>{const s=getScatter(li);gsap.set(_,{x:s.x,y:s.y,rotation:s.rot,opacity:0});});
+  const theLetters=wordEls[3].querySelectorAll('.ltr');
+  theLetters.forEach((l,li)=>gsap.set(l,{x:li<2?-90:90,opacity:0}));
+  onProgress(0);
+};
+
+/* Expose face builder for chart portrait rings */
+window._buildFace = buildFace;
+
+/* Create/recreate the ScrollTrigger pin (also called by global replay) */
+function _createIntroPinTrigger() {
+  ScrollTrigger.getAll().filter(t=>t.vars&&t.vars.id==='intro-pin').forEach(t=>t.kill());
+  ScrollTrigger.create({
+    id:'intro-pin',
+    trigger:section,
+    start:'top top',
+    end:'bottom bottom',
+    pin:stageEl,
+    pinSpacing:false,
+    invalidateOnRefresh:true,
+    onUpdate:self=>onProgress(self.progress),
+    onRefresh:self=>onProgress(self.progress),
+  });
+  onProgress(0);
+}
+window._introReinit = _createIntroPinTrigger;
+
+/* Init on load (same timing as chart section) */
+window.addEventListener('load', _createIntroPinTrigger);
+
+/* Resize: re-drive animation at current scroll position */
+window.addEventListener('resize',()=>{
+  const total=section.offsetHeight-window.innerHeight;
+  if(total>0) onProgress(clamp(-section.getBoundingClientRect().top/total,0,1));
+},{passive:true});
+
+/* Set initial column positions immediately so entry is correct */
+onProgress(0);
+
+})();
+</script>
+
+<!-- ── 03 CHART JS ── -->
+<script>
+;(function() {
+
+const PLAYERS = [
+  { id:'brady',     name:'Brady',     initials:'TB', bg:'#001840', accent:'#C8102E' },
+  { id:'rivers',    name:'Rivers',    initials:'PR', bg:'#005A9C', accent:'#FFB612' },
+  { id:'payton',    name:'Payton',    initials:'WP', bg:'#B83000', accent:'#F2EDE4' },
+  { id:'alexander', name:'Alexander', initials:'SA', bg:'#001E3C', accent:'#69BE28' },
+  { id:'page',      name:'Page',      initials:'AP', bg:'#3D1E6B', accent:'#B5985A' },
+];
+
+const ROWS = [
+  { id:'years', label:'YEARS IN NFL', sub:'career longevity',
+    order:['rivers','payton','alexander','page','brady'],
+    /* Mobile: worst→best (numerically ascending), gold lands last */
+    mobileOrder:['alexander','payton','page','rivers','brady'],
+    cells:{ brady:{val:'23',color:'cg-gold'}, rivers:{val:'17',color:'cg-faint'}, payton:{val:'13',color:'cg-faint'}, alexander:{val:'9',color:'neutral'}, page:{val:'15',color:'cg-faint'} }
+  },
+  { id:'award', label:"NFL'S HIGHEST OFF-FIELD HONOR", sub:'community impact + excellence on and off the field',
+    order:['rivers','alexander','page','brady','payton'],
+    /* Mobile: reader specified — brady(nothing), alexander, rivers, page, payton(gold) */
+    mobileOrder:['brady','alexander','rivers','page','payton'],
+    cells:{
+      brady:{val:'',color:'neutral'}, rivers:{val:'Finalist',color:'cg-faint',flavor:'2011 · Rivers of Hope Foundation'},
+      payton:{val:'Award renamed in his honor',color:'cg-gold',dramatic:true},
+      alexander:{val:'Team nominee',color:'cg-faint'}, page:{val:'—',color:'neutral'},
+    }
+  },
+  { id:'charities', label:'CHARITABLE IMPACT', sub:null,
+    /* Reveal order: Page (dramatic $16M foundation) lands LAST as the gold
+       crown — the pattern "yellow is always the final beat" holds across
+       every row except 'life', which has a special late-label moment. */
+    order:['rivers','alexander','brady','payton','page'],
+    /* Mobile: brady, rivers, alexander, payton, page(gold) */
+    mobileOrder:['brady','rivers','alexander','payton','page'],
+    cells:{
+      brady:{val:'TB12 Foundation',color:'cg-mid',flavor:'athlete wellness'},
+      rivers:{val:'Rivers of Hope',color:'cg-mid',flavor:'$1M+ for foster children'},
+      payton:{val:'Walter Payton Foundation',color:'cg-strong',flavor:'Still running today'},
+      alexander:{val:'Harvest Covenant',color:'cg-mid',flavor:'Co-op + Shaun Alexander Foundation'},
+      page:{val:'Page Education Foundation',color:'cg-strong',flavor:'$16M+ · 8,000+ scholarships',dramatic:true},
+    }
+  },
+  { id:'life', label:'LIFE AFTER FOOTBALL', sub:null,
+    order:['brady','rivers','alexander','payton','page'],
+    /* Mobile: brady, rivers, alexander, payton, page(gold). Same as desktop. */
+    mobileOrder:['brady','rivers','alexander','payton','page'],
+    cells:{
+      brady:{val:'Broadcaster',color:'cg-mid',flavor:'5% ownership in the Raiders',lateLabel:'Logan Paul Podcast Guest'},
+      /* Rivers note removed per request — "coaching his own son" read like
+         a footnote. The HS coach role speaks for itself. */
+      rivers:{val:'HS Football Coach',color:'cg-mid'},
+      payton:{val:'Foundation + Board',color:'cg-strong',flavor:'Bears board · pursued NFL ownership'},
+      alexander:{val:'Harvest Covenant + VC',color:'cg-strong',flavor:'Co-op · author · investor'},
+      /* Page: re-formatted as a stacked bulleted list — these are the
+         most impressive accolades in the chart and deserve legible
+         top-billing rather than run-on commas. flavorList renders each
+         entry on its own line with a leading bullet. */
+      page:{val:'MN Supreme Court Justice',color:'cg-gold',
+        flavorList:[
+          '22 years on the bench',
+          '1st Black justice in Minnesota',
+          'Presidential Medal of Freedom · 2018'
+        ],
+        dramatic:true,persist:true},
+    }
+  },
+  { id:'kids', label:'NUMBER OF CHILDREN', sub:null,
+    /* Synchronized count-up: every cell reveals its number as a count from
+       0 to target. All cells start counting at the same time after the row
+       label finishes typing, so the reveal plays like a scoreboard race —
+       Payton (2) and Brady (3) finish almost instantly, Alexander (14)
+       keeps ticking past everyone, making his gold payoff feel earned.
+       syncCount flag tells revealRow to skip its default per-cell clip-in
+       animation and use the shared count-up group instead. */
+    order:['payton','page','brady','rivers','alexander'],
+    /* Mobile: strict numeric ascending — payton(2), brady(3), page(4), rivers(10), alexander(14) */
+    mobileOrder:['payton','brady','page','rivers','alexander'],
+    syncCount: true,
+    cells:{
+      brady:{val:'3',color:'cg-faint',counter:true},
+      rivers:{val:'10',color:'cg-strong',counter:true},
+      payton:{val:'2',color:'cg-faint',counter:true},
+      alexander:{val:'14',color:'cg-gold',counter:true,dramatic:true},
+      page:{val:'4',color:'cg-faint',counter:true},
+    }
+  },
+  { id:'cusses', label:'CUSSES', sub:null,
+    /* Brady's dramatic YES lands fourth; Rivers "dadgummit" is the gold
+       payoff and closes the row. */
+    order:['payton','alexander','page','brady','rivers'],
+    /* Mobile: payton, alexander, page, brady, rivers(gold) */
+    mobileOrder:['payton','alexander','page','brady','rivers'],
+    cells:{
+      brady:{val:'YES',color:'cr-deep',dramatic:true},
+      rivers:{val:'NO',color:'cg-gold',flavor:'dadgummit',typewriteFlavor:true},
+      payton:{val:'Unknown',color:'neutral'}, alexander:{val:'Unknown',color:'neutral'}, page:{val:'Unknown',color:'neutral'},
+    }
+  },
+  { id:'grandpa', label:'PLAYED AS A GRANDPA', sub:null,
+    /* Not "fast" anymore — the reveal that Rivers played at 44 deserves
+       the same beat as the other dramatic rows, and ROW_DWELL gives it
+       a matching pause before the summary transition takes over. */
+    order:['brady','payton','alexander','page','rivers'],
+    /* Mobile: brady, payton, alexander, page, rivers(gold YES) */
+    mobileOrder:['brady','payton','alexander','page','rivers'],
+    cells:{
+      brady:{val:'No',color:'neutral'}, rivers:{val:'YES',color:'cg-gold',flavor:'44 years old',dramatic:true},
+      payton:{val:'No',color:'neutral'}, alexander:{val:'No',color:'neutral'}, page:{val:'No',color:'neutral'},
+    }
+  },
+];
+
+function renderTable() {
+  const header=document.getElementById('table-header'), body=document.getElementById('table-body');
+  PLAYERS.forEach(p=>{
+    const d=document.createElement('div');
+    d.className=`player-head phead-${p.id}`; d.id=`phead-${p.id}`;
+    /* Portrait ring holds both initials (visible now) and face SVG (hidden, revealed during face transition) */
+    const faceHtml=window._buildFace
+      ? `<div class="pring-face" style="position:absolute;inset:0;border-radius:50%;overflow:hidden;opacity:0;">${window._buildFace(p.id)}</div>`
+      : '';
+    d.innerHTML=`<div class="portrait-ring" style="background:${p.bg};border-color:${p.accent}55;position:relative;">${faceHtml}<span class="initials" style="color:${p.accent};position:relative;z-index:1;">${p.initials}</span></div><span class="player-name-label">${p.name}</span>`;
+    header.appendChild(d);
+  });
+  ROWS.forEach((row,ri)=>{
+    const rowEl=document.createElement('div'); rowEl.className='cat-row'; rowEl.id=`row-${row.id}`;
+    const lc=document.createElement('div'); lc.className='cat-label-col';
+    lc.innerHTML=`<h3 class="cat-title-el" id="ct-${row.id}"></h3>${row.sub?`<p class="cat-sub-el">${row.sub}</p>`:''}`;
+    rowEl.appendChild(lc);
+    PLAYERS.forEach(p=>{
+      const cd=row.cells[p.id], vl=cd.val.length, sz=vl<=3?'':vl<=10?' sm':' xs';
+      const cel=document.createElement('div'); cel.className='p-cell'; cel.id=`cell-${row.id}-${p.id}`;
+      cel.setAttribute('data-pid', p.id);
+      /* Mobile ordering: CSS `order` property sorts cells within the row's
+         flex/grid parent on mobile only. Desktop stays in fixed PLAYERS
+         column order (unchanged); mobile reorders worst→best so the gold
+         winner is the last thing the user reads per category. */
+      if (row.mobileOrder) {
+        const mIdx = row.mobileOrder.indexOf(p.id);
+        if (mIdx !== -1) cel.style.setProperty('--m-order', mIdx);
+      }
+      /* Mobile-only portrait + name block (hidden on desktop via CSS).
+         Portrait uses the same _buildFace renderer as the header row. */
+      const faceHtml = window._buildFace
+        ? `<div class="m-cell-face" style="background:${p.bg};border-color:${p.accent}55;">${window._buildFace(p.id)}</div>`
+        : `<div class="m-cell-face" style="background:${p.bg};border-color:${p.accent}55;"><span style="color:${p.accent};font-size:13px;letter-spacing:.04em;">${p.initials}</span></div>`;
+      const mHeader = `<div class="m-cell-header"><div class="m-cell-portrait">${faceHtml}</div><div class="m-cell-name" style="color:${p.accent};">${p.name}</div></div>`;
+      /* Flavor rendering:
+         - flavorList: bulleted stack (Page's life-after accolades)
+         - flavor + flavor2: two-line fallback
+         - flavor: single line                                               */
+      let flavorHtml = '';
+      if (cd.flavorList && cd.flavorList.length) {
+        flavorHtml = `<ul class="cell-flavor-list" id="flav-${row.id}-${p.id}">${cd.flavorList.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+      } else if (cd.flavor || cd.flavor2) {
+        flavorHtml = `<span class="cell-flavor" id="flav-${row.id}-${p.id}">${cd.flavor||''}${cd.flavor2?'<br>'+cd.flavor2:''}</span>`;
+      }
+      const mBody = `<div class="m-cell-body"><span class="cell-val${sz}" id="val-${row.id}-${p.id}">${cd.val}</span>${flavorHtml}${cd.lateLabel?`<span class="cell-late-label" id="late-${row.id}-${p.id}">${cd.lateLabel}</span>`:''}</div>`;
+      cel.innerHTML = mHeader + mBody;
+      rowEl.appendChild(cel);
+    });
+    body.appendChild(rowEl);
+  });
+}
+
+function typewrite(el,text,onDone) {
+  el.innerHTML='';
+  const cur=document.createElement('span'); cur.className='cat-cursor'; el.appendChild(cur);
+  let i=0; const speed=Math.max(18,55-text.length*0.8);
+  const t=setInterval(()=>{ if(i>=text.length){clearInterval(t);cur.remove();if(onDone)onDone();return;} cur.insertAdjacentText('beforebegin',text[i++]); },speed);
+}
+
+function typewriteInto(el,text) {
+  el.textContent=''; let i=0;
+  const t=setInterval(()=>{ if(i>=text.length){clearInterval(t);return;} el.textContent+=text[i++]; },52);
+}
+
+function countUp(el,target,duration) {
+  const start=Date.now();
+  const iv=setInterval(()=>{ const p=Math.min((Date.now()-start)/duration,1); el.textContent=Math.round((1-Math.pow(1-p,3))*target); if(p>=1) clearInterval(iv); },16);
+}
+
+function revealRow(row,rowEl) {
+  rowEl.classList.add('dotted');
+  typewrite(document.getElementById(`ct-${row.id}`),row.label,()=>{
+    /* syncCount rows (e.g. NUMBER OF CHILDREN): every cell reveals at the
+       same instant and every counter starts from 0 together with a shared
+       duration. Alexander's 14 keeps ticking after the others plateau,
+       turning the gold cell into a live visual payoff. */
+    if (row.syncCount) {
+      const SYNC_MS = 1600;
+      row.order.forEach((pid)=>{
+        const cd = row.cells[pid];
+        const cel = document.getElementById(`cell-${row.id}-${pid}`);
+        const valEl = document.getElementById(`val-${row.id}-${pid}`);
+        /* Pre-zero the display so the count-up starts from 0 even before
+           the cell has faded in — avoids a "14 → 0 → 14" flash. */
+        if (valEl && cd.counter) valEl.textContent = '0';
+        gsap.fromTo(cel, {clipPath:'inset(0 100% 0 0)', opacity:0},
+                        {clipPath:'inset(0 0% 0 0)', opacity:1, duration:.35, ease:'power3.out',
+          onComplete() {
+            if (cd.color !== 'neutral') {
+              cel.classList.add(cd.color);
+              if (cd.dramatic) requestAnimationFrame(()=>{if(cd.color==='cg-gold')gsap.set(cel,{clearProps:'opacity'});cel.classList.add('pulse');});
+            }
+            if (cd.counter && valEl) countUp(valEl, parseInt(cd.val), SYNC_MS);
+          }
+        });
+      });
+      return;
+    }
+
+    row.order.forEach((pid,oi)=>{
+      const cd=row.cells[pid], cel=document.getElementById(`cell-${row.id}-${pid}`);
+      const valEl=document.getElementById(`val-${row.id}-${pid}`), flEl=document.getElementById(`flav-${row.id}-${pid}`);
+      const isLast=oi===row.order.length-1;
+      /* Reveal pacing: faster stagger, shorter wipe. Dramatic cells still
+         get a pause but trimmed. Keeps the drama without the waiting. */
+      const extraDelay=row.fastRow?0:(cd.dramatic?(isLast?0.30:0.18):0);
+      const delay=oi*(row.fastRow?0.04:0.07)+extraDelay;
+      gsap.fromTo(cel,{clipPath:'inset(0 100% 0 0)',opacity:0},{clipPath:'inset(0 0% 0 0)',opacity:1,duration:.30,ease:'power3.out',delay,
+        onComplete(){
+          if(cd.color!=='neutral'){cel.classList.add(cd.color);if(cd.dramatic)requestAnimationFrame(()=>{if(cd.color==='cg-gold')gsap.set(cel,{clearProps:'opacity'});cel.classList.add('pulse');});if(cd.persist)setTimeout(()=>{cel.classList.remove('pulse');cel.classList.add('breathe');},1200);}
+          if(flEl)setTimeout(()=>{flEl.style.opacity='1';if(cd.typewriteFlavor&&cd.flavor)typewriteInto(flEl,cd.flavor);},cd.dramatic?300:120);
+          if(cd.counter&&valEl){valEl.textContent='0';setTimeout(()=>countUp(valEl,parseInt(cd.val),900),100);}
+          if(cd.lateLabel){const lateEl=document.getElementById(`late-${row.id}-${pid}`);if(lateEl){
+            /* Late label appears first (after other cells finish) — the fact drops in red */
+            const labelDelay=(row.order.length-1)*.07*1000+400+300+500;
+            setTimeout(()=>lateEl.classList.add('in'),labelDelay);
+            /* Then, after the fact has landed, black out the cell in response to it */
+            setTimeout(()=>{cel.classList.remove('cg-faint','cg-mid','cg-strong','cg-deep','cg-gold','cr-deep','pulse','breathe');cel.classList.add('neutral');},labelDelay+900);
+          }}
+          if(row.id==='grandpa'&&pid==='rivers')setTimeout(()=>document.getElementById('phead-rivers')?.classList.add('lit'),400);
+        }
+      });
+    });
+  });
+}
+
+function setupChartInView() {
+  var reduced   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile  = window.matchMedia('(max-width: 768px)').matches;
+  var traceFill = document.getElementById('trace-fill');
+
+  /* ── Apply all cell colors and text immediately ──
+     Desktop: chart is fully static — everything visible on load.
+     Mobile:  colors applied, but cell opacity is CSS-driven (starts at 0).
+              Per-row ScrollTriggers fade rows up on viewport entry.        */
+  ROWS.forEach(function(row) {
+    var labelEl = document.getElementById('ct-' + row.id);
+    if (labelEl) labelEl.textContent = row.label;
+    var rowEl = document.getElementById('row-' + row.id);
+    if (rowEl) rowEl.classList.add('dotted');
+
+    PLAYERS.forEach(function(p) {
+      var cd   = row.cells[p.id];
+      var cel  = document.getElementById('cell-' + row.id + '-' + p.id);
+      var flEl = document.getElementById('flav-' + row.id + '-' + p.id);
+      if (!cel || !cd) return;
+
+      if (cd.color !== 'neutral') cel.classList.add(cd.color);
+
+      if (!isMobile) {
+        gsap.set(cel, { opacity: 1, clearProps: 'y,clipPath' });
+        if (flEl) flEl.style.opacity = '1';
+      } else {
+        /* Mobile: flavor visible immediately (cell opacity handles the fade).
+           Counter values start at 0 so count-up plays from 0 on reveal. */
+        if (flEl) flEl.style.opacity = '1';
+        if (cd.counter) {
+          var valEl = document.getElementById('val-' + row.id + '-' + p.id);
+          if (valEl) valEl.textContent = '0';
+        }
+      }
+    });
+  });
+
+  /* Rivers portrait ring lights up since grandpa row is always visible */
+  var ph = document.getElementById('phead-rivers');
+  if (ph) ph.classList.add('lit');
+
+  if (traceFill) traceFill.style.height = '100%';
+
+  /* Logan Paul late-label handling ──
+     Both desktop + mobile: hidden initially, revealed via scroll-past trigger
+     below. On desktop, cell state + label reveal are triggered together. */
+  var lateEl = document.getElementById('late-life-brady');
+
+  /* Desktop + mobile shared Logan-Paul scroll-past trigger.
+     Registered outside the mobile-only block so it fires on all viewports. */
+  var lpTriggers = [];
+  if (!reduced) {
+    var lifeRowAll   = document.getElementById('row-life');
+    var bradyCellAll = document.getElementById('cell-life-brady');
+    if (lifeRowAll && bradyCellAll && lateEl) {
+      /* Trigger fires AFTER the user has read Brady's life-after cell —
+         i.e. the cell's bottom has scrolled past the middle of the viewport.
+         Earlier versions used 'top 85%' which fired the Logan Paul gag
+         as the cell was just entering view; reader feedback was that the
+         reveal should land *after* they've absorbed the regular content. */
+      var lpST = ScrollTrigger.create({
+        trigger: bradyCellAll,
+        start: 'bottom 40%',
+        end:   'bottom top',
+        onEnter: function() {
+          bradyCellAll.classList.remove('cg-mid', 'cg-strong', 'cg-deep', 'cg-gold', 'cg-faint', 'cr-deep', 'pulse', 'breathe');
+          bradyCellAll.classList.add('lp-reveal');
+          lateEl.classList.add('in');
+        },
+        onLeaveBack: function() {
+          bradyCellAll.classList.remove('lp-reveal');
+          bradyCellAll.classList.add('cg-mid');
+          lateEl.classList.remove('in');
+        }
+      });
+      lpTriggers.push(lpST);
+    }
+  } else if (lateEl) {
+    /* Reduced motion: show the label immediately */
+    lateEl.classList.add('in');
+  }
+
+  /* ── Mobile row-enter + count-up triggers ── */
+  var mobileTriggers = [];
+  if (isMobile && !reduced) {
+    ROWS.forEach(function(row) {
+      var rowEl = document.getElementById('row-' + row.id);
+      if (!rowEl) return;
+      var cells = row.order.map(function(pid) {
+        return document.getElementById('cell-' + row.id + '-' + pid);
+      }).filter(Boolean);
+
+      var st = ScrollTrigger.create({
+        trigger: rowEl,
+        start: 'top 85%',
+        once: true,
+        onEnter: function() {
+          /* Row-label fade — no typewriter on mobile, just clean fade-up */
+          gsap.fromTo(rowEl.querySelector('.cat-label-col'),
+            { opacity: 0, y: 8 },
+            { opacity: 1, y: 0, duration: .35, ease: 'power2.out' });
+          /* Cells DROP + BOUNCE from above — elastic so they feel like they
+             got dropped there, not settled into place. */
+          cells.forEach(function(cel, i) {
+            var pid = cel.getAttribute('data-pid');
+            var cd  = row.cells[pid];
+            gsap.fromTo(cel,
+              { opacity: 0, y: -60 },
+              { opacity: 1, y: 0, duration: .75, ease: 'bounce.out',
+                delay: i * 0.08,
+                onComplete: function() {
+                  if (cd.counter) {
+                    var valEl = document.getElementById('val-' + row.id + '-' + pid);
+                    if (valEl) countUp(valEl, parseInt(cd.val), 700);
+                  }
+                }
+              });
+          });
+        }
+      });
+      mobileTriggers.push(st);
+    });
+  } else if (isMobile && reduced) {
+    /* Reduced motion: show everything immediately, no scroll triggers */
+    document.querySelectorAll('.p-cell').forEach(function(c) { c.style.opacity = '1'; });
+    if (lateEl) lateEl.classList.add('in');
+  }
+
+  /* ── Cleanup for replay() ── */
+  return function cleanup() {
+    mobileTriggers.forEach(function(t) { try { t.kill(); } catch(e){} });
+    lpTriggers.forEach(function(t) { try { t.kill(); } catch(e){} });
+    if (lateEl) lateEl.classList.remove('in');
+    if (ph) ph.classList.remove('lit');
+    if (traceFill) traceFill.style.height = '0%';
+  };
+}
+
+
+/* Animate chart header portrait faces in when header enters viewport */
+function setupFaceTransition() {
+  ScrollTrigger.create({
+    id:'face-transition',
+    trigger:'#table-header',
+    start:'top 90%',
+    once:true,
+    onEnter:function(){
+      PLAYERS.forEach(function(p,idx){
+        const faceDiv=document.querySelector('#phead-'+p.id+' .pring-face');
+        const initial=document.querySelector('#phead-'+p.id+' .initials');
+        if(faceDiv) gsap.fromTo(faceDiv,{opacity:0,y:-20},{opacity:1,y:0,duration:0.35,ease:'power2.out',delay:idx*0.07});
+        if(initial) gsap.to(initial,{opacity:0,duration:0.2,delay:idx*0.07});
+      });
+    }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   CHART SUMMARY — renders a condensed highlight-only grid between the
+   chart and the vote section. Portraits on top, below them one dot per
+   chart-cell where the cell's color is gold/strong/deep/red. Empty cells
+   render as faint outlines so the shape of the chart is implied without
+   the text. Triggers on viewport enter; reverses when scrolled back up.
+───────────────────────────────────────────── */
+
+/* Map chart's color classes → summary's dot classes. Only "memorable" hits
+   get a colored dot; cg-faint/cg-mid are deemphasized so gold payoffs pop. */
+const SUMMARY_COLOR_MAP = {
+  'cg-gold':   'is-gold',
+  'cg-deep':   'is-deep',
+  'cg-strong': 'is-strong',
+  'cg-mid':    'is-mid',
+  'cg-faint':  'is-faint',
+  'cr-deep':   'is-red',
+};
+
+function renderChartSummary() {
+  const portraitsEl = document.getElementById('csum-portraits');
+  const gridEl      = document.getElementById('csum-grid');
+  if (!portraitsEl || !gridEl) return;
+
+  /* ── Portraits row ── */
+  portraitsEl.innerHTML = '';
+  PLAYERS.forEach(function(p) {
+    const wrap = document.createElement('div');
+    wrap.className = 'csum-portrait';
+    wrap.id = 'csum-portrait-' + p.id;
+    const faceHtml = window._buildFace ? window._buildFace(p.id) : '';
+    wrap.innerHTML =
+      '<div class="csum-portrait-ring" style="background:' + p.bg +
+      ';border-color:' + p.accent + 'AA;">' + faceHtml + '</div>' +
+      '<div class="csum-portrait-name">' + (p.name || p.id) + '</div>';
+    portraitsEl.appendChild(wrap);
+  });
+
+  /* ── Highlight grid: one row per chart row, 5 cols (player order matches
+        the header). A cell gets a colored dot only if its color is mapped
+        above; otherwise it's a faint empty outline. ── */
+  gridEl.innerHTML = '';
+  ROWS.forEach(function(row) {
+    PLAYERS.forEach(function(p) {
+      const cd = row.cells[p.id];
+      const cel = document.createElement('div');
+      cel.className = 'csum-cell';
+      cel.setAttribute('data-pid', p.id);
+      cel.setAttribute('data-row', row.id);
+      const mapped = cd && cd.color && SUMMARY_COLOR_MAP[cd.color];
+      if (mapped) cel.classList.add(mapped);
+      else cel.classList.add('empty');
+      gridEl.appendChild(cel);
+    });
+  });
+}
+
+function setupChartSummaryInView() {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const section = document.getElementById('chart-summary');
+  if (!section) return function(){};
+
+  const portraits = Array.from(section.querySelectorAll('.csum-portrait'));
+  const cells     = Array.from(section.querySelectorAll('.csum-cell'));
+  const highlightCells = cells.filter(function(c){ return !c.classList.contains('empty'); });
+  const emptyCells     = cells.filter(function(c){ return c.classList.contains('empty'); });
+
+  /* Find the matching chart cell (by row + pid) for a summary cell. */
+  function chartCellFor(summaryCell) {
+    const rowId = summaryCell.getAttribute('data-row');
+    const pid   = summaryCell.getAttribute('data-pid');
+    return document.getElementById('cell-' + rowId + '-' + pid);
+  }
+
+  /* ── FLIP travel (desktop) ──
+     For each highlight summary cell, read its current box + the matching
+     chart cell's box, compute the delta, set the summary cell's transform
+     to "starts at chart origin" (via CSS custom props), then flip .in on to
+     animate transform:0. The chart cell simultaneously dims, so it feels
+     handed off rather than duplicated.                                    */
+  function flightActivate() {
+    /* Reset any stale state first */
+    cells.forEach(function(c){
+      c.classList.remove('in','flight');
+      c.style.transform = '';
+      c.style.transition = '';
+    });
+    portraits.forEach(function(p){
+      p.classList.remove('in','landed');
+      p.style.transform = '';
+      p.style.transition = '';
+    });
+
+    /* ── Portraits FLIP: each summary portrait starts at its chart-header
+       counterpart's position (if visible in DOM), then flies + lands with
+       a subtle vertical bounce. If the chart header isn't measurable, fall
+       back to a quick drop so nothing stalls. ── */
+    const portraitFlight = portraits.map(function(p) {
+      const pid = p.id.replace('csum-portrait-', '');
+      const src = document.getElementById('phead-' + pid);
+      if (!src) return { p: p, ok: false };
+      const pRect = p.getBoundingClientRect();
+      const sRect = src.getBoundingClientRect();
+      const dx = sRect.left + sRect.width/2  - (pRect.left + pRect.width/2);
+      const dy = sRect.top  + sRect.height/2 - (pRect.top  + pRect.height/2);
+      const scale = Math.max(.8, Math.min(3, sRect.width / Math.max(1, pRect.width)));
+      return { p: p, ok: true, dx: dx, dy: dy, scale: scale };
+    });
+
+    portraitFlight.forEach(function(pf) {
+      if (!pf.ok) return;
+      pf.p.style.transition = 'none';
+      pf.p.style.transform = 'translate(' + pf.dx.toFixed(1) + 'px,' + pf.dy.toFixed(1) + 'px) scale(' + pf.scale.toFixed(3) + ')';
+      pf.p.style.opacity = '1';
+    });
+
+    void section.offsetWidth;
+
+    portraitFlight.forEach(function(pf, i) {
+      const delay = i * 70;
+      setTimeout(function(){
+        if (pf.ok) {
+          /* Fly to resting spot, THEN add .landed for the bounce keyframe */
+          pf.p.style.transition = 'transform .65s cubic-bezier(.22,.9,.25,1), opacity .4s ease';
+          pf.p.style.transform = '';
+          pf.p.classList.add('in');
+          setTimeout(function(){ pf.p.classList.add('landed'); }, 620);
+        } else {
+          pf.p.classList.add('in');
+          setTimeout(function(){ pf.p.classList.add('landed'); }, 550);
+        }
+      }, delay);
+    });
+
+    const PORTRAIT_DELAY = portraits.length * 70 + 120;
+
+    /* Pre-measure chart cell rects once so layout thrash is minimal */
+    const flightData = highlightCells.map(function(sc){
+      const chartCell = chartCellFor(sc);
+      if (!chartCell) return null;
+      const scRect = sc.getBoundingClientRect();
+      const ccRect = chartCell.getBoundingClientRect();
+      const dx = ccRect.left + ccRect.width/2  - (scRect.left + scRect.width/2);
+      const dy = ccRect.top  + ccRect.height/2 - (scRect.top  + scRect.height/2);
+      const sx = ccRect.width  / Math.max(1, scRect.width);
+      const sy = ccRect.height / Math.max(1, scRect.height);
+      /* Clamp scale so off-screen giants don't break layout, but keep
+         enough range that you can SEE the shrink during flight. */
+      const sc_scale = Math.max(1.2, Math.min(3.2, (sx + sy) / 2));
+      return { sc: sc, chartCell: chartCell, dx: dx, dy: dy, scale: sc_scale };
+    }).filter(Boolean);
+
+    /* Place each summary cell AT its chart-cell origin */
+    flightData.forEach(function(d) {
+      d.sc.style.transition = 'none';
+      d.sc.style.transform = 'translate(' + d.dx.toFixed(1) + 'px,' + d.dy.toFixed(1) + 'px) scale(' + d.scale.toFixed(3) + ')';
+      d.sc.classList.add('flight');
+    });
+
+    void section.offsetWidth;
+
+    /* Release: animate transform back to 0 with a brisk shrink + slide home */
+    flightData.forEach(function(d, i){
+      const delay = PORTRAIT_DELAY + i * 55;
+      setTimeout(function(){
+        d.sc.style.transition = 'transform .7s cubic-bezier(.22,.9,.25,1), opacity .45s ease';
+        d.sc.style.transform = '';
+        d.sc.classList.add('in');
+        /* Briefly flash the donor chart cell, then dim it — even if the
+           chart is off-screen, any visible tail-row gives viewers a cue. */
+        if (d.chartCell) {
+          d.chartCell.classList.add('csum-flash');
+          setTimeout(function(){
+            if (d.chartCell) {
+              d.chartCell.classList.remove('csum-flash');
+              d.chartCell.classList.add('csum-handed');
+            }
+          }, 180);
+        }
+      }, delay);
+    });
+
+    /* Empty cells fade in after highlights have mostly landed */
+    const emptyStart = PORTRAIT_DELAY + flightData.length * 55 + 180;
+    emptyCells.forEach(function(c, i){
+      setTimeout(function(){ c.classList.add('in'); }, emptyStart + i * 6);
+    });
+  }
+
+  /* ── Mobile: simple fade-up, no flight (chart rows are full-width on
+        mobile so flying dots from them is visually confusing). ── */
+  function mobileActivate() {
+    portraits.forEach(function(p, i) {
+      setTimeout(function(){ p.classList.add('in'); }, i * 50);
+    });
+    const START = portraits.length * 50 + 60;
+    highlightCells.forEach(function(c, i){
+      setTimeout(function(){ c.classList.add('in'); }, START + i * 50);
+    });
+    const EMPTY_START = START + highlightCells.length * 50 + 120;
+    emptyCells.forEach(function(c, i){
+      setTimeout(function(){ c.classList.add('in'); }, EMPTY_START + i * 6);
+    });
+  }
+
+  function activate() {
+    if (isMobile || reduced) mobileActivate();
+    else flightActivate();
+  }
+
+  function deactivate() {
+    portraits.forEach(function(p){
+      p.classList.remove('in','landed');
+      p.style.transition = '';
+      p.style.transform = '';
+      p.style.opacity = '';
+    });
+    cells.forEach(function(c){
+      c.classList.remove('in','flight');
+      c.style.transition = '';
+      c.style.transform = '';
+    });
+    document.querySelectorAll('.p-cell.csum-handed, .p-cell.csum-flash').forEach(function(cc){
+      cc.classList.remove('csum-handed','csum-flash');
+    });
+  }
+
+  if (reduced) {
+    activate();
+    return function cleanup() { deactivate(); };
+  }
+
+  const st = ScrollTrigger.create({
+    id: 'chart-summary',
+    trigger: section,
+    start: 'top 100%',   /* fire as summary enters bottom of viewport */
+    end:   'bottom 25%',
+    onEnter:     activate,
+    onLeaveBack: deactivate,
+    onEnterBack: activate,
+  });
+
+  return function cleanup() {
+    try { st.kill(); } catch(e){}
+    deactivate();
+  };
+}
+
+
+window.replay = function() {
+  if(window._chartCleanup) window._chartCleanup(); /* resets chart section before killing STs */
+  if(window._voteReset)   window._voteReset();
+  ScrollTrigger.getAll().forEach(t=>t.kill());
+  document.querySelectorAll('.p-cell').forEach(c=>{c.className='p-cell';c.style.cssText='';gsap.set(c,{opacity:1,clearProps:'y,clipPath,borderColor,boxShadow'});});
+  document.querySelectorAll('.cell-flavor').forEach(f=>f.style.opacity='0');
+  document.querySelectorAll('.cell-late-label').forEach(l=>l.classList.remove('in'));
+  document.querySelectorAll('.cat-title-el').forEach(t=>t.innerHTML='');
+  document.querySelectorAll('.cat-row').forEach(r=>r.classList.remove('dotted'));
+  document.querySelectorAll('.player-head').forEach(h=>h.classList.remove('lit'));
+  document.querySelectorAll('.pring-face').forEach(f=>f.style.opacity='0');
+  document.querySelectorAll('.portrait-ring .initials').forEach(i=>i.style.opacity='');
+  if(window._introReset) window._introReset();
+  if(window._heroShowInitial) window._heroShowInitial();
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>{
+    if(window._heroReset) window._heroReset();
+    window._chartCleanup = setupChartInView();
+    if(window._chartSummaryCleanup) window._chartSummaryCleanup();
+    window._chartSummaryCleanup = setupChartSummaryInView();
+    setupFaceTransition();
+    if(window._introReinit) window._introReinit();
+    ScrollTrigger.refresh();
+  },400);
+};
+
+window.addEventListener('load',()=>{
+  renderTable();
+  renderChartSummary();
+  window._chartCleanup = setupChartInView();
+  window._chartSummaryCleanup = setupChartSummaryInView();
+  setupFaceTransition();
+  setTimeout(()=>{
+    ScrollTrigger.refresh();
+    if(window.__scrollToVote){
+      window.__scrollToVote=false;
+      setTimeout(()=>{
+        var el=document.getElementById('vote-section');
+        if(el) window.scrollTo({top:el.offsetTop,behavior:'smooth'});
+      },100);
+    }
+  },400);
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.replay();});
+
+})();
+</script>
+
+<!-- ── 04 VOTE JS ── -->
+<script>
+;(function() {
+
+  var isKiosk = new URLSearchParams(location.search).get('kiosk') === '1';
+  var sessionStore = isKiosk ? localStorage : sessionStorage;
+
+  var VOTE_PLAYERS = [
+    { id:'rivers',    name:'Philip Rivers',   primary:'#002A5E', accent:'#FFB612' },
+    { id:'alexander', name:'Shaun Alexander',  primary:'#002244', accent:'#69BE28' },
+    { id:'payton',    name:'Walter Payton',    primary:'#0B1F4E', accent:'#E87722' },
+    { id:'page',      name:'Alan Page',        primary:'#3D1E6B', accent:'#B5985A' },
+    { id:'brady',     name:'Tom Brady',        primary:'#001840', accent:'#C8102E' },
+  ];
+
+  /* PNGs, not SVGs — these player SVGs ship without internal <style>
+     blocks or fill attributes, so they render as black silhouettes when
+     loaded via <img src>. The PNG versions are the fully-colored art.
+     (Same fix class as the tom-brady-shocked / crown swap earlier.) */
+  var STICKER_ASSETS = {
+    rivers:    'Assets/phillip-rivers.png',
+    alexander: 'Assets/shaun-alexander.png',
+    payton:    'Assets/walter-payton.png',
+    page:      'Assets/alan-page.png',
+    brady:     'Assets/tom-brady-crownless.png',
+  };
+
+  // ── State ──
+  var voteState    = 'vote'; // 'vote' | 'celebration' | 'results'
+  var chosenPlayer = null;
+  var celebTimer = null, inactivityTimer = null;
+
+  // ── DOM refs ──
+  var section   = document.getElementById('vote-section');
+  var voteEl    = section.querySelector('.vote-state');
+  var celebEl   = section.querySelector('.celebration-state');
+  var resultsEl = section.querySelector('.results-state');
+
+  // ── localStorage / sessionStorage helpers ──
+  function getVotes() {
+    try { return JSON.parse(localStorage.getItem('goat_votes') || '{}'); } catch(e) { return {}; }
+  }
+  function writeVote(pid) {
+    var v = getVotes();
+    v[pid] = (v[pid] || 0) + 1;
+    localStorage.setItem('goat_votes', JSON.stringify(v));
+    /* SUPABASE: await supabase.from('votes').rpc('increment_vote', { player_id: pid }) */
+  }
+  function getSession() {
+    try { return JSON.parse(sessionStore.getItem('goat_session') || 'null'); } catch(e) { return null; }
+  }
+  function setSession(data) { sessionStore.setItem('goat_session', JSON.stringify(data)); }
+  function clearSession()   { sessionStore.removeItem('goat_session'); }
+
+  // ── Build vote cards (circle + grid) ──
+  function buildVoteCards() {
+    var circleWrap = section.querySelector('.vote-orbit-wrap');
+    var gridWrap   = section.querySelector('.vote-grid');
+    /* Remove only previously-built cards — preserve the persistent orbit
+       children (.vote-orbit-center and #vote-center-preview) which live
+       in the source markup and are referenced by setupCenterPreview. */
+    circleWrap.querySelectorAll('.vote-card-orbit').forEach(function(el){ el.remove(); });
+    gridWrap.innerHTML = '';
+
+    VOTE_PLAYERS.forEach(function(p, i) {
+      // Grid card
+      var gc = document.createElement('div');
+      gc.className = 'vote-card vote-card-grid';
+      gc.dataset.pid = p.id;
+      gc.style.setProperty('--vote-accent', p.accent);
+      var gr = document.createElement('div');
+      gr.className = 'vote-face-ring';
+      gr.style.cssText = 'border-color:' + p.accent + '88;background:#07090C;';
+      if (window._buildFace) gr.innerHTML = window._buildFace(p.id);
+      var gn = document.createElement('div');
+      gn.className   = 'vote-card-name';
+      gn.textContent = p.name.split(' ').slice(-1)[0];
+      gc.appendChild(gr);
+      gc.appendChild(gn);
+      gc.addEventListener('click', (function(pid){ return function(){ handleVoteClick(pid); }; })(p.id));
+      gridWrap.appendChild(gc);
+
+      // Circle card (absolutely positioned by positionCircleCards)
+      var cc = document.createElement('div');
+      cc.id        = 'vote-card-' + p.id;
+      cc.className = 'vote-card vote-card-orbit';
+      cc.dataset.pid = p.id;
+      cc.style.setProperty('--vote-accent', p.accent);
+      var cr = document.createElement('div');
+      cr.className = 'vote-face-ring';
+      cr.style.cssText = 'border-color:' + p.accent + '88;background:#07090C;';
+      if (window._buildFace) cr.innerHTML = window._buildFace(p.id);
+      var cn = document.createElement('div');
+      cn.className   = 'vote-card-name';
+      cn.textContent = p.name.split(' ').slice(-1)[0];
+      cc.appendChild(cr);
+      cc.appendChild(cn);
+      cc.addEventListener('click', (function(pid){ return function(){ handleVoteClick(pid); }; })(p.id));
+      circleWrap.appendChild(cc);
+    });
+    setupCenterPreview();
+    // positionCircleCards called after load via rAF — not here
+  }
+
+  function setupCenterPreview() {
+    var preview     = document.getElementById('vote-center-preview');
+    var previewImg  = document.getElementById('vote-preview-img');
+    if (!preview || !previewImg) return;
+
+    /* Map each player to their large hero illustration — on hover, the
+       corresponding portrait swaps into the orbit's center with an
+       accent-colored radial glow. Brady gets the "shocked" variant to
+       reinforce the overall gag. */
+    var HOVER_IMG = {
+      brady:     'Assets/tom-brady-shocked.png',
+      rivers:    'Assets/phillip-rivers.png',
+      alexander: 'Assets/shaun-alexander.png',
+      page:      'Assets/alan-page.png',
+      payton:    'Assets/walter-payton.png',
+    };
+
+    var orbitCards = section.querySelectorAll('.vote-card-orbit');
+    orbitCards.forEach(function(card) {
+      var pid = card.dataset.pid;
+      var p   = VOTE_PLAYERS.find(function(pl){ return pl.id === pid; });
+
+      card.addEventListener('mouseenter', function() {
+        if (voteState !== 'vote' || !p) return;
+        var src = HOVER_IMG[pid];
+        if (!src) return;
+        previewImg.src = src;
+        previewImg.alt = p.name;
+        preview.style.setProperty('--preview-accent', p.accent);
+        preview.classList.add('visible');
+      });
+
+      card.addEventListener('mouseleave', function() {
+        preview.classList.remove('visible');
+      });
+    });
+  }
+
+  var _circleResizeTimer = null;
+
+  function positionCircleCards() {
+    var container  = section.querySelector('.vote-orbit-wrap');
+    var headlineEl = section.querySelector('.vote-header');
+    if (!container || !headlineEl) return;
+
+    var availH = window.innerHeight - headlineEl.offsetHeight - 60;
+    container.style.width    = '100%';
+    container.style.height   = availH + 'px';
+    container.style.position = 'relative';
+
+    /* Card size tuned so portraits never crowd the center preview image.
+       Radius picks from min of horiz/vert half minus half a card minus a
+       generous gap — guarantees the preview region stays visually clear. */
+    var cardSize = Math.round(Math.min(Math.max(window.innerWidth * 0.12, 140), 190));
+    var cx       = container.offsetWidth  / 2;
+    var cy       = container.offsetHeight / 2;
+    /* Center preview takes up ~clamp(240px, 36vmin, 460px); the orbit must
+       clear that with a ~40px gutter. Compute dynamically rather than
+       capping at 300 so the orbit expands on tall/wide viewports. */
+    var previewHalf = Math.min(230, Math.min(cx, cy) * 0.36);
+    var minRadius   = previewHalf + cardSize / 2 + 40;
+    var maxRadius   = Math.min(cx, cy) - cardSize / 2 - 10;
+    var radius      = Math.round(Math.max(minRadius, Math.min(maxRadius, Math.min(cx, cy) * 0.72)));
+
+    VOTE_PLAYERS.forEach(function(p, i) {
+      var angle = (2 * Math.PI / VOTE_PLAYERS.length) * i - Math.PI / 2;
+      var x     = cx + radius * Math.cos(angle) - cardSize / 2;
+      var y     = cy + radius * Math.sin(angle) - cardSize / 2;
+      var card  = document.getElementById('vote-card-' + p.id);
+      if (!card) return;
+      card.style.position  = 'absolute';
+      card.style.left      = x + 'px';
+      card.style.top       = y + 'px';
+      card.style.width     = cardSize + 'px';
+      card.style.height    = cardSize + 'px';
+      card.style.transform = 'none'; // no rotation — faces stay upright
+
+      var ring = card.querySelector('.vote-face-ring');
+      if (ring) { ring.style.width = cardSize + 'px'; ring.style.height = cardSize + 'px'; }
+    });
+  }
+
+  // ── Vote click handler ──
+  function handleVoteClick(pid) {
+    if (voteState !== 'vote') return;
+
+    if (pid === 'brady') {
+      if (window.dataLayer) window.dataLayer.push({ event: 'brady_click', section: 'vote' });
+      window.location.href = 'https://riversgoat.com';
+      return;
+    }
+
+    writeVote(pid);
+    setSession({ voted: true, choice: pid });
+    chosenPlayer = pid;
+    transitionTo('celebration');
+  }
+
+  // ── State machine ──
+  function transitionTo(state) {
+    voteState = state;
+    voteEl.classList.remove('active');
+    celebEl.classList.remove('active');
+    resultsEl.classList.remove('active');
+
+    if (state === 'vote') {
+      voteEl.classList.add('active');
+    } else if (state === 'celebration') {
+      buildCelebration();
+      celebEl.classList.add('active');
+    } else if (state === 'results') {
+      buildResults();
+      resultsEl.classList.add('active');
+      if (isKiosk) startInactivity();
+    }
+  }
+
+  // ── Celebration state ──
+  /* Builds the reveal moment after a user votes. Design goals:
+     - No tap-hint text: a hairline timer bar at the bottom shows progress
+     - On sticker landing, a radial accent-color sweep pulses from behind it,
+       and ~30 tiny accent-colored particles burst outward briefly
+     - The player's name cascades in letter-by-letter with a small overshoot
+       ("nameplate slam") instead of a plain fade
+     - A small counter ticks up showing "1 vote logged" (total count, from
+       localStorage) so the reveal feels like you contributed to a thing
+     - On desktop, the sticker gets a mousemove 3D tilt/parallax
+     - Tap anywhere still skips forward to results                          */
+  function buildCelebration() {
+    var p = VOTE_PLAYERS.find(function(pl){ return pl.id === chosenPlayer; });
+    if (!p) return;
+
+    celebEl.innerHTML = '';
+    gsap.set(celebEl, { opacity: 1 });
+
+    var wrap = document.createElement('div');
+    wrap.className = 'vote-celeb-wrap';
+
+    /* Radial sweep layer — sits BEHIND the sticker; a team-color ring
+       expands and fades out on landing. Two cycles = ripple effect. */
+    var sweep = document.createElement('div');
+    sweep.className = 'celeb-sweep';
+    sweep.style.setProperty('--accent', p.accent);
+
+    var sticker = document.createElement('div');
+    sticker.className = 'sticker-placeholder celeb-sticker-el';
+    sticker.id = 'celeb-sticker';
+    sticker.style.cssText = 'box-shadow:0 0 60px ' + p.accent + '55;background:none;';
+    sticker.innerHTML = '<img src="' + (STICKER_ASSETS[p.id]||'') + '" alt="' + p.id + '" style="width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;">';
+
+    /* Particle container — populated on landing */
+    var particles = document.createElement('div');
+    particles.className = 'celeb-particles';
+    particles.id = 'celeb-particles';
+
+    /* Sticker shell wraps sweep + sticker + particles so the 3D tilt
+       applies to the whole composed moment, not just the image */
+    var stickerShell = document.createElement('div');
+    stickerShell.className = 'celeb-sticker-shell';
+    stickerShell.id = 'celeb-sticker-shell';
+    stickerShell.appendChild(sweep);
+    stickerShell.appendChild(sticker);
+    stickerShell.appendChild(particles);
+
+    /* Name: each letter gets its own span for the cascade slam-in */
+    var celebName = document.createElement('div');
+    celebName.className   = 'vote-celeb-name';
+    celebName.id          = 'celeb-name';
+    var letters = p.name.split('');
+    letters.forEach(function(ch) {
+      var sp = document.createElement('span');
+      sp.className = 'celeb-letter';
+      sp.textContent = ch === ' ' ? '\u00A0' : ch;
+      celebName.appendChild(sp);
+    });
+
+    /* Vote counter — shows total votes for this player after writeVote
+       has run (it runs in handleVote before transitionTo('celebration')) */
+    var counter = document.createElement('div');
+    counter.className = 'celeb-counter';
+    counter.id = 'celeb-counter';
+    var countNum = document.createElement('span');
+    countNum.className = 'celeb-counter-num';
+    countNum.id = 'celeb-counter-num';
+    countNum.textContent = '0';
+    var countLabel = document.createElement('span');
+    countLabel.className = 'celeb-counter-label';
+    countLabel.textContent = 'vote' + (0 === 1 ? '' : 's') + ' for ' + p.name.split(' ').slice(-1)[0];
+    counter.appendChild(countNum);
+    counter.appendChild(document.createTextNode(' '));
+    counter.appendChild(countLabel);
+
+    /* Timer bar — hairline at bottom of the wrap, fills over the auto-advance
+       duration. Replaces the "tap to continue" text. */
+    var timer = document.createElement('div');
+    timer.className = 'celeb-timer';
+    var timerFill = document.createElement('div');
+    timerFill.className = 'celeb-timer-fill';
+    timerFill.id = 'celeb-timer-fill';
+    timerFill.style.background = p.accent;
+    timer.appendChild(timerFill);
+
+    wrap.appendChild(stickerShell);
+    wrap.appendChild(celebName);
+    wrap.appendChild(counter);
+    wrap.appendChild(timer);
+    celebEl.appendChild(wrap);
+
+    /* ── Initial states ── */
+    gsap.set(stickerShell, { y: '-110vh' });
+    gsap.set(celebName.querySelectorAll('.celeb-letter'),
+             { opacity: 0, y: -30, rotateX: -60 });
+    gsap.set(counter,  { opacity: 0 });
+    gsap.set(timerFill, { scaleX: 0, transformOrigin: 'left center' });
+
+    /* ── Timeline ── */
+    var tl = gsap.timeline();
+
+    /* 1. Sticker drops in from above */
+    tl.to(stickerShell, { y: 0, duration: 0.65, ease: 'expo.out' }, 0)
+      /* 2. Landing bounce */
+      .to(sticker, { scale: 1.08, duration: 0.1, ease: 'power2.out' }, 0.58)
+      .to(sticker, { scale: 1.0,  duration: 0.22, ease: 'power2.inOut' }, 0.68);
+
+    /* 3. On landing: trigger sweep + particles (CSS-driven, added via class) */
+    tl.add(function(){
+      sweep.classList.add('burst');
+      spawnCelebParticles(particles, p.accent);
+    }, 0.58);
+
+    /* 4. Name letters slam in (cascade, 30ms apart, slight overshoot) */
+    tl.to(celebName.querySelectorAll('.celeb-letter'),
+          { opacity: 1, y: 0, rotateX: 0,
+            duration: 0.5, ease: 'back.out(2.2)',
+            stagger: 0.03 },
+          0.55);
+
+    /* 5. Counter fades in + ticks up AFTER the name lands */
+    var totalVotes = (getVotes()[p.id]) || 1;
+    tl.to(counter, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 1.15);
+    tl.add(function(){
+      countLabel.textContent = 'vote' + (totalVotes === 1 ? '' : 's') + ' for ' + p.name.split(' ').slice(-1)[0];
+      tickCounter(countNum, totalVotes, 800);
+    }, 1.15);
+
+    /* 6. Timer bar fills over the auto-advance window */
+    var AUTO_MS = 3400;
+    tl.to(timerFill, { scaleX: 1, duration: AUTO_MS / 1000, ease: 'none' }, 0.9);
+
+    if (celebTimer) clearTimeout(celebTimer);
+    celebTimer = setTimeout(advanceCelebration, AUTO_MS + 900);
+
+    /* Tap anywhere to skip forward */
+    function onCelebClick() {
+      celebEl.removeEventListener('click', onCelebClick);
+      if (voteState === 'celebration') advanceCelebration();
+    }
+    celebEl.addEventListener('click', onCelebClick);
+
+    /* Desktop: 3D tilt on mouse move inside the sticker shell */
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      var rect = null;
+      function onMove(e) {
+        if (!rect) rect = stickerShell.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width;   // 0..1
+        var py = (e.clientY - rect.top)  / rect.height;  // 0..1
+        var rx = (0.5 - py) * 14;   // tilt up/down
+        var ry = (px - 0.5) * 14;   // tilt left/right
+        stickerShell.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+        stickerShell.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+      }
+      function onLeave() {
+        rect = null;
+        stickerShell.style.setProperty('--rx', '0deg');
+        stickerShell.style.setProperty('--ry', '0deg');
+      }
+      function onEnter() { rect = stickerShell.getBoundingClientRect(); }
+      stickerShell.addEventListener('mouseenter', onEnter);
+      stickerShell.addEventListener('mousemove',  onMove);
+      stickerShell.addEventListener('mouseleave', onLeave);
+    }
+  }
+
+  /* Spawn ~28 tiny accent-colored particles bursting radially from center.
+     Particles use CSS custom props for per-particle angle + distance so the
+     animation is entirely CSS-driven after spawn (cheap). */
+  function spawnCelebParticles(container, color) {
+    container.innerHTML = '';
+    var N = 28;
+    for (var i = 0; i < N; i++) {
+      var ang  = (Math.random() * Math.PI * 2);
+      var dist = 90 + Math.random() * 140;    // px
+      var size = 3 + Math.random() * 4;       // px
+      var dx   = Math.cos(ang) * dist;
+      var dy   = Math.sin(ang) * dist;
+      var d = document.createElement('span');
+      d.className = 'celeb-particle';
+      d.style.setProperty('--dx', dx.toFixed(1) + 'px');
+      d.style.setProperty('--dy', dy.toFixed(1) + 'px');
+      d.style.setProperty('--sz', size.toFixed(1) + 'px');
+      d.style.setProperty('--dur', (0.55 + Math.random() * 0.35).toFixed(2) + 's');
+      d.style.setProperty('--delay', (Math.random() * 0.08).toFixed(2) + 's');
+      d.style.background = color;
+      container.appendChild(d);
+    }
+  }
+
+  /* Tick a number element from 0 → target over ms, integer frames */
+  function tickCounter(el, target, ms) {
+    var start = performance.now();
+    function step(now) {
+      var t = Math.min(1, (now - start) / ms);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(target * eased).toLocaleString();
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function advanceCelebration() {
+    if (voteState !== 'celebration') return;
+    if (celebTimer) { clearTimeout(celebTimer); celebTimer = null; }
+
+    var shell = document.getElementById('celeb-sticker-shell');
+    var tl = gsap.timeline({ onComplete: function(){ transitionTo('results'); } });
+    if (shell) tl.to(shell, { y: '-50vh', scale: 0.32, duration: 0.5, ease: 'power3.in' }, 0);
+    tl.to(celebEl, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 0.15);
+  }
+
+  // ── Results state ──
+  function buildResults() {
+    var p = VOTE_PLAYERS.find(function(pl){ return pl.id === chosenPlayer; });
+    if (!p) return;
+
+    var votes = getVotes();
+    /* SUPABASE: const { data } = await supabase.from('votes').select('*') — merge with localStorage totals */
+
+    resultsEl.innerHTML = '';
+    gsap.set(resultsEl, { opacity: 0 });
+
+    // Top sticker (chosen player)
+    var stickerTop = document.createElement('div');
+    stickerTop.className = 'vote-results-sticker-top';
+    var stickerEl = document.createElement('div');
+    stickerEl.className = 'sticker-placeholder';
+    stickerEl.style.cssText = 'box-shadow:0 0 40px ' + p.accent + '44;background:none;';
+    stickerEl.innerHTML = '<img src="' + (STICKER_ASSETS[p.id]||'') + '" alt="' + p.id + '" style="width:100%;height:100%;object-fit:contain;display:block;">';
+    var stickerLabel = document.createElement('div');
+    stickerLabel.className   = 'vote-results-sticker-name';
+    stickerLabel.textContent = 'Your vote';
+    stickerTop.appendChild(stickerEl);
+    stickerTop.appendChild(stickerLabel);
+    resultsEl.appendChild(stickerTop);
+
+    // Leaderboard: non-Brady sorted desc, Brady pinned last
+    var nonBrady = VOTE_PLAYERS.filter(function(pl){ return pl.id !== 'brady'; })
+      .slice().sort(function(a, b){ return (votes[b.id] || 0) - (votes[a.id] || 0); });
+    var brady  = VOTE_PLAYERS.find(function(pl){ return pl.id === 'brady'; });
+    var ranked = nonBrady.concat([brady]);
+    var maxVotes = Math.max.apply(null, nonBrady.map(function(pl){ return votes[pl.id] || 0; }).concat([1]));
+
+    var lb = document.createElement('div');
+    lb.className = 'vote-leaderboard';
+
+    ranked.forEach(function(pl, idx) {
+      var row = document.createElement('div');
+      row.className = 'vote-lb-row';
+      row.id = 'vote-lb-row-' + pl.id;
+
+      // Face
+      var faceWrap = document.createElement('div');
+      faceWrap.className = 'vote-lb-face';
+      if (window._buildFace) faceWrap.innerHTML = window._buildFace(pl.id);
+
+      // Info column
+      var info = document.createElement('div');
+      info.className = 'vote-lb-info';
+
+      var nameRow = document.createElement('div');
+      nameRow.className = 'vote-lb-name-row';
+
+      var nameEl = document.createElement('span');
+      nameEl.className   = 'vote-lb-name';
+      nameEl.textContent = pl.name.split(' ').slice(-1)[0];
+      nameRow.appendChild(nameEl);
+
+      if (pl.id === chosenPlayer) {
+        var pill = document.createElement('span');
+        pill.className    = 'vote-lb-pill';
+        pill.textContent  = 'Your Vote';
+        pill.style.cssText = 'background:' + pl.accent + ';color:#fff;';
+        nameRow.appendChild(pill);
+      }
+      info.appendChild(nameRow);
+
+      // Vote bar
+      var barTrack = document.createElement('div');
+      barTrack.className = 'vote-bar-track';
+      var barFill = document.createElement('div');
+      barFill.className  = 'vote-bar-fill';
+      barFill.id         = 'vote-bar-' + pl.id;
+      barFill.style.background = pl.accent;
+      barTrack.appendChild(barFill);
+      info.appendChild(barTrack);
+
+      // Count
+      var countEl = document.createElement('div');
+      countEl.className   = 'vote-lb-count';
+      countEl.textContent = pl.id === 'brady' ? '0' : (votes[pl.id] || 0);
+
+      row.appendChild(faceWrap);
+      row.appendChild(info);
+      row.appendChild(countEl);
+      lb.appendChild(row);
+    });
+
+    resultsEl.appendChild(lb);
+
+    // Reset button (kiosk only)
+    var resetBtn = document.createElement('button');
+    resetBtn.className   = 'vote-reset-btn' + (isKiosk ? ' visible' : '');
+    resetBtn.textContent = 'Reset for next person ↺';
+    resetBtn.addEventListener('click', doReset);
+    resultsEl.appendChild(resetBtn);
+
+    // Animate section and rows in
+    gsap.to(resultsEl, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+
+    ranked.forEach(function(pl, idx) {
+      var row = document.getElementById('vote-lb-row-' + pl.id);
+      if (!row) return;
+      gsap.to(row, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.3 + idx * 0.06 });
+
+      if (pl.id !== 'brady') {
+        var pct = maxVotes > 0 ? (votes[pl.id] || 0) / maxVotes * 100 : 0;
+        var bar = document.getElementById('vote-bar-' + pl.id);
+        if (bar) gsap.to(bar, { width: pct + '%', duration: 0.6, ease: 'power2.out', delay: 0.35 + idx * 0.05 });
+      }
+    });
+  }
+
+  // ── Reset ──
+  function doReset() {
+    clearSession();
+    chosenPlayer = null;
+    stopInactivity();
+    if (celebTimer) { clearTimeout(celebTimer); celebTimer = null; }
+    transitionTo('vote');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Inactivity timer (kiosk only) ──
+  function resetInactivity() { stopInactivity(); startInactivity(); }
+  function startInactivity() {
+    inactivityTimer = setTimeout(doReset, 60000);
+    ['touchstart','click','mousemove'].forEach(function(ev){
+      section.addEventListener(ev, resetInactivity, { passive: true });
+    });
+  }
+  function stopInactivity() {
+    if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+    ['touchstart','click','mousemove'].forEach(function(ev){
+      section.removeEventListener(ev, resetInactivity);
+    });
+  }
+
+
+  // ── Session restore on load ──
+  function initSession() {
+    // Web mode: clear session on every page load so refresh = new visitor
+    // Kiosk mode: session persists in localStorage across refresh intentionally
+    if (!isKiosk) sessionStorage.removeItem('goat_session');
+    var sess = getSession();
+    if (sess && sess.voted && sess.choice && !isKiosk) {
+      // Web: reload into results showing prior vote
+      chosenPlayer = sess.choice;
+      transitionTo('results');
+    } else {
+      transitionTo('vote');
+    }
+  }
+
+  // ── Expose reset so global replay() can call it ──
+  window._voteReset = function() {
+    clearSession();
+    chosenPlayer = null;
+    voteState  = 'vote';
+    stopInactivity();
+    if (celebTimer) { clearTimeout(celebTimer); celebTimer = null; }
+    gsap.set(celebEl,   { clearProps: 'opacity' });
+    gsap.set(resultsEl, { clearProps: 'opacity' });
+    voteEl.classList.add('active');
+    celebEl.classList.remove('active');
+    resultsEl.classList.remove('active');
+  };
+
+  // ── Init ──
+  function runCircleEntrance() {
+    positionCircleCards();
+    gsap.fromTo('.vote-card-orbit',
+      { opacity: 0, scale: 0.4 },
+      { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.4)',
+        stagger: 0.07, delay: 0.1 }
+    );
+  }
+
+  window.addEventListener('load', function() {
+    buildVoteCards();
+    initSession();
+
+    // Wait for all ScrollTriggers (hero, intro, chart) to finish initializing
+    ScrollTrigger.addEventListener('refresh', function onFirstRefresh() {
+      ScrollTrigger.removeEventListener('refresh', onFirstRefresh);
+      setTimeout(function() {
+        requestAnimationFrame(runCircleEntrance);
+      }, 100);
+    });
+
+    // Fallback: if refresh event already fired before listener registered
+    setTimeout(function() {
+      var cards = document.querySelectorAll('.vote-card-orbit');
+      var allVisible = Array.prototype.every.call(cards, function(c) {
+        return parseFloat(c.style.left) > 0;
+      });
+      if (!allVisible) runCircleEntrance();
+    }, 800);
+  });
+
+  window.addEventListener('resize', function() {
+    clearTimeout(_circleResizeTimer);
+    _circleResizeTimer = setTimeout(positionCircleCards, 80);
+  }, { passive: true });
+
+})();
+</script>
+
+<!-- ── ELEMENT TUNER (activate with ?tune=1) ── -->
+<script>
+;(function() {
+  if (new URLSearchParams(location.search).get('tune') !== '1') return;
+
+  window.addEventListener('load', function() {
+
+    // ── Kill scroll-pinning so entire page scrolls freely ──
+    if (window.ScrollTrigger) {
+      ScrollTrigger.getAll().forEach(function(st) { st.kill(); });
+    }
+    if (window._heroShowInitial) window._heroShowInitial();
+
+    var box = document.getElementById('illo-wrap');
+    if (!box) return;
+    box.style.overflow = 'visible';
+
+    // ── State machine ──
+    var currentStateId = null;
+    var active = null;
+    var TARGETS = [];   // active target list for current state
+    var dragSt = null, resizeSt = null, rotateSt = null;
+    // For illo-wrap special drag (tracks GSAP y/scale, not style.left/top)
+    var wrapDragSt = null;
+    var _wrapY = 55, _wrapScale = 1.32;
+
+    // ── Page states ──
+    var STATES = [
+      {
+        id: 'normal',
+        label: '🏈 Normal',
+        color: '#aaaaaa',
+        setup: function() {
+          scrollToHero();
+          if (window._heroShowInitial) window._heroShowInitial();
+          gsap.set('#crown-svg',  { opacity: 1, x: 0, y: 0, scale: 1, rotation: window.CROWN_ROT || -20.4 });
+          gsap.set('#hero-goat',  { opacity: 1, x: 0 });
+          gsap.set('#illo-wrap',  { y: 0, scale: 1, transformOrigin: '50% 28%' });
+          gsap.set('#subtext',    { opacity: 0 });
+          gsap.set('#line-bottom',{ y: 0 });
+          var bi = document.getElementById('hero-brady-img');
+          if (bi) bi.src = 'Assets/tom-brady.png';
+          if (window._positionCrown) window._positionCrown();
+          if (window._positionGoat)  window._positionGoat();
+        },
+        targets: [
+          { id: 'hero-brady-img', label: '🏈 Brady', color: '#aaaaaa', rotation: 0 },
+          { id: 'crown-svg',      label: '👑 Crown', color: '#FFB612', rotation: -20.4 },
+          { id: 'hero-goat',      label: '🐐 Goat',  color: '#00dd66', rotation: 0 },
+        ]
+      },
+      {
+        id: 'shocked',
+        label: '😱 Shocked',
+        color: '#ff6666',
+        setup: function() {
+          scrollToHero();
+          if (window._heroShowInitial) window._heroShowInitial();
+          var bi = document.getElementById('hero-brady-img');
+          if (bi) bi.src = 'Assets/tom-brady-shocked.png';
+          gsap.set('#hero-brady-img', { opacity: 1 });
+          gsap.set('#crown-svg',      { opacity: 0 });
+          gsap.set('#hero-goat',      { opacity: 0, x: 0 });
+          gsap.set('#subtext',        { opacity: 1 });
+          gsap.set('#line-bottom',    { y: 260 });
+          gsap.set('#illo-wrap',      { y: _wrapY, scale: _wrapScale, transformOrigin: '50% 28%' });
+        },
+        targets: [
+          { id: 'illo-wrap', label: '📦 Illo zoom', color: '#ff6666', isWrap: true },
+          { id: 'subtext',   label: '📝 Subtext',   color: '#88aaff', rotation: 0 },
+        ]
+      }
+    ];
+
+    // ── Utility ──
+    function scrollToHero() {
+      var h = document.getElementById('hero');
+      if (h) window.scrollTo({ top: h.offsetTop, behavior: 'smooth' });
+    }
+
+    function imgBounds() {
+      var img = document.getElementById('hero-brady-img');
+      if (!img || !img.naturalWidth) return null;
+      var cW = box.offsetWidth, cH = box.offsetHeight;
+      var iAR = img.naturalWidth / img.naturalHeight, cAR = cW / cH;
+      var rW, rH, oX, oY;
+      if (iAR > cAR) { rW=cW; rH=cW/iAR; oX=0; oY=(cH-rH)/2; }
+      else            { rH=cH; rW=cH*iAR; oX=(cW-rW)/2; oY=0; }
+      return { rW:rW, rH:rH, oX:oX, oY:oY };
+    }
+
+    // ── HUD ──
+    var hud = document.createElement('div');
+    hud.style.cssText = 'position:fixed;top:14px;right:14px;background:rgba(0,0,0,.94);color:#fff;font-family:monospace;font-size:12px;padding:14px 18px;border-radius:10px;z-index:99999;line-height:2;border:1px solid #444;min-width:260px;max-width:300px;';
+    document.body.appendChild(hud);
+
+    // ── Setup a state ──
+    function activateState(stateObj) {
+      // Tear down previous targets
+      TARGETS.forEach(function(t) {
+        if (t.el) { t.el.style.outline = ''; t.el.style.cursor = ''; }
+        if (t.rh) t.rh.remove();
+        if (t.oh) t.oh.remove();
+      });
+      TARGETS = [];
+      active = null;
+
+      currentStateId = stateObj.id;
+      stateObj.setup();
+
+      // Small delay so setup gsap.sets settle before we measure positions
+      setTimeout(function() {
+        stateObj.targets.forEach(function(def) {
+          var el = document.getElementById(def.id);
+          if (!el) return;
+          var t = { id: def.id, label: def.label, color: def.color,
+                    rotation: def.rotation || 0, isWrap: !!def.isWrap, el: el };
+
+          if (t.isWrap) {
+            // illo-wrap: dragging changes _wrapY/_wrapScale via GSAP, not style.left/top
+            el.style.cursor = 'move';
+            el.style.outline = '2px dashed ' + t.color + '88';
+            el.addEventListener('mousedown', function(e) {
+              selectTarget(t);
+              wrapDragSt = { mx: e.clientX, my: e.clientY, sy: _wrapY, ss: _wrapScale };
+              e.preventDefault(); e.stopPropagation();
+            });
+            // Scale handle for wrap
+            var sh = document.createElement('div');
+            sh.title = 'Scale (drag left=smaller / right=larger)';
+            sh.style.cssText = 'position:fixed;width:20px;height:20px;background:#ff6666;border:2px solid #fff;border-radius:50%;cursor:ew-resize;z-index:99998;box-shadow:0 2px 6px rgba(0,0,0,.8);display:none;font-size:10px;text-align:center;line-height:18px;color:#fff;';
+            sh.textContent = '↔';
+            document.body.appendChild(sh);
+            t.sh = sh;
+            sh.addEventListener('mousedown', function(e) {
+              selectTarget(t);
+              wrapDragSt = { mx: e.clientX, my: e.clientY, sy: _wrapY, ss: _wrapScale, scaleOnly: true };
+              e.preventDefault(); e.stopPropagation();
+            });
+          } else {
+            // Regular absolute-positioned element
+            var container = (def.id === 'subtext') ? document.body : box;
+            t.container = container;
+            var br = container.getBoundingClientRect();
+            var er = el.getBoundingClientRect();
+            // Brady needs flow → absolute conversion
+            if (def.id === 'hero-brady-img') {
+              el.style.position = 'absolute';
+            }
+            el.style.transform  = 'none';
+            el.style.left       = (er.left - br.left + (def.id === 'subtext' ? 0 : 0)) + 'px';
+            el.style.top        = (er.top  - br.top)  + 'px';
+            el.style.cursor     = 'move';
+            el.style.userSelect = 'none';
+            el.style.outline    = '2px dashed ' + t.color + '88';
+
+            var rh = document.createElement('div');
+            rh.title = 'Resize (drag right)';
+            rh.style.cssText = 'position:absolute;width:18px;height:18px;background:' + t.color + ';border:2px solid #fff;border-radius:50%;cursor:se-resize;z-index:99998;box-shadow:0 2px 6px rgba(0,0,0,.8);display:none;';
+            container.appendChild(rh);
+            t.rh = rh;
+
+            var oh = document.createElement('div');
+            oh.title = 'Rotate (drag left/right)';
+            oh.style.cssText = 'position:absolute;width:18px;height:18px;background:#ff6600;border:2px solid #fff;border-radius:50%;cursor:ew-resize;z-index:99998;box-shadow:0 2px 6px rgba(0,0,0,.8);display:none;';
+            container.appendChild(oh);
+            t.oh = oh;
+
+            el.addEventListener('mousedown', function(e) {
+              selectTarget(t);
+              dragSt = { mx: e.clientX, my: e.clientY,
+                         sl: parseFloat(el.style.left)||0, st: parseFloat(el.style.top)||0 };
+              e.preventDefault(); e.stopPropagation();
+            });
+            rh.addEventListener('mousedown', function(e) {
+              selectTarget(t);
+              resizeSt = { mx: e.clientX, sw: el.offsetWidth };
+              e.preventDefault(); e.stopPropagation();
+            });
+            oh.addEventListener('mousedown', function(e) {
+              selectTarget(t);
+              rotateSt = { mx: e.clientX, sr: t.rotation };
+              e.preventDefault(); e.stopPropagation();
+            });
+          }
+
+          TARGETS.push(t);
+        });
+        renderList();
+      }, 80);
+    }
+
+    // ── Selection ──
+    function selectTarget(t) {
+      TARGETS.forEach(function(x) {
+        if (x.el) x.el.style.outline = '2px dashed ' + x.color + '44';
+        if (x.rh) x.rh.style.display = 'none';
+        if (x.oh) x.oh.style.display = 'none';
+        if (x.sh) x.sh.style.display = 'none';
+      });
+      active = t;
+      t.el.style.outline = '2px dashed ' + t.color;
+      if (t.rh) t.rh.style.display = 'block';
+      if (t.oh) t.oh.style.display = 'block';
+      if (t.sh) t.sh.style.display = 'block';
+      renderDetail();
+    }
+
+    function syncHandles(t) {
+      if (!t || !t.el) return;
+      if (t.isWrap) {
+        // Position scale handle at bottom-right of illo-wrap in viewport coords
+        var er = t.el.getBoundingClientRect();
+        if (t.sh) {
+          t.sh.style.left = (er.right - 10) + 'px';
+          t.sh.style.top  = (er.bottom - 10) + 'px';
+        }
+        return;
+      }
+      var cont = t.container || box;
+      var br = cont.getBoundingClientRect();
+      var er = t.el.getBoundingClientRect();
+      if (t.rh) {
+        t.rh.style.left = (er.right  - br.left - 9) + 'px';
+        t.rh.style.top  = (er.bottom - br.top  - 9) + 'px';
+      }
+      if (t.oh) {
+        t.oh.style.left = (er.left + er.width / 2 - br.left - 9) + 'px';
+        t.oh.style.top  = (er.top  - br.top - 28) + 'px';
+      }
+    }
+
+    // ── Value computation ──
+    function vals(t) {
+      if (t.isWrap) {
+        return { isWrap: true, y: _wrapY.toFixed(0), scale: _wrapScale.toFixed(3) };
+      }
+      var cont = t.container || box;
+      var bw = cont.offsetWidth, bh = cont.offsetHeight;
+      var lp = parseFloat(t.el.style.left) || 0;
+      var tp = parseFloat(t.el.style.top)  || 0;
+      var base = { wp: (t.el.offsetWidth / box.offsetWidth * 100).toFixed(1), rot: t.rotation.toFixed(1) };
+      var ib = imgBounds();
+      if (t.id === 'crown-svg' && ib) {
+        var cx = lp + t.el.offsetWidth / 2;
+        var cy = tp + t.el.offsetHeight * 0.55;
+        base.imgX = ((cx - ib.oX) / ib.rW).toFixed(3);
+        base.imgY = ((cy - ib.oY) / ib.rH).toFixed(3);
+        base.label0 = 'CROWN_HEAD_X'; base.label1 = 'CROWN_HEAD_Y'; base.isImg = true;
+      } else if (t.id === 'hero-goat' && ib) {
+        base.imgX = ((lp - ib.oX) / ib.rW).toFixed(3);
+        base.imgY = ((tp - ib.oY) / ib.rH).toFixed(3);
+        base.label0 = 'GOAT_X'; base.label1 = 'GOAT_Y'; base.isImg = true;
+      } else {
+        base.lp = (lp / bw * 100).toFixed(1);
+        base.tp = (tp / bh * 100).toFixed(1);
+      }
+      return base;
+    }
+
+    function copyStr(t) {
+      var v = vals(t);
+      if (v.isWrap)  return 'y: ' + v.y + ', scale: ' + v.scale + ', transformOrigin: \'50% 28%\'';
+      if (v.isImg)   return v.label0 + ' = ' + v.imgX + ';\n' + v.label1 + ' = ' + v.imgY + ';\nROT = ' + v.rot + ';\nwidth: clamp(30px,' + v.wp + '%,400px);';
+      return t.label + ':\nleft:' + v.lp + '%; top:' + v.tp + '%; width:clamp(30px,' + v.wp + '%,400px); transform:rotate(' + v.rot + 'deg);';
+    }
+
+    // ── Render ──
+    function stateBar() {
+      return '<div style="display:flex;gap:6px;margin-bottom:10px;">' +
+        STATES.map(function(s) {
+          var active = currentStateId === s.id;
+          return '<button data-sid="' + s.id + '" style="flex:1;padding:5px 4px;background:' + (active ? s.color : '#222') + ';color:' + (active ? '#000' : s.color) + ';border:1px solid ' + s.color + ';border-radius:5px;cursor:pointer;font-family:monospace;font-size:11px;">' + s.label + '</button>';
+        }).join('') + '</div>';
+    }
+
+    function renderList() {
+      hud.innerHTML = stateBar() +
+        '<div style="color:#aaa;font-size:10px;margin-bottom:6px">Select an element:</div>' +
+        TARGETS.map(function(x) {
+          return '<div data-tid="' + x.id + '" style="margin-top:5px;cursor:pointer;padding:5px 8px;border-radius:4px;border:1px solid ' + x.color + ';color:' + x.color + ';">' + x.label + '</div>';
+        }).join('');
+      bindStateButtons();
+      TARGETS.forEach(function(x) {
+        var btn = hud.querySelector('[data-tid="' + x.id + '"]');
+        if (btn) btn.onclick = function() { selectTarget(x); };
+      });
+    }
+
+    function renderDetail() {
+      if (!active) { renderList(); return; }
+      var t = active;
+      var v = vals(t);
+      var posLines;
+      if (v.isWrap) {
+        posLines = 'y:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b style="color:#0ff">' + v.y + 'px</b><br>' +
+                   'scale:&nbsp;<b style="color:#0ff">' + v.scale + '</b><br>';
+      } else if (v.isImg) {
+        posLines = v.label0 + ':&nbsp;<b style="color:#0ff">' + v.imgX + '</b><br>' +
+                   v.label1 + ':&nbsp;<b style="color:#0ff">' + v.imgY + '</b><br>';
+      } else {
+        posLines = 'left:&nbsp;<b style="color:#0ff">' + v.lp + '%</b><br>' +
+                   'top:&nbsp;&nbsp;<b style="color:#0ff">' + v.tp + '%</b><br>';
+      }
+      hud.innerHTML = stateBar() +
+        '<div style="color:' + t.color + ';font-size:13px;font-weight:bold;margin-bottom:3px">' + t.label + '</div>' +
+        '<div style="color:#666;font-size:10px;margin-bottom:6px">' + (t.isWrap ? 'Drag=move · ↔=scale' : 'Drag=move · Green=resize · Orange=rotate') + '</div>' +
+        posLines +
+        (v.isWrap ? '' : 'width:&nbsp;<b style="color:#0ff">' + v.wp + '%</b><br>rotate:&nbsp;<b style="color:#0ff">' + v.rot + 'deg</b><br>') +
+        '<button id="t-copy" style="margin-top:8px;width:100%;background:#C8102E;color:#fff;border:none;padding:7px;border-radius:5px;cursor:pointer;font-family:monospace;font-size:12px;">Copy values</button>' +
+        '<button id="t-back" style="margin-top:5px;width:100%;background:#222;color:#888;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:monospace;font-size:11px;">← Back</button>';
+
+      bindStateButtons();
+      document.getElementById('t-copy').onclick = function() {
+        navigator.clipboard.writeText(copyStr(t)).then(function(){});
+        this.textContent = '✓ Copied!';
+        var btn = this;
+        setTimeout(function() { if (active) renderDetail(); }, 1500);
+      };
+      document.getElementById('t-back').onclick = function() { active = null; renderList(); };
+      syncHandles(t);
+    }
+
+    function bindStateButtons() {
+      hud.querySelectorAll('[data-sid]').forEach(function(btn) {
+        btn.onclick = function() {
+          var sid = btn.getAttribute('data-sid');
+          var s = STATES.filter(function(x){ return x.id === sid; })[0];
+          if (s) activateState(s);
+        };
+      });
+    }
+
+    // ── Global mouse events ──
+    document.addEventListener('mousemove', function(e) {
+      if (wrapDragSt) {
+        var dy = e.clientY - wrapDragSt.my;
+        var dx = e.clientX - wrapDragSt.mx;
+        if (!wrapDragSt.scaleOnly) _wrapY = wrapDragSt.sy + dy;
+        _wrapScale = Math.max(0.5, wrapDragSt.ss + dx * 0.005);
+        gsap.set('#illo-wrap', { y: _wrapY, scale: _wrapScale });
+        if (active) { syncHandles(active); renderDetail(); }
+        return;
+      }
+      if (!active) return;
+      var el = active.el;
+      if (dragSt) {
+        el.style.left = (dragSt.sl + e.clientX - dragSt.mx) + 'px';
+        el.style.top  = (dragSt.st + e.clientY - dragSt.my) + 'px';
+        syncHandles(active); renderDetail();
+      }
+      if (resizeSt) {
+        el.style.width = Math.max(20, resizeSt.sw + e.clientX - resizeSt.mx) + 'px';
+        syncHandles(active); renderDetail();
+      }
+      if (rotateSt) {
+        active.rotation = rotateSt.sr + (e.clientX - rotateSt.mx) * 0.6;
+        el.style.transform = 'rotate(' + active.rotation + 'deg)';
+        renderDetail();
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      dragSt = resizeSt = rotateSt = wrapDragSt = null;
+    });
+
+    // ── Boot into Normal state ──
+    activateState(STATES[0]);
+  });
+})();
+</script>
+
+<!-- Global keep-scrolling hint — auto-hides when the vote section is in view. -->
+<div class="keep-scrolling" id="keep-scrolling" aria-hidden="true">Keep scrolling</div>
+<script>
+(function() {
+  var hint = document.getElementById('keep-scrolling');
+  var vote = document.getElementById('vote-section');
+  if (!hint || !vote || !('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function(entries) {
+    entries.forEach(function(en) {
+      hint.classList.toggle('hide', en.isIntersecting);
+    });
+  }, { threshold: 0.15 }).observe(vote);
+})();
+</script>
+
+<!-- ── Rive runtime (shared — was loaded by the old single-canvas init
+     which is now gone; the dual-canvas init below needs it) ── -->
+<script src="https://unpkg.com/@rive-app/canvas@latest/rive.js"></script>
+
+<!-- ══════════════════════════════════════════
+     SECTION 01b JS — BRADY PARTY PAYOFF
+     Dual Rive puppets + scroll-driven phase machine + accolade cards.
+     Lights / strobe / specks are pure CSS (ambient, not scroll-driven).
+══════════════════════════════════════════ -->
+<script>
+(function() {
+  var danceCanvas = document.getElementById('rive-dance-party');
+  var rockCanvas  = document.getElementById('rive-rocking-party');
+  if (!danceCanvas || !rockCanvas) return;
+
+  var danceInst = null, rockInst = null;
+  /* Scroll-scrub contract: both puppets load with autoplay:false, SM paused,
+     and we call r.scrub(animName, time) each tick so the dance tracks scroll
+     position. Per Rive file author the dance_v2 animation is ~1.5s; we use
+     heavier loop multipliers for the party (8×) so Brady visibly dances
+     harder once the lights come on. */
+  var DANCE_ANIM = 'dance_v2';
+  var DANCE_DURATION = 1.5;
+  /* Loop counts scaled so the party scrubs at ~intro's pace (400vh/loop).
+     Party is now 700vh total, so dance = ~1.75 loops (700/400);
+     rock runs at ~2× that rate for party-intensity. */
+  var DANCE_LOOPS_IDLE  = 1.75;
+  var ROCK_LOOPS_PARTY  = 3.5;
+
+  function sizeCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.offsetWidth  || c.parentElement.offsetWidth  || 300;
+    var h = c.offsetHeight || c.parentElement.offsetHeight || 400;
+    c.width  = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+  }
+  function loadBuf(src, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', src, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function() {
+      if (xhr.status === 0 || xhr.status === 200) cb(null, xhr.response);
+      else cb(new Error('HTTP ' + xhr.status));
+    };
+    xhr.onerror = function() { cb(new Error('XHR error loading ' + src)); };
+    xhr.send();
+  }
+  function initPuppet(canvas, src, setter) {
+    sizeCanvas(canvas);
+    loadBuf(src, function(err, buf) {
+      if (err) { console.error('[Party]', src, err); return; }
+      var r = new rive.Rive({
+        buffer: buf, canvas: canvas,
+        animations: DANCE_ANIM,
+        autoplay: false,
+        fit: rive.Fit.Cover,
+        alignment: rive.Alignment.TopCenter,
+        onLoad: function() {
+          r.resizeDrawingSurfaceToCanvas();
+          try { r.scrub(DANCE_ANIM, 0); } catch(e) { console.warn('[Rive] scrub not supported on', src, e); }
+          setter(r);
+          try {
+            console.log('[Rive loaded]', src,
+              '\n  animationNames    =', JSON.stringify(r.animationNames),
+              '\n  stateMachineNames =', JSON.stringify(r.stateMachineNames),
+              '\n  scrub available   =', typeof r.scrub === 'function');
+          } catch(e) {}
+        },
+        onLoadError: function(e) { console.error('[Party rive]', src, e); }
+      });
+    });
+  }
+
+  /* Phase timeline — progress 0-1 across the PARTY portion of the intro.
+     (The intro's global scroll runs 0-1 across 2300vh; the first ~30%
+     of that — 700vh — is the party, and this local 0-1 maps to that.)
+       0.00-0.38  DANCE     dance puppet visible, cream bg
+       0.38-0.42  FLASH     lightning sweep, cross-fade to rocking
+       0.42-0.84  PARTY     rocking puppet, lights on, cards pop in
+       0.84-0.88  EXIT      cards glitch out
+       0.88-1.00  WIND-DOWN lights fade, cross-fade back to dance, cream returns */
+  var CARD_SCHED = [
+    { in:0.48, out:0.84 },
+    { in:0.56, out:0.85 },
+    { in:0.64, out:0.86 },
+    { in:0.72, out:0.87 },
+  ];
+  var PARTY_START = 0.42, PARTY_END = 0.88;
+  var lightningFired = false;
+
+  /* Called by the intro's onProgress each scroll tick. gpLocal is the
+     party-phase progress (0-1 across the first 30% of intro scroll).
+     Anything outside [0,1] means we're past the party; the update
+     clamps and cleans up (party-on removed, cards reset). */
+  function partyUpdate(gpLocal) {
+    var p = Math.max(0, Math.min(1, gpLocal));
+    var stage     = document.getElementById('section-stage');
+    var lightning = document.getElementById('party-lightning');
+    var cards     = [].slice.call(document.querySelectorAll('.accolade'));
+
+    /* Scrub rock to local party progress so it fully cycles through the
+       party phase regardless of how long the rest of the intro is. */
+    if (rockInst && typeof rockInst.scrub === 'function') {
+      try { rockInst.scrub(DANCE_ANIM, p * DANCE_DURATION * ROCK_LOOPS_PARTY); } catch(e) {}
+    }
+
+    /* Lightning one-shot at the flash window. */
+    if (lightning) {
+      if (p >= 0.38 && p <= 0.42 && !lightningFired) {
+        lightning.classList.remove('flash');
+        void lightning.offsetWidth;
+        lightning.classList.add('flash');
+        lightningFired = true;
+      } else if ((p < 0.36 || gpLocal > 1) && lightningFired) {
+        lightningFired = false;
+        lightning.classList.remove('flash');
+      }
+    }
+
+    /* Party-on toggles lights + club bg + puppet cross-fade on the
+       section-stage (used to live on party-inner, but the party section
+       has been folded into the intro section). */
+    if (stage) {
+      var onNow = gpLocal >= 0 && gpLocal <= 1 && p >= PARTY_START && p <= PARTY_END;
+      stage.classList.toggle('party-on', onNow);
+    }
+
+    /* Cards — idempotent per tick. */
+    for (var i = 0; i < cards.length; i++) {
+      var el = cards[i], s = CARD_SCHED[i];
+      if (!s) continue;
+      var inWin  = gpLocal >= 0 && gpLocal <= 1 && p >= s.in && p < s.out;
+      var exited = gpLocal >= 0 && gpLocal <= 1 && p >= s.out;
+      el.classList.toggle('in',  inWin);
+      el.classList.toggle('out', exited);
+      if (!inWin && !exited) { el.classList.remove('in'); el.classList.remove('out'); }
+    }
+  }
+
+  /* Dance puppet scrub — driven across the whole intro (not just the
+     party phase) so it stays alive through the shrink + words beats too.
+     Called by the intro's onProgress every scroll tick. */
+  function danceScrubGlobal(gp) {
+    if (!danceInst || typeof danceInst.scrub !== 'function') return;
+    /* ~5 full cycles across the 2300vh intro — intro pace is ~460vh per loop. */
+    try { danceInst.scrub(DANCE_ANIM, gp * DANCE_DURATION * 5); } catch(e) {}
+  }
+
+  /* Forced canvas resync — the center-card's shrink transform can cause
+     the browser compositor to cache a scaled-down rasterization of the
+     canvas, producing blur when the user scrolls back up past the chart
+     and the puppet grows back to full size. Re-initializing Rive's
+     drawing surface forces a crisp re-render. Called surgically on
+     direction reversal from the intro's onProgress. */
+  window._puppetResync = function() {
+    sizeCanvas(danceCanvas); sizeCanvas(rockCanvas);
+    if (danceInst) danceInst.resizeDrawingSurfaceToCanvas();
+    if (rockInst)  rockInst.resizeDrawingSurfaceToCanvas();
+  };
+
+  /* Expose to the intro's onProgress. */
+  window._partyUpdate = partyUpdate;
+  window._danceScrub  = danceScrubGlobal;
+
+  /* Seed 60-80 tiny white specks with randomized position, twinkle duration
+     and delay. Goal: "distant lights in a club" — visible but subtle, not
+     the focal point. Each speck is a blurred absolutely-positioned div so
+     CSS can handle the staggered twinkle animation. */
+  function seedSpecks() {
+    var host = document.getElementById('party-specks');
+    if (!host || host.children.length) return;
+    var COUNT = 72;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < COUNT; i++) {
+      var s = document.createElement('div');
+      s.className = 'speck';
+      var size = 4 + Math.random() * 2;                /* 4-6 px */
+      s.style.width = s.style.height = size.toFixed(2) + 'px';
+      s.style.left = (Math.random() * 100).toFixed(2) + '%';
+      s.style.top  = (Math.random() * 100).toFixed(2) + '%';
+      s.style.setProperty('--dur',   (1.0 + Math.random() * 1.4).toFixed(2) + 's');
+      s.style.setProperty('--delay', (-Math.random() * 2.8).toFixed(2) + 's');
+      s.style.setProperty('--peak',  (0.45 + Math.random() * 0.35).toFixed(2));
+      frag.appendChild(s);
+    }
+    host.appendChild(frag);
+  }
+
+  function initParty() {
+    if (typeof rive === 'undefined') {
+      /* Rive library hasn't loaded yet — retry shortly. */
+      setTimeout(initParty, 80); return;
+    }
+    seedSpecks();
+    initPuppet(danceCanvas, 'Assets/puppet/bradywithbones2.riv',             function(r){ danceInst = r; });
+    initPuppet(rockCanvas,  'Assets/puppet/tombradywithbonesrockloop.riv',   function(r){ rockInst  = r; });
+    /* (No ScrollTrigger here — the intro's onProgress calls
+       window._partyUpdate(gpLocal) and window._danceScrub(gp) every tick.) */
+
+    window.addEventListener('resize', function() {
+      sizeCanvas(danceCanvas); sizeCanvas(rockCanvas);
+      if (danceInst) danceInst.resizeDrawingSurfaceToCanvas();
+      if (rockInst)  rockInst.resizeDrawingSurfaceToCanvas();
+    });
+
+    /* Re-sync on section re-entry — fixes scroll-back blur on the puppet.
+       Why this bug exists: during the shrink phase the center-card
+       transform scales the canvas down to ~12% of its layout size. The
+       browser's compositor caches that scaled-down raster and reuses it
+       when the transform returns to scale 1.0 (scroll-up from chart back
+       into intro), producing a stretched/blurry image. Forcing the Rive
+       backing store to re-initialize on section re-entry makes Rive
+       re-rasterize at current DPR.
+       Triple-resync (immediate + 80ms + 240ms) catches cases where layout
+       is still settling after a pin release; multiple thresholds make
+       sure the observer actually fires across slow scroll-ins. */
+    function resyncCanvases() {
+      sizeCanvas(danceCanvas); sizeCanvas(rockCanvas);
+      if (danceInst) danceInst.resizeDrawingSurfaceToCanvas();
+      if (rockInst)  rockInst.resizeDrawingSurfaceToCanvas();
+    }
+    var section = document.getElementById('intro-section');
+    if (section && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function(entries) {
+        entries.forEach(function(en) {
+          if (!en.isIntersecting) return;
+          resyncCanvases();
+          setTimeout(resyncCanvases, 80);
+          setTimeout(resyncCanvases, 240);
+        });
+      }, { threshold: [0, 0.01, 0.1, 0.25] }).observe(section);
+    }
+    /* Tab visibility → DPR can change when switching monitors/windows.
+       Re-sync after visibility restore so the puppet stays crisp. */
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) setTimeout(resyncCanvases, 80);
+    });
+  }
+
+  window.addEventListener('load', function() { setTimeout(initParty, 60); });
+})();
+</script>
+
+</body>
+</html>

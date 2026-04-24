@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0D14">
+<title>RIVERS IS THE GOAT. DADGUMMIT.</title>
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  riversgoat.com — the Brady-vote penalty page.
+  ═══════════════════════════════════════════════════════════════
+
+  CONTEXT:
+  If a user dares click "Vote: Brady" on tb12notgoat.com, they're
+  ejected here. No warning, no in-app modal, just — BAM — Rivers,
+  lightning, Thor-tier typography, and a gentle "vote again" link
+  back to the main site to correct their mistake.
+
+  DESIGN NOTES:
+  - Mobile-first. Portrait lightning god at full bleed; type stacks
+    vertically on narrow, flows horizontally at tablet+.
+  - No framework dependencies — the user name-checked "React Bits"
+    (reactbits.dev) but we implement the lightning natively with
+    Canvas 2D for a) zero-dep payload, b) full control of the
+    strike timing synchronized to the Rivers reveal.
+  - Type pairs "Metamorphous" (Thor-esque serif) + "Bungee Shade"
+    (god-tier display) from Google Fonts — feels mythic without
+    being a gaming-YouTuber cliché.
+
+  LAYERS (back to front):
+    1. Vignette black background with subtle radial glow
+    2. Canvas: lightning strikes (3 layers of procedural bolts)
+    3. Canvas: rain/spark particles drifting
+    4. Rivers image (PNG w/ transparency — scales huge on mobile)
+    5. Headline: "RIVERS IS THE GOAT. DADGUMMIT."
+    6. Vote Again link (anchor back to tb12notgoat.com#vote)
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Bungee+Shade&family=Cinzel+Decorative:wght@900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ═══ RESET ═══ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #06080C;
+    color: #F2EDE4;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: 'Oswald', system-ui, sans-serif;
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* ═══ STAGE ═══
+     Full viewport. Overflow hidden — lightning can arc past bounds
+     visually but won't cause scroll bars. */
+  .stage {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  /* ═══ BACKGROUND VIGNETTE ═══
+     Deep radial from center-top (where Rivers' head lands) fading
+     to near-black at edges. Gives the lightning somewhere bright
+     to originate from. */
+  .bg-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 35%, rgba(64, 140, 220, 0.18) 0%, rgba(20, 40, 80, 0.08) 30%, transparent 70%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(10, 18, 36, 0.4) 0%, rgba(4, 6, 12, 0.95) 100%);
+    z-index: 1;
+  }
+
+  /* ═══ CANVAS LAYERS ═══
+     lightning canvas sits behind rivers (so bolts appear to
+     shoot from/around him), particle canvas sits in front of
+     rivers (rain-like sparks across the whole frame). */
+  .lightning-canvas,
+  .particle-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .lightning-canvas { z-index: 2; mix-blend-mode: screen; }
+  .particle-canvas  { z-index: 4; mix-blend-mode: screen; opacity: 0.9; }
+
+  /* ═══ RIVERS HERO IMAGE ═══
+     Right-anchored at all viewport sizes — headline reads from the
+     left, Rivers stands on the right like a guardian. Use clamp on
+     height so he's never so tall he gets cut off by the headline
+     area above (leave ~45vh breathing room at top on mobile).
+
+     Mobile: translate him DOWN so his head clears the stacked
+     headline block above. On tablet+ his head sits within the frame
+     naturally because the image shrinks into the right half. */
+  .rivers-wrap {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 3;
+    height: clamp(55vh, 68vh, 78vh);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    pointer-events: none;
+    padding-right: clamp(0px, 2vw, 24px);
+    /* Push down on very narrow screens so head clears the stacked type */
+    transform: translateY(clamp(0px, 4vh, 40px));
+  }
+  /* ═══ RIVERS — ILLUMINATION SYSTEM ═══
+     The SVG paths have no fill declared, so by default they render
+     black — invisible against our dark backdrop. We override via CSS
+     to paint every path in a visible color. The `.rivers` element is
+     the <img>, so we use an inline-svg approach via object or a mask;
+     simplest is: invert the image so black becomes white, then tint.
+     We use `filter: invert(1)` to flip black→white, then add glow.
+     Because the img is an <img> tag, CSS filters are the only way in.
+
+     On top of that, we keep the mode system for different looks. */
+  /* ── Rivers image ─────────────────────────────────────────
+     The SVG is now FULL-COLOR — he's visible on his own. We just
+     add glow layers on top. No invert, no brightness hacks.
+     Scene director (JS) applies [data-fx] to the STAGE to swap
+     into dramatic transformations for short, theatrical beats. */
+  .rivers {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    filter:
+      drop-shadow(0 0 6px rgba(180, 220, 255, 0.4))
+      drop-shadow(0 0 28px rgba(100, 170, 255, 0.35))
+      drop-shadow(0 0 70px rgba(60, 140, 240, 0.25))
+      drop-shadow(0 20px 40px rgba(0, 0, 0, 0.7));
+    animation: river-breathe 3.4s ease-in-out infinite, river-flicker 0.14s steps(2) infinite;
+    transform-origin: center bottom;
+    will-change: transform, filter;
+    transition: filter 0.28s ease-out;
+  }
+
+  /* ── FX: silhouette ─ dramatic dark reveal, electric aura ── */
+  .stage[data-fx="silhouette"] .rivers {
+    filter:
+      brightness(0)
+      drop-shadow(0 0 14px rgba(120, 200, 255, 0.85))
+      drop-shadow(0 0 50px rgba(60, 150, 255, 0.7))
+      drop-shadow(0 0 120px rgba(40, 110, 220, 0.5))
+      drop-shadow(0 20px 40px rgba(0, 0, 0, 0.9));
+    transition: filter 0.22s ease-out;
+  }
+  /* ── FX: electric ─ blown-out white, pure energy flash ──── */
+  .stage[data-fx="electric"] .rivers {
+    filter:
+      brightness(0) invert(1) brightness(2.4)
+      drop-shadow(0 0 6px rgba(255, 255, 255, 1))
+      drop-shadow(0 0 28px rgba(200, 235, 255, 0.95))
+      drop-shadow(0 0 90px rgba(120, 190, 255, 0.85));
+    transition: filter 0.05s ease-out;
+  }
+  /* ── FX: outline ─ X-ray line-art mode ──────────────────── */
+  .stage[data-fx="outline"] .rivers {
+    filter:
+      brightness(0) invert(1)
+      drop-shadow(0 0 2px #fff)
+      drop-shadow(0 0 10px rgba(140, 210, 255, 0.95))
+      drop-shadow(0 0 32px rgba(80, 170, 255, 0.8))
+      drop-shadow(0 0 80px rgba(40, 120, 220, 0.6));
+    transition: filter 0.18s ease-out;
+  }
+  /* ── FX: lit ─ color-boosted, high-energy charge ────────── */
+  .stage[data-fx="lit"] .rivers {
+    filter:
+      brightness(1.25) contrast(1.15) saturate(1.25)
+      drop-shadow(0 0 10px rgba(220, 240, 255, 0.85))
+      drop-shadow(0 0 36px rgba(120, 200, 255, 0.7))
+      drop-shadow(0 0 90px rgba(60, 150, 240, 0.55))
+      drop-shadow(0 20px 40px rgba(0, 0, 0, 0.7));
+    transition: filter 0.08s ease-out;
+  }
+  /* Strike pulse — added on top of whatever FX is current.
+     Using .lit retains back-compat with the strike code path. */
+  .rivers.lit {
+    filter:
+      brightness(1.35) saturate(1.3)
+      drop-shadow(0 0 8px rgba(255, 255, 255, 0.95))
+      drop-shadow(0 0 32px rgba(200, 235, 255, 0.85))
+      drop-shadow(0 0 100px rgba(120, 190, 255, 0.7));
+    transition: filter 0.04s ease-out;
+  }
+  /* Gentle rise-fall, like the image is charging */
+  @keyframes river-breathe {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50%      { transform: scale(1.015) translateY(-4px); }
+  }
+  /* Subtle flicker — electricity impulse. Kept low-amplitude so
+     it's not seizure-inducing; 4% opacity swing. */
+  @keyframes river-flicker {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.96; }
+  }
+
+  /* ═══ HEADLINE BLOCK ═══
+     Left column, stacked: line-1, line-2, then the Vote Again CTA.
+     All three are left-justified so they read as a single block.
+     The block is vertically-centered-ish on the left side so Rivers
+     (right) has a clean half of the frame to occupy. */
+  .headline {
+    position: absolute;
+    top: clamp(24px, 6vh, 64px);
+    left: clamp(16px, 4vw, 48px);
+    right: clamp(16px, 4vw, 48px);
+    z-index: 5;
+    text-align: left;
+    /* pointer-events auto at the container so vote-again child is clickable */
+    pointer-events: auto;
+  }
+  .headline .line-1 {
+    display: block;
+    font-family: 'Bungee Shade', 'Oswald', sans-serif;
+    font-size: clamp(44px, 13vw, 140px);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    color: #F2EDE4;
+    text-shadow:
+      0 0 18px rgba(120, 200, 255, 0.55),
+      0 0 40px rgba(60, 140, 240, 0.35),
+      0 4px 0 rgba(8, 14, 28, 0.9);
+    animation: headline-pulse 2.6s ease-in-out infinite;
+    transform-origin: left center;
+  }
+  @keyframes headline-pulse {
+    0%, 100% {
+      text-shadow:
+        0 0 18px rgba(120, 200, 255, 0.55),
+        0 0 40px rgba(60, 140, 240, 0.35),
+        0 4px 0 rgba(8, 14, 28, 0.9);
+    }
+    50% {
+      text-shadow:
+        0 0 28px rgba(180, 230, 255, 0.85),
+        0 0 80px rgba(100, 180, 255, 0.6),
+        0 4px 0 rgba(8, 14, 28, 0.9);
+    }
+  }
+  .headline .line-2 {
+    display: block;
+    font-family: 'Metamorphous', serif;
+    font-size: clamp(28px, 9vw, 96px);
+    font-style: italic;
+    color: #C8D8FF;
+    letter-spacing: 0.02em;
+    margin-top: clamp(6px, 1.5vh, 16px);
+    text-shadow:
+      0 0 16px rgba(120, 200, 255, 0.6),
+      0 2px 0 rgba(4, 8, 18, 0.95);
+    animation: dadgummit-sway 4s ease-in-out infinite;
+    transform-origin: left center;
+  }
+  @keyframes dadgummit-sway {
+    0%, 100% { transform: skewX(0deg) translateX(0); }
+    50%      { transform: skewX(-2deg) translateX(4px); }
+  }
+
+  /* ═══ BUNGEE SHADE FALLBACK ═══
+     Some browsers treat Bungee Shade as partially loaded before
+     metrics arrive, causing an invisible first-paint. Lock size
+     hint via font-size-adjust. */
+  .headline .line-1 { font-size-adjust: 0.5; }
+
+  /* ═══ VOTE AGAIN LINK ═══
+     Now lives INSIDE the headline block — stacked beneath the type,
+     still left-justified. Reads as the quiet third beat after the
+     shout. */
+  .vote-again {
+    display: block;
+    margin-top: clamp(20px, 4vh, 36px);
+    text-align: left;
+    pointer-events: auto;
+  }
+  .vote-again a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(13px, 1.6vw, 16px);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #F2EDE4;
+    text-decoration: none;
+    padding: 14px 28px;
+    border: 1px solid rgba(180, 220, 255, 0.3);
+    border-radius: 3px;
+    background: rgba(10, 20, 40, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: all .3s ease;
+    box-shadow: 0 0 0 0 rgba(120, 200, 255, 0);
+  }
+  .vote-again a:hover {
+    border-color: rgba(180, 220, 255, 0.7);
+    color: #FFFFFF;
+    background: rgba(20, 40, 80, 0.55);
+    box-shadow:
+      0 0 30px rgba(120, 200, 255, 0.4),
+      inset 0 0 20px rgba(120, 200, 255, 0.15);
+    letter-spacing: 0.35em;
+  }
+  .vote-again .arrow {
+    display: inline-block;
+    transition: transform .3s ease;
+  }
+  .vote-again a:hover .arrow { transform: translateX(-4px); }
+  /* sub-caption removed at user's request — vote-again stands alone */
+
+  /* ═══ LOGO CORNER ═══
+     Small "riversgoat.com" mark top-right. Reinforces that they've
+     been teleported to a different domain. */
+  .mark {
+    position: absolute;
+    top: clamp(16px, 3vh, 32px);
+    right: clamp(14px, 4vw, 32px);
+    z-index: 5;
+    font-family: 'Metamorphous', serif;
+    font-size: clamp(11px, 1.4vw, 13px);
+    letter-spacing: 0.14em;
+    color: rgba(200, 220, 255, 0.55);
+    pointer-events: none;
+    text-transform: lowercase;
+  }
+  .mark::before {
+    content: '⚡';
+    margin-right: 6px;
+    color: #6BB8FF;
+  }
+
+  /* ═══ FLASH OVERLAY ═══
+     White flash synced to major lightning strikes. Full-screen
+     div flipped to opacity 0.85 briefly. */
+  .flash {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    background: rgba(220, 240, 255, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    transition: opacity 40ms linear;
+  }
+
+  /* ═══ RESPONSIVE ═══ */
+
+  /* Tablet — Rivers bigger, headline cap-width so type doesn't
+     collide with him. Reset the mobile downward-push. */
+  @media (min-width: 640px) {
+    .rivers-wrap { height: 80vh; transform: translateY(0); }
+    .headline { max-width: 58%; }
+  }
+
+  /* Desktop — Rivers full-height on right, headline fills left half
+     vertically-centered. Larger display type unlocked. */
+  @media (min-width: 1024px) {
+    .rivers-wrap {
+      height: 96vh;
+      padding-right: clamp(24px, 3vw, 48px);
+    }
+    .headline {
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 52vw;
+      right: auto;
+    }
+    .headline .line-1 { font-size: clamp(80px, 9vw, 180px); }
+    .headline .line-2 { font-size: clamp(50px, 6vw, 120px); }
+  }
+
+  /* Reduced motion respects */
+  @media (prefers-reduced-motion: reduce) {
+    .rivers, .headline .line-1, .headline .line-2 {
+      animation: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- Background vignette -->
+  <div class="bg-vignette"></div>
+
+  <!-- Lightning (behind Rivers) -->
+  <canvas class="lightning-canvas" id="lightning"></canvas>
+
+  <!-- Rivers hero -->
+  <div class="rivers-wrap">
+    <img src="Assets/phillip-rivers.svg" alt="Phillip Rivers, GOAT" class="rivers" id="rivers">
+  </div>
+
+  <!-- Particle sparks (in front) -->
+  <canvas class="particle-canvas" id="particles"></canvas>
+
+  <!-- Flash overlay for strike sync -->
+  <div class="flash" id="flash"></div>
+
+  <!-- Logo corner removed — leave the frame clean -->
+
+  <!-- Headline block: type + vote-again, all left-justified -->
+  <div class="headline">
+    <h1 style="all:unset;display:block;">
+      <span class="line-1">RIVERS IS<br>THE GOAT.</span>
+      <span class="line-2">Dadgummit.</span>
+    </h1>
+    <div class="vote-again">
+      <a href="index.html#vote-section" id="vote-again-link">
+        <span class="arrow">←</span>
+        Vote Again
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   LIGHTNING ENGINE
+   Procedural bolts drawn on canvas. Each strike:
+     - Starts at a random top-of-screen anchor
+     - Grows downward via recursive jitter (midpoint displacement)
+     - Branches fractally
+     - Fades over ~200ms while a bright afterglow holds briefly
+   Plus:
+     - A flash div is flipped on for major strikes
+     - Particles respond (velocity kick)
+   ═══════════════════════════════════════════════════════════════ */
+
+(function() {
+  const canvas  = document.getElementById('lightning');
+  const pcanvas = document.getElementById('particles');
+  const flash   = document.getElementById('flash');
+  const ctx     = canvas.getContext('2d');
+  const pctx    = pcanvas.getContext('2d');
+
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    [canvas, pcanvas].forEach(c => {
+      c.width  = W * DPR;
+      c.height = H * DPR;
+      c.style.width  = W + 'px';
+      c.style.height = H + 'px';
+    });
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    pctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Bolt generation ────────────────────────────────────────
+     Midpoint-displacement: subdivide segments, nudge midpoints
+     perpendicular to the segment direction, recurse.
+     maxDepth=6 gives ~64 segments — crisp on mobile, not too
+     heavy at 60fps. */
+  function generateBolt(x1, y1, x2, y2, displacement, depth) {
+    if (depth === 0) {
+      return [[x1, y1], [x2, y2]];
+    }
+    const mx = (x1 + x2) / 2 + (Math.random() - 0.5) * displacement;
+    const my = (y1 + y2) / 2 + (Math.random() - 0.5) * displacement;
+
+    const left  = generateBolt(x1, y1, mx, my, displacement / 2, depth - 1);
+    const right = generateBolt(mx, my, x2, y2, displacement / 2, depth - 1);
+    return left.concat(right.slice(1));
+  }
+
+  function generateBranches(path, chance, maxDepth) {
+    const branches = [];
+    for (let i = 2; i < path.length - 2; i += 3) {
+      if (Math.random() < chance) {
+        const [sx, sy] = path[i];
+        const angle = Math.atan2(path[i+1][1] - sy, path[i+1][0] - sx);
+        const len   = 60 + Math.random() * 140;
+        const spread = (Math.random() - 0.5) * 1.4;
+        const ex = sx + Math.cos(angle + spread) * len;
+        const ey = sy + Math.sin(angle + spread) * len;
+        branches.push(generateBolt(sx, sy, ex, ey, 40, maxDepth));
+      }
+    }
+    return branches;
+  }
+
+  /* ── Active bolt store ──────────────────────────────────────
+     Each bolt: { path, branches, t, life, thickness, hue } */
+  const bolts = [];
+
+  function spawnBolt(opts) {
+    opts = opts || {};
+    const x1 = opts.x1 != null ? opts.x1 : Math.random() * W;
+    const y1 = opts.y1 != null ? opts.y1 : -20;
+    const x2 = opts.x2 != null ? opts.x2 : x1 + (Math.random() - 0.5) * W * 0.6;
+    const y2 = opts.y2 != null ? opts.y2 : H + 20;
+    const path     = generateBolt(x1, y1, x2, y2, Math.min(W, 800) * 0.18, 6);
+    const branches = generateBranches(path, 0.4, 3);
+    bolts.push({
+      path, branches,
+      t: 0,
+      life: opts.life || (0.18 + Math.random() * 0.12),
+      thickness: opts.thickness || (1.4 + Math.random() * 1.8),
+      hue: opts.hue || (195 + Math.random() * 30),
+      major: opts.major || false,
+    });
+
+    if (opts.major) triggerFlash();
+    kickParticles(x1, y1, 40);
+  }
+
+  /* Major strike flash — white overlay ~50ms.
+     ALSO: tell Rivers to light up. The SVG gets .lit for ~180ms,
+     creating the theatrical 'lightning-reveals-the-god' moment. */
+  const riversEl = document.getElementById('rivers');
+  function triggerFlash() {
+    flash.style.opacity = '0.85';
+    setTimeout(() => { flash.style.opacity = '0'; }, 60);
+    if (riversEl) {
+      // Subtle strike pulse on every major bolt — adds a brightness
+      // kick regardless of which FX is currently active. Looks great
+      // whether he's full-color, silhouette, or outline.
+      riversEl.classList.add('lit');
+      setTimeout(() => riversEl.classList.remove('lit'), 160);
+    }
+    // Tell the scene director that a major strike happened —
+    // occasionally syncs a theatrical electric-burst transformation
+    // for maximum drama.
+    if (typeof window.__riversScenePulse === 'function') {
+      window.__riversScenePulse(true);
+    }
+  }
+
+  /* ── Draw bolt ─────────────────────────────────────────────
+     Two passes: wide glow (low alpha), then crisp core (high). */
+  function drawBolt(b, alpha) {
+    const strokes = [b.path, ...b.branches];
+    strokes.forEach(path => {
+      // Glow pass
+      ctx.beginPath();
+      ctx.moveTo(path[0][0], path[0][1]);
+      for (let i = 1; i < path.length; i++) ctx.lineTo(path[i][0], path[i][1]);
+      ctx.lineWidth = b.thickness * 6;
+      ctx.strokeStyle = `hsla(${b.hue}, 100%, 70%, ${alpha * 0.25})`;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Mid glow
+      ctx.lineWidth = b.thickness * 3;
+      ctx.strokeStyle = `hsla(${b.hue}, 100%, 80%, ${alpha * 0.5})`;
+      ctx.stroke();
+
+      // Core
+      ctx.lineWidth = b.thickness;
+      ctx.strokeStyle = `hsla(${b.hue}, 40%, 98%, ${alpha})`;
+      ctx.stroke();
+    });
+  }
+
+  /* ── Main loop ─────────────────────────────────────────────
+     clearRect every frame; integrate bolt lifetimes. */
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (let i = bolts.length - 1; i >= 0; i--) {
+      const b = bolts[i];
+      b.t += dt;
+      const p = b.t / b.life;
+      if (p >= 1) { bolts.splice(i, 1); continue; }
+      // Quick-fade first half, afterglow second half
+      const alpha = p < 0.15 ? (p / 0.15) : Math.pow(1 - (p - 0.15) / 0.85, 1.6);
+      drawBolt(b, alpha);
+    }
+
+    stepParticles(dt);
+
+    requestAnimationFrame(tick);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PARTICLE SPARKS
+     Drifting glowing dots — like static in the air. Occasionally
+     kicked by a lightning strike. */
+
+  const particles = [];
+  const PARTICLE_COUNT = 70;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 10,
+      vy: -5 - Math.random() * 20,
+      size: 0.8 + Math.random() * 2.2,
+      life: Math.random(),
+      baseAlpha: 0.4 + Math.random() * 0.5,
+    });
+  }
+
+  function kickParticles(cx, cy, strength) {
+    particles.forEach(p => {
+      const dx = p.x - cx, dy = p.y - cy;
+      const d = Math.hypot(dx, dy) + 1;
+      const force = strength / (d * 0.1 + 1);
+      p.vx += (dx / d) * force;
+      p.vy += (dy / d) * force;
+    });
+  }
+
+  function stepParticles(dt) {
+    pctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+      p.x += p.vx * dt * 20;
+      p.y += p.vy * dt * 20;
+
+      // Re-spawn off-screen
+      if (p.y < -20 || p.x < -20 || p.x > W + 20 || p.y > H + 20) {
+        p.x = Math.random() * W;
+        p.y = H + 20;
+        p.vx = (Math.random() - 0.5) * 10;
+        p.vy = -5 - Math.random() * 20;
+      }
+
+      const alpha = p.baseAlpha;
+      pctx.beginPath();
+      pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      pctx.fillStyle = `rgba(150, 210, 255, ${alpha})`;
+      pctx.fill();
+
+      // Glow halo
+      pctx.beginPath();
+      pctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+      pctx.fillStyle = `rgba(100, 180, 255, ${alpha * 0.15})`;
+      pctx.fill();
+    });
+  }
+
+  requestAnimationFrame(tick);
+
+  /* ═══════════════════════════════════════════════════════════════
+     STRIKE SCHEDULER
+     - Opening sequence: 3 rapid major strikes on load (page entrance)
+     - Then: spaced regular strikes (avg 1.2-2.2s) with occasional
+       rapid double/triple flurries.
+     - Hovering "Vote Again" damps strikes (offers a moment of calm
+       before the user leaves). */
+
+  let damped = false;
+  document.getElementById('vote-again-link')?.addEventListener('mouseenter', () => damped = true);
+  document.getElementById('vote-again-link')?.addEventListener('mouseleave', () => damped = false);
+
+  function openingSequence() {
+    /* First strike — dead center, dramatic major flash */
+    setTimeout(() => spawnBolt({ x1: W * 0.5, major: true, thickness: 3, life: 0.28 }), 100);
+    setTimeout(() => spawnBolt({ x1: W * 0.3, major: true, thickness: 2.6 }), 280);
+    setTimeout(() => spawnBolt({ x1: W * 0.75, major: true, thickness: 2.4 }), 460);
+    /* A fork pair */
+    setTimeout(() => {
+      spawnBolt({ x1: W * 0.15, thickness: 1.8 });
+      spawnBolt({ x1: W * 0.85, thickness: 1.8 });
+    }, 700);
+  }
+
+  function regularStrike() {
+    if (damped) {
+      setTimeout(regularStrike, 1600);
+      return;
+    }
+    const major = Math.random() < 0.18;
+    spawnBolt({ major });
+
+    // Flurry chance
+    if (Math.random() < 0.25) {
+      setTimeout(() => spawnBolt({}), 120 + Math.random() * 140);
+      if (Math.random() < 0.4) {
+        setTimeout(() => spawnBolt({ major: Math.random() < 0.3 }), 260 + Math.random() * 200);
+      }
+    }
+
+    const next = 1100 + Math.random() * 1400;
+    setTimeout(regularStrike, next);
+  }
+
+  openingSequence();
+  setTimeout(regularStrike, 1000);
+
+  /* ═══════════════════════════════════════════════════════════════
+     CLICK-TO-STRIKE
+     Tapping/clicking anywhere spawns a bolt at that location. Gives
+     agency — the user is the weather. */
+  document.getElementById('stage').addEventListener('click', (e) => {
+    /* Skip if clicking the vote-again link (let it navigate). */
+    if (e.target.closest('.vote-again')) return;
+    spawnBolt({
+      x1: e.clientX,
+      y1: -20,
+      x2: e.clientX + (Math.random() - 0.5) * 200,
+      y2: e.clientY + 40,
+      major: true,
+      thickness: 3,
+      life: 0.26,
+    });
+  });
+
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   DYNAMIC RETURN-LINK
+   If arrived via ?from=<url> query (production: tb12notgoat.com),
+   link back to that URL with #vote-section anchor. Otherwise
+   default to index.html for dev. */
+(function() {
+  const params = new URLSearchParams(location.search);
+  const from = params.get('from');
+  if (from) {
+    const link = document.getElementById('vote-again-link');
+    if (link) {
+      try {
+        const url = new URL(from.startsWith('http') ? from : 'https://' + from);
+        url.hash = 'vote-section';
+        link.href = url.toString();
+      } catch (err) {
+        /* malformed param — fall back to default anchor */
+      }
+    }
+  }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TWEAKS — toggleable reveal modes for Rivers
+     ═══════════════════════════════════════════════════════════════
+     The user LOVES the silhouette ("badass") but wants Rivers to
+     actually read. Four modes trade mystery for visibility:
+       - silhouette : original look. Rivers is pure shadow.
+       - flash      : silhouette, but lightning strikes briefly
+                      illuminate him in electric white (default — best
+                      of both worlds, theatrical).
+       - outline    : always-visible bright cyan outline of Rivers.
+                      Reads at a glance; still feels electric.
+       - lit        : Rivers is always brightened; pure reveal. For
+                      users who want no ambiguity about the hero.
+     Modes are applied by setting data-mode="..." on .stage; CSS rules
+     above handle the rest. The default on load is "flash". -->
+<script>
+(function() {
+  const stage = document.getElementById('stage');
+  const DEFAULTS = /*EDITMODE-BEGIN*/{
+    "revealMode": "natural"
+  }/*EDITMODE-END*/;
+  const state = Object.assign({}, DEFAULTS);
+
+  function apply() {
+    // "flash" and "silhouette" both render as silhouette by default
+    // (no data-mode). The difference is purely behavioral: .lit class
+    // is applied on strike only when revealMode === "flash".
+    // Default (no data-mode) = detailed inverted view (new default).
+    // Named modes override it.
+    if (state.revealMode === 'silhouette' || state.revealMode === 'outline' || state.revealMode === 'lit') {
+      stage.setAttribute('data-mode', state.revealMode);
+    } else {
+      stage.removeAttribute('data-mode');
+    }
+    // Expose current mode to the lightning engine so it knows whether
+    // to trigger the .lit class on flashes. (Reads window.__revealMode.)
+    window.__revealMode = state.revealMode;
+  }
+  apply();
+
+  // ─── Tweaks panel ───────────────────────────────────────────
+  let panel = null;
+  function buildPanel() {
+    panel = document.createElement('div');
+    panel.id = 'tweaks-panel';
+    panel.innerHTML = `
+      <style>
+        #tweaks-panel {
+          position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+          background: rgba(8, 12, 22, 0.92); border: 1px solid rgba(120, 180, 255, 0.4);
+          border-radius: 12px; padding: 16px 18px 14px; min-width: 220px;
+          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(80, 160, 255, 0.2);
+          font-family: 'Oswald', system-ui, sans-serif; color: #E8EEF8;
+          animation: tweaks-in 0.18s ease-out;
+        }
+        @keyframes tweaks-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        #tweaks-panel h3 { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+          color: #7FB5FF; font-weight: 700; margin-bottom: 10px; }
+        #tweaks-panel .group { margin-bottom: 4px; }
+        #tweaks-panel .label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+          color: rgba(232, 238, 248, 0.65); font-weight: 600; margin-bottom: 6px; }
+        #tweaks-panel .options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        #tweaks-panel button {
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(120, 180, 255, 0.18);
+          color: #C8D8FF; padding: 8px 10px; border-radius: 6px; font-size: 11px;
+          font-family: inherit; letter-spacing: 0.08em; text-transform: uppercase;
+          cursor: pointer; transition: all 0.15s; font-weight: 600;
+        }
+        #tweaks-panel button:hover { background: rgba(120, 180, 255, 0.12); border-color: rgba(120,180,255,0.4); }
+        #tweaks-panel button.active {
+          background: rgba(120, 180, 255, 0.25); border-color: rgba(180, 220, 255, 0.7);
+          color: #fff; box-shadow: 0 0 12px rgba(120, 180, 255, 0.4);
+        }
+      </style>
+      <h3>Tweaks</h3>
+      <div class="group">
+        <div class="label">Rivers Reveal</div>
+        <div class="options" data-group="revealMode">
+          <button data-val="scene">Scene</button>
+          <button data-val="natural">Natural</button>
+          <button data-val="silhouette">Silhouette</button>
+          <button data-val="outline">Outline</button>
+          <button data-val="lit">Lit</button>
+          <button data-val="electric">Electric</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(panel);
+    panel.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-val]');
+      if (!btn) return;
+      const group = btn.parentElement.getAttribute('data-group');
+      const val = btn.getAttribute('data-val');
+      state[group] = val;
+      apply();
+      syncButtons();
+      // Persist via host
+      try {
+        window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [group]: val } }, '*');
+      } catch (_) {}
+    });
+    syncButtons();
+  }
+  function syncButtons() {
+    if (!panel) return;
+    panel.querySelectorAll('button[data-val]').forEach(b => {
+      const group = b.parentElement.getAttribute('data-group');
+      b.classList.toggle('active', state[group] === b.getAttribute('data-val'));
+    });
+  }
+
+  // ─── Edit mode protocol ─────────────────────────────────────
+  window.addEventListener('message', (e) => {
+    const msg = e.data;
+    if (!msg || !msg.type) return;
+    if (msg.type === '__activate_edit_mode') {
+      if (!panel) buildPanel();
+      panel.style.display = '';
+    } else if (msg.type === '__deactivate_edit_mode') {
+      if (panel) panel.style.display = 'none';
+    }
+  });
+  try {
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>

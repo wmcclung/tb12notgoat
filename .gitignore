@@ -1,0 +1,28 @@
+# Scratch / experimental folders — not part of the deployed site
+uploads/
+audit/
+site/
+riversgoat/
+
+# Local backups & diagnostic pages
+index.original.backup.html
+riv-test.html
+*.bak
+
+# Claude Code / editor scratch
+.claude/
+
+# Node / dependency caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

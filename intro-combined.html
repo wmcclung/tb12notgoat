@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intro — Heads + Words</title>
+<style>
+  :root {
+    --bg:        #F5F1EB;
+    --surface:   #EEEBE4;
+    --ink:       #1A1614;
+    --ink-faint: #B5B0A8;
+    --red:       #C8102E;
+    --gold:      #C9920A;
+    --shadow:    rgba(26,22,20,.10);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  /* NO overflow on html/body — breaks sticky */
+  html { background:var(--bg); }
+  body { background:var(--bg); font-family:Georgia,'Times New Roman',serif; color:var(--ink); }
+
+  .pre-spacer {
+    height:50vh; display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:24px;
+  }
+  .pre-spacer p {
+    font-family:'Courier New',monospace; font-size:11px;
+    letter-spacing:.28em; text-transform:uppercase; color:var(--ink-faint);
+  }
+
+  /* ══════════════════════════════════════════════
+     SECTION — 700vh. NO overflow — breaks sticky.
+     Sticky stage = viewport window.
+  ══════════════════════════════════════════════ */
+  .intro-section {
+    position: relative;
+    height: 800vh;
+    background: var(--bg);
+    /* NO overflow property — kills sticky if present */
+  }
+
+  .section-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden; /* safe — only on the sticky element itself */
+    background: var(--bg);
+  }
+
+  /* ── CENTER CARD (Brady illustration placeholder) ── */
+  .center-card {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    will-change:transform,clip-path;
+    transform-origin:center center;
+    background:var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    z-index:2;
+  }
+  .brady-box {
+    width:clamp(100px,14vw,180px); height:clamp(140px,19vw,250px);
+    border:1.5px dashed var(--ink-faint); border-radius:4px;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:8px; opacity:.42;
+  }
+  .brady-box span {
+    font-family:'Courier New',monospace; font-size:10px;
+    letter-spacing:.15em; text-transform:uppercase;
+    color:var(--ink-faint); text-align:center;
+  }
+
+  /* ── HEAD COLUMNS ── */
+  .cards-col {
+    position:absolute; top:0;
+    display:flex; flex-direction:column;
+    justify-content:space-around;
+    height:110vh;
+    padding:clamp(16px,2.5vh,40px) 0;
+    gap:clamp(14px,2vh,30px);
+    z-index:5; will-change:transform;
+  }
+
+  .col-far-left  { left: clamp(6px,1.8vw,28px); }
+  .col-near-left { left: clamp(9%,15vw,210px); }
+  .col-near-right{ right:clamp(9%,15vw,210px); }
+  .col-far-right { right:clamp(6px,1.8vw,28px); }
+
+  /* Inner columns hidden on small screens */
+  @media (max-width:899px) {
+    .col-near-left,.col-near-right { display:none; }
+  }
+
+  /* ── PLAYER CARD ── */
+  .player-card {
+    width:clamp(68px,10vw,152px); height:clamp(68px,10vw,152px);
+    border-radius:50%; background:white;
+    box-shadow:0 3px 16px var(--shadow),0 0 0 2px rgba(255,255,255,.9);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative; flex-shrink:0;
+    transition:box-shadow .25s,transform .25s;
+  }
+  .player-card:hover {
+    box-shadow:0 10px 32px rgba(26,22,20,.18),0 0 0 2.5px var(--hov-col,var(--gold));
+    transform:scale(1.05);
+  }
+  .face-wrap { width:100%; height:100%; border-radius:50%; overflow:hidden; }
+  .face-svg  { width:100%; height:100%; display:block; }
+
+  /* ── WORD SLOTS ──
+     position:absolute; inset:0 fills 100vh stage.
+     display:flex centers word — GSAP only offsets y from that center.
+     z-index:20 puts words in front of heads.
+  ── */
+  .word-slot {
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    white-space:nowrap;
+    line-height:1;
+    letter-spacing:-.025em;
+    text-transform:uppercase;
+    opacity:0;
+    z-index:20;
+    pointer-events:none;
+    overflow:hidden;
+    padding:0 clamp(28px,5vw,80px);
+    font-family:Impact,Haettenschweiler,'Arial Narrow',sans-serif;
+  }
+  .word-slot .ltr { display:inline-block; will-change:transform,opacity; }
+  /* WHO wipe wrapper — clip-path applied here, not to full slot */
+  .word-slot .wipe-wrap { display:inline-block; will-change:clip-path; }
+
+  /* Word sizes + vertical positions — cascade top to bottom */
+  /* Each word owns a vertical zone so on a tall screen they read
+     from top to bottom: THEN → WHO → IS → THE → GOAT */
+  #w-then {
+    font-size: clamp(52px, 10vw, 140px);
+    color: var(--ink);
+    align-items: flex-start;
+    padding-top: clamp(32px, 5vh, 64px);       /* very top */
+    transform-origin: 50% 5%;
+  }
+  #w-who {
+    font-size: clamp(68px, 13vw, 185px);
+    color: var(--ink);
+    align-items: flex-start;
+    padding-top: clamp(120px, 27vh, 280px);    /* halfway between THEN(5vh) and IS(50vh) = 27.5vh */
+    transform-origin: 50% 27%;
+  }
+  #w-is {
+    font-size: clamp(88px, 17vw, 240px);
+    color: var(--ink);
+    /* true center */
+    transform-origin: 50% 50%;
+  }
+  #w-the {
+    font-size: clamp(60px, 11vw, 155px);
+    color: var(--ink);
+    /* Use padding-top + flex-start so flexbox actually respects the offset.
+       padding-bottom with flex-end is ignored — word snaps to absolute bottom. */
+    align-items: flex-start;
+    padding-top: clamp(400px, 68vh, 700px); /* 68vh from top = lower-middle zone */
+    transform-origin: 50% 68%;
+  }
+  #w-goat {
+    font-size: clamp(56px, 10vw, 145px);
+    color: var(--gold);
+    align-items: flex-end;
+    padding-bottom: clamp(32px, 5vh, 64px);    /* very bottom */
+    transform-origin: 50% 95%;
+  }
+
+  .post-spacer {
+    height:60vh; display:flex; align-items:center; justify-content:center;
+  }
+  .post-spacer p {
+    font-family:'Courier New',monospace; font-size:11px;
+    letter-spacing:.28em; text-transform:uppercase; color:var(--ink-faint);
+  }
+
+  /* ── CHART HEADER PREVIEW ──────────────────────
+     Minimal stub showing where the 5 player heads
+     will land after the domino drop.
+     Dark background signals the section transition.
+  ──────────────────────────────────────────────── */
+  .chart-preview {
+    background: #07090C;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: clamp(40px, 8vh, 80px);
+  }
+
+  .chart-header-stub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 64px);
+    padding: clamp(16px, 2vh, 28px) clamp(24px, 5vw, 80px);
+    border-bottom: 1px solid rgba(242,237,228,.08);
+    width: 100%;
+    background: rgba(7,9,12,.97);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .chart-player-stub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stub-ring {
+    width: clamp(34px, 4.5vw, 58px);
+    height: clamp(34px, 4.5vw, 58px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    font-family: Impact, sans-serif;
+    font-size: clamp(10px, 1.4vw, 16px);
+    font-weight: normal;
+    letter-spacing: .04em;
+  }
+
+  .stub-name {
+    font-family: 'Courier New', monospace;
+    font-size: clamp(7px, .9vw, 10px);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(242,237,228,.35);
+    text-align: center;
+  }
+
+  .chart-coming-soon {
+    color: rgba(242,237,228,.18);
+    font-family: 'Courier New', monospace;
+    font-size: clamp(10px, 1.2vw, 14px);
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    margin-top: clamp(60px, 12vh, 120px);
+    text-align: center;
+  }
+
+  /* Gradient bridge between intro and chart */
+  .section-bridge {
+    height: 10vh;
+    background: linear-gradient(to bottom, #F5F1EB 0%, #07090C 100%);
+    position: relative;
+    z-index: 1;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="pre-spacer"><p>← Hero section above</p></div>
+
+<div class="intro-section" id="intro-section">
+  <div class="section-stage" id="section-stage">
+
+    <!-- Brady: full-screen → shrinks to circle -->
+    <div class="center-card" id="center-card">
+      <div class="brady-box">
+        <span style="font-size:28px;opacity:.22">🏈</span>
+        <span>Casey's<br>Brady art</span>
+      </div>
+    </div>
+
+    <!-- Head columns — JS fills these -->
+    <div class="cards-col col-far-left"   id="col-fl"></div>
+    <div class="cards-col col-near-left"  id="col-nl"></div>
+    <div class="cards-col col-near-right" id="col-nr"></div>
+    <div class="cards-col col-far-right"  id="col-fr"></div>
+
+    <!-- Words — z:20, centered via inset+flex -->
+    <div class="word-slot" id="w-then">THEN</div>
+    <div class="word-slot" id="w-who">WHO</div>
+    <div class="word-slot" id="w-is">IS</div>
+    <div class="word-slot" id="w-the">THE</div>
+    <div class="word-slot" id="w-goat">GOAT</div>
+
+  </div>
+</div>
+
+<div class="post-spacer"><p>Chart section begins here →</p></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════
+   PLAYERS — 5 including Brady
+   Brady is introduced LAST in column order.
+══════════════════════════════════════════════ */
+const PLAYERS = {
+  /* face = accent (secondary/bright color), iris = dark navy — easier to tell apart */
+  rivers:    { bg:'#001B3D', accent:'#FFB612', face:'#FFB612', iris:'#001B3D' },
+  payton:    { bg:'#0B1F4E', accent:'#E87722', face:'#E87722', iris:'#001830' },
+  alexander: { bg:'#002244', accent:'#69BE28', face:'#3A6B1A', iris:'#001830' },
+  page:      { bg:'#3D1E6B', accent:'#B5985A', face:'#3D1E6B', iris:'#B5985A' }, /* Page stays as-is */
+  brady:     { bg:'#001840', accent:'#C8102E', face:'#C8102E', iris:'#001840' },
+};
+
+/* ══════════════════════════════════════════════
+   COLUMN LAYOUT
+   Brady placed LAST in both outer columns so he
+   rises after all other players are visible.
+   Inner cols (slower) have no Brady — he's the
+   late arrival, not the first face you see.
+
+   Column top cards enter viewport first as column
+   rises from below, so last = appears latest.
+
+   Total: 4 + 3 + 4 + 4 = 15 heads, 2 Brady heads.
+══════════════════════════════════════════════ */
+const COLUMNS = [
+  /* No same player at same index in adjacent column pairs (fl,nl), (nl,nr), (nr,fr) */
+  /* Brady last in both outer cols — rises into view latest */
+  { id:'col-fl', players:['rivers','payton','page','brady'],     speed:1.35 },
+  { id:'col-nl', players:['alexander','rivers','payton'],        speed:0.82 },
+  { id:'col-nr', players:['payton','page','alexander'],          speed:0.82 },
+  { id:'col-fr', players:['page','alexander','rivers','brady'],  speed:1.35 },
+];
+/* Player count: rivers=3 payton=3 alexander=3 page=3 brady=2 = 14 ✓ */
+
+/* ══════════════════════════════════════════════
+   SVG FACE BUILDER
+══════════════════════════════════════════════ */
+function buildFace(pid) {
+  const p = PLAYERS[pid]; if (!p) return '';
+  const eyeR=11, eyeY=42, eLX=32, eRX=68, pR=5.7;
+  const uid = pid + '_' + Math.random().toString(36).slice(2,7);
+  return `<svg class="face-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="${p.face || p.bg}"/>
+    <ellipse cx="50" cy="54" rx="32" ry="38" fill="rgba(255,255,255,.07)"/>
+    <ellipse cx="${eLX}" cy="${eyeY}" rx="${eyeR}" ry="${eyeR*.75}" fill="rgba(255,255,255,.9)"/>
+    <ellipse cx="${eRX}" cy="${eyeY}" rx="${eyeR}" ry="${eyeR*.75}" fill="rgba(255,255,255,.9)"/>
+    <g style="clip-path:url(#cl-${uid})">
+      <clipPath id="cl-${uid}"><ellipse cx="${eLX}" cy="${eyeY}" rx="${eyeR}" ry="${eyeR*.75}"/></clipPath>
+      <circle class="iris-l" cx="${eLX}" cy="${eyeY}" r="${eyeR*.7}" fill="${p.iris || p.accent}" opacity=".9"/>
+      <circle class="pupil-l" cx="${eLX}" cy="${eyeY}" r="${pR}" fill="#050810"/>
+      <circle cx="${eLX-pR*.3}" cy="${eyeY-pR*.35}" r="${pR*.28}" fill="rgba(255,255,255,.62)"/>
+    </g>
+    <g style="clip-path:url(#cr-${uid})">
+      <clipPath id="cr-${uid}"><ellipse cx="${eRX}" cy="${eyeY}" rx="${eyeR}" ry="${eyeR*.75}"/></clipPath>
+      <circle class="iris-r" cx="${eRX}" cy="${eyeY}" r="${eyeR*.7}" fill="${p.iris || p.accent}" opacity=".9"/>
+      <circle class="pupil-r" cx="${eRX}" cy="${eyeY}" r="${pR}" fill="#050810"/>
+      <circle cx="${eRX-pR*.3}" cy="${eyeY-pR*.35}" r="${pR*.28}" fill="rgba(255,255,255,.62)"/>
+    </g>
+    <rect class="lid-l" x="${eLX-eyeR}" y="${eyeY-eyeR*.75}" width="${eyeR*2}" height="${eyeR*1.6}"
+      fill="${p.bg}" rx="5.5" style="transform-origin:${eLX}px ${eyeY-eyeR*.75}px;transform:scaleY(0)"/>
+    <rect class="lid-r" x="${eRX-eyeR}" y="${eyeY-eyeR*.75}" width="${eyeR*2}" height="${eyeR*1.6}"
+      fill="${p.bg}" rx="5.5" style="transform-origin:${eRX}px ${eyeY-eyeR*.75}px;transform:scaleY(0)"/>
+    <path d="M${eLX-7.5} ${eyeY-eyeR-3.5}Q${eLX} ${eyeY-eyeR-6}${eLX+7.5} ${eyeY-eyeR-3.5}"
+      stroke="rgba(255,255,255,.2)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M${eRX-7.5} ${eyeY-eyeR-3.5}Q${eRX} ${eyeY-eyeR-6}${eRX+7.5} ${eyeY-eyeR-3.5}"
+      stroke="rgba(255,255,255,.2)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="56" r="2.2" fill="rgba(255,255,255,.2)"/>
+    <path d="M38 66Q50 72 62 66" stroke="rgba(255,255,255,.28)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="48.5" fill="none" stroke="${p.accent}" stroke-width="2" opacity=".5"/>
+  </svg>`;
+}
+
+/* ══════════════════════════════════════════════
+   BUILD CARDS
+   First occurrence of each player gets tagged
+   data-champion — used for the domino drop.
+══════════════════════════════════════════════ */
+const championsTagged = new Set();
+
+COLUMNS.forEach(col => {
+  const el = document.getElementById(col.id); if (!el) return;
+  col.players.forEach(pid => {
+    const p = PLAYERS[pid]; if (!p) return;
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.setProperty('--hov-col', p.accent);
+    card.innerHTML = `<div class="face-wrap">${buildFace(pid)}</div>`;
+    /* Tag first occurrence of each player as champion */
+    if (!championsTagged.has(pid)) {
+      card.dataset.champion = pid;
+      championsTagged.add(pid);
+    }
+    el.appendChild(card);
+  });
+});
+
+/* ══════════════════════════════════════════════
+   IDLE ANIMATIONS — blink + look
+   Independent per face, randomized timing.
+══════════════════════════════════════════════ */
+document.querySelectorAll('.face-svg').forEach((svg, i) => {
+  const d = i * 260 + Math.random() * 500;
+
+  function blink() {
+    const lids = svg.querySelectorAll('.lid-l,.lid-r');
+    lids.forEach(l => { l.style.transition='transform .07s ease-in'; l.style.transform='scaleY(1)'; });
+    setTimeout(() => lids.forEach(l => { l.style.transition='transform .11s ease-out'; l.style.transform='scaleY(0)'; }), 85);
+    setTimeout(blink, 2700 + Math.random() * 4200);
+  }
+  setTimeout(blink, d + Math.random() * 1600);
+
+  function look() {
+    const dx = (Math.random()-.5)*5.5, dy = (Math.random()-.5)*2.8;
+    const dur = (300 + Math.random()*280) + 'ms';
+    svg.querySelectorAll('.pupil-l,.iris-l,.pupil-r,.iris-r').forEach(el => {
+      el.style.transition = `transform ${dur} ease-in-out`;
+      el.style.transform  = `translate(${dx}px,${dy}px)`;
+    });
+    if (Math.random() > .7) {
+      const t = (Math.random()-.5)*2.8;
+      svg.style.transition = 'transform .6s ease-in-out';
+      svg.style.transform  = `rotate(${t}deg)`;
+      setTimeout(() => { svg.style.transform='rotate(0deg)'; }, 700);
+    }
+    setTimeout(look, 1200 + Math.random() * 1900);
+  }
+  setTimeout(look, d*.5 + Math.random()*800);
+});
+
+/* ══════════════════════════════════════════════
+   WORD SETUP
+══════════════════════════════════════════════ */
+const WORDS   = ['THEN','WHO','IS','THE','GOAT'];
+const wordEls = ['w-then','w-who','w-is','w-the','w-goat']
+                  .map(id => document.getElementById(id));
+
+/* GOAT scatter — fixed per session */
+const scatterCache = {};
+
+/* Once a word reaches SIT_END it's been "seen" — never plays enter again.
+   Scrolling back up shows it as a ghost. Scrolling through shows it full. */
+const hasSeen = [false, false, false, false, false];
+function getScatter(li) {
+  if (!scatterCache[li]) {
+    const dist = 180 + Math.random()*220, ang = Math.random()*Math.PI*2;
+    scatterCache[li] = { x:Math.cos(ang)*dist, y:Math.sin(ang)*dist*.5, rot:(Math.random()-.5)*280 };
+  }
+  return scatterCache[li];
+}
+
+/* Build GOAT letter spans for scatter animation */
+(() => {
+  const el = document.getElementById('w-goat');
+  el.innerHTML = [...'GOAT'].map((ch,li) =>
+    `<span class="ltr" data-li="${li}">${ch}</span>`
+  ).join('');
+})();
+
+/* Build THE letter spans — T+H come from left, E from right */
+(() => {
+  const el = document.getElementById('w-the');
+  el.innerHTML = [...'THE'].map((ch,li) =>
+    `<span class="ltr" data-li="${li}">${ch}</span>`
+  ).join('');
+})();
+
+/* WHO uses clip-path on the slot directly — no inner wrap needed */
+
+/* ══════════════════════════════════════════════
+   SCROLL MATH
+   ─────────────────────────────────────────────
+   Section: 700vh total.
+   globalP 0→1 across full scroll.
+
+   Phases:
+   0.00–0.12  Brady shrinks + first heads appear
+   0.10–0.80  Words sequence (5 × 0.14 each)
+   0.65–0.82  Heads fully assembled
+   0.83→      Domino drop fires (one-shot GSAP)
+   ─────────────────────────────────────────────
+   Word zones — each word owns 14% of total:
+     THEN  0.10–0.24
+     WHO   0.24–0.38
+     IS    0.38–0.52
+     THE   0.52–0.66
+     GOAT  0.66–0.80
+
+   Within each word's zone (wp 0→1):
+     0.00–0.25  enter  (animation in)
+     0.25–0.74  sit    (locked at center)
+     0.74–0.92  exit   (slides off top + fades)
+     0.92–1.00  gap    (invisible)
+══════════════════════════════════════════════ */
+const WORD_START    = 0.42;   /* words start after heads are well assembled */
+const WORD_ZONE     = 0.11;   /* each word owns 11% of scroll */
+
+const ENTER_END     = 0.25;   /* wp: animation complete */
+const SIT_END       = 0.78;   /* wp: full-size sit ends, stamp begins */
+const STAMP_SCALE   = 0.65;   /* stamp shrinks to 65% — stays readable, small positional error */
+const STAMP_OPACITY = 0.60;   /* stamp opacity — clearly read, noticeably receded */
+
+function clamp(v,a,b) { return Math.min(Math.max(v,a),b); }
+function eio(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t; }
+function eout3(t) { return 1-Math.pow(1-t,3); }
+function bounceOut(t) {
+  if (t<0.72) return eout3(t/0.72);
+  const b=(t-0.72)/0.28;
+  return 1+Math.sin(b*Math.PI)*0.10*(1-b*0.5);
+}
+
+function wordP(gp, i) {
+  return clamp((gp - WORD_START - i*WORD_ZONE) / WORD_ZONE, 0, 1);
+}
+
+/* ── THEN: stamp drop — bidirectional ── */
+function animThen(wp, wH) {
+  const el = wordEls[0];
+  if (wp >= SIT_END) hasSeen[0] = true;
+
+  if (wp >= 1) {
+    /* Fully past zone — always show as stamp ghost */
+    gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 5%' });
+    return;
+  }
+  if (wp >= SIT_END) {
+    /* Stamping: shrinks from full to ghost */
+    const sp = clamp((wp - SIT_END) / 0.22, 0, 1);
+    const sc = 1 - eio(sp) * (1 - STAMP_SCALE);
+    const op = 1 - eio(sp) * (1 - STAMP_OPACITY);
+    gsap.set(el, { opacity:op, scaleX:sc, scaleY:sc, y:0, filter:'none', transformOrigin:'50% 5%' });
+    return;
+  }
+  if (wp >= ENTER_END) {
+    /* Sitting at full size */
+    gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+    return;
+  }
+  if (wp > 0) {
+    if (hasSeen[0]) {
+      /* Already seen — show as stamp, no re-animation */
+      gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 5%' });
+    } else {
+      /* First time entering — play stamp drop */
+      const ep = wp / ENTER_END;
+      const bv = bounceOut(ep);
+      gsap.set(el, { opacity:Math.min(ep/0.2,1), y:-wH*0.18*(1-ep), scaleX:1,scaleY:1,filter:'none' });
+    }
+    return;
+  }
+  /* wp <= 0: not yet reached OR scrolled back above — show stamp if seen */
+  if (hasSeen[0]) {
+    gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 5%' });
+  } else {
+    gsap.set(el, { opacity:0 });
+  }
+}
+
+/* ══════════════════════════════════════════════
+   WHO — VERTICAL CLIP-PATH WIPE
+   Curtain pulls up revealing word top→bottom.
+   Distinct from THEN's drop — no directional blur.
+══════════════════════════════════════════════ */
+function animWho(wp, wH) {
+  /* WHO — vertical clip-path wipe on the slot itself.
+     clip-path inset clips from bottom: 100%=hidden, 0%=fully revealed.
+     Word sits at top of slot (padding-top), so top appears first. */
+  const el = wordEls[1];
+  if (wp >= SIT_END) hasSeen[1] = true;
+
+  const showFull = () =>
+    gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none', clipPath:'inset(0% 0% 0% 0%)' });
+
+  const showStamp = () =>
+    gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 27%', clipPath:'none' });
+
+  if (wp >= 1) { showStamp(); return; }
+  if (wp >= SIT_END) {
+    const sp = clamp((wp-SIT_END)/0.22, 0, 1);
+    gsap.set(el, {
+      opacity: 1 - eio(sp)*(1-STAMP_OPACITY),
+      scaleX:  1 - eio(sp)*(1-STAMP_SCALE),
+      scaleY:  1 - eio(sp)*(1-STAMP_SCALE),
+      y:0, filter:'none', transformOrigin:'50% 27%', clipPath:'none',
+    });
+    return;
+  }
+  if (wp >= ENTER_END) { showFull(); return; }
+  if (wp > 0) {
+    if (hasSeen[1]) { showStamp(); return; }
+    /* Wipe: reveal top-to-bottom via clip-path inset from bottom */
+    const ep  = wp / ENTER_END;
+    const pct = Math.max(100 * (1 - eio(ep)), 0);
+    gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none',
+      clipPath:`inset(0% 0% ${pct.toFixed(1)}% 0%)` });
+    return;
+  }
+  /* wp <= 0 */
+  if (hasSeen[1]) { showStamp(); }
+  else gsap.set(el, { opacity:0, clipPath:'inset(0% 0% 100% 0%)' });
+}
+
+/* ══════════════════════════════════════════════
+   IS — SCALE PUNCH
+   Enters at 135%, snaps to 100% with elastic dip.
+   IS is the biggest word — punch gives it weight.
+══════════════════════════════════════════════ */
+function animIs(wp, wH) {
+  const el = wordEls[2];
+  if (wp >= SIT_END) hasSeen[2] = true;
+
+  const showFull  = () => gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+  const showStamp = () => gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 50%' });
+
+  if (wp >= 1)    { showStamp(); return; }
+  if (wp >= SIT_END) {
+    const sp = clamp((wp-SIT_END)/0.22, 0, 1);
+    const sc = 1 - eio(sp)*(1-STAMP_SCALE);
+    const op = 1 - eio(sp)*(1-STAMP_OPACITY);
+    gsap.set(el, { opacity:op, scaleX:sc, scaleY:sc, y:0, filter:'none', transformOrigin:'50% 50%' });
+    return;
+  }
+  if (wp >= ENTER_END) { showFull(); return; }
+  if (wp > 0) {
+    if (hasSeen[2]) { showStamp(); }
+    else {
+      /* Punch: 1.60 → 1.0 with elastic undershoot — hard landing */
+      const ep = wp / ENTER_END;
+      let sc;
+      if (ep < 0.50) {
+        /* Big compress: 1.6 → 1.0 */
+        sc = 1.60 - eio(ep / 0.50) * 0.60;
+      } else {
+        /* Elastic undershoot: dips to 0.88 then bounces back to 1.0 */
+        const t = (ep - 0.50) / 0.50;
+        sc = 1.0 - Math.sin(t * Math.PI) * 0.12;
+      }
+      gsap.set(el, { opacity:Math.min(ep/0.08,1), scaleX:sc, scaleY:sc, y:0, filter:'none', transformOrigin:'50% 50%' });
+    }
+    return;
+  }
+  hasSeen[2] ? showStamp() : gsap.set(el, { opacity:0, scaleX:1.35, scaleY:1.35 });
+}
+
+/* ══════════════════════════════════════════════
+   THE — SPLIT LOCK
+   T+H slide in from left, E from right.
+   They converge and lock together.
+══════════════════════════════════════════════ */
+function animThe(wp, wH) {
+  const el      = wordEls[3];
+  const letters = el.querySelectorAll('.ltr');
+  if (wp >= SIT_END) hasSeen[3] = true;
+
+  const showFull = () => {
+    gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+    letters.forEach(l => gsap.set(l, { x:0, opacity:1 }));
+  };
+  const showStamp = () => {
+    gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 68%' });
+    letters.forEach(l => gsap.set(l, { x:0 }));
+  };
+  const hideFar = () => {
+    gsap.set(el, { opacity:0 });
+    letters.forEach((l,li) => gsap.set(l, { x: li<2 ? -90 : 90 }));
+  };
+
+  if (wp >= 1)    { showStamp(); return; }
+  if (wp >= SIT_END) {
+    const sp = clamp((wp-SIT_END)/0.22, 0, 1);
+    const sc = 1 - eio(sp)*(1-STAMP_SCALE);
+    const op = 1 - eio(sp)*(1-STAMP_OPACITY);
+    gsap.set(el, { opacity:op, scaleX:sc, scaleY:sc, y:0, filter:'none', transformOrigin:'50% 68%' });
+    letters.forEach(l => gsap.set(l, { x:0 }));
+    return;
+  }
+  if (wp >= ENTER_END) { showFull(); return; }
+  if (wp > 0) {
+    if (hasSeen[3]) { showStamp(); }
+    else {
+      /* Split: T+H slide from left, E from right — converge and lock */
+      const ep   = wp / ENTER_END;
+      const dist = 160; /* px — wide enough to feel dramatic at large type */
+      gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+      letters.forEach((l, li) => {
+        /* T(0) locks first, H(1) slightly after, E(2) mirrors T timing */
+        const lag  = li === 1 ? 0.12 : 0;
+        const lp   = clamp((ep - lag) / (1 - lag), 0, 1);
+        const ease = eio(lp);
+        const fromLeft = li < 2;
+        /* Overshoot: letter continues slightly past center before snapping.
+           fromLeft → overshoot goes positive (right of center)
+           fromRight → overshoot goes negative (left of center) */
+        const os = lp > 0.82 ? Math.sin(((lp-0.82)/0.18) * Math.PI) * 18 : 0;
+        const start = fromLeft ? -dist : dist;
+        const x = start * (1 - ease) + (fromLeft ? os : -os);
+        gsap.set(l, { x, opacity:Math.min(ep/0.10,1) });
+      });
+    }
+    return;
+  }
+  hasSeen[3] ? showStamp() : hideFar();
+}
+
+/* ══════════════════════════════════════════════
+   GOAT — SCATTER SNAP → LOCKED IN GOLD
+   No fall-apart during scroll.
+   Fall-apart fires only from domino drop onComplete.
+══════════════════════════════════════════════ */
+let goatFallTl = null; /* reference so reverse can kill it */
+
+function fireGoatFallApart() {
+  const el      = wordEls[4];
+  const letters = el.querySelectorAll('.ltr');
+  if (!letters.length) return;
+  if (goatFallTl) goatFallTl.kill();
+  goatFallTl = gsap.timeline();
+  letters.forEach((l, li) => {
+    const s      = getScatter(li);
+    const norm   = Math.sqrt(s.x*s.x + s.y*s.y) || 1;
+    const fleeDist = 160 + li * 40;
+    goatFallTl.to(l, {
+      x:        (s.x/norm) * fleeDist,
+      y:        (s.y/norm) * fleeDist,
+      rotation: s.rot * 0.55,
+      opacity:  0,
+      duration: 0.55,
+      ease:     'power2.in',
+    }, li * 0.08);
+  });
+  goatFallTl.to(el, { opacity:0, duration:0.20 }, 0.45);
+}
+
+function restoreGoat() {
+  if (goatFallTl) { goatFallTl.kill(); goatFallTl = null; }
+  const el      = wordEls[4];
+  const letters = el.querySelectorAll('.ltr');
+  gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+  letters.forEach(l => gsap.set(l, { x:0, y:0, rotation:0, opacity:1 }));
+}
+
+function animGoat(wp, wH) {
+  const el      = wordEls[4];
+  const letters = el.querySelectorAll('.ltr');
+  if (!letters.length) return;
+
+  const showFull = () => {
+    /* Don't override if fall-apart is actively playing */
+    if (goatFallTl && goatFallTl.isActive()) return;
+    gsap.set(el, { opacity:1, scaleX:1, scaleY:1, y:0, filter:'none' });
+    letters.forEach(l => gsap.set(l, { x:0, y:0, rotation:0, opacity:1 }));
+  };
+
+  if (wp >= SIT_END) hasSeen[4] = true;
+
+  /* GOAT stays full past its zone — no stamp fade */
+  if (wp >= 1 || (wp >= SIT_END)) {
+    if (!goatFallTl || !goatFallTl.isActive()) showFull();
+    return;
+  }
+  if (wp <= 0) {
+    if (hasSeen[4]) {
+      /* Seen but scrolled back above — show at stamp size, letters locked */
+      gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:'none', transformOrigin:'50% 95%' });
+      letters.forEach(l => gsap.set(l,{x:0,y:0,rotation:0,opacity:1}));
+    } else {
+      gsap.set(el,{opacity:0});
+      letters.forEach((_,li)=>{const s=getScatter(li);gsap.set(_,{x:s.x,y:s.y,rotation:s.rot,opacity:0});});
+    }
+    return;
+  }
+  if (wp >= ENTER_END) { showFull(); return; }
+  /* Entering zone but already seen — show stamp */
+  if (hasSeen[4]) {
+    gsap.set(el, { opacity:STAMP_OPACITY, scaleX:STAMP_SCALE, scaleY:STAMP_SCALE, y:0, filter:"none", transformOrigin:"bottom center" });
+    letters.forEach(l => gsap.set(l,{x:0,y:0,rotation:0,opacity:1}));
+    return;
+  }
+  /* Scatter snap in */
+  gsap.set(el, { opacity:1, y:0, scaleX:1, scaleY:1, filter:'none' });
+  letters.forEach((l,li) => {
+    const s   = getScatter(li);
+    const lag = li * 0.06;
+    const lp  = clamp((wp/ENTER_END - lag*0.3)/0.7, 0, 1);
+    const e   = lp<0.5 ? 4*lp*lp*lp : 1-Math.pow(-2*lp+2,3)/2;
+    gsap.set(l, { x:s.x*(1-e), y:s.y*(1-e), rotation:s.rot*(1-e), opacity:Math.min(lp/0.18,1) });
+  });
+}
+
+/* ══════════════════════════════════════════════
+   DOMINO DROP TRANSITION
+   Fires once at gp >= 0.83.
+   One champion card per player detaches from columns,
+   scales down, and falls off bottom in sequence:
+   Rivers → Payton → Alexander → Page → Brady
+
+   "Curtain drop" into chart — like evidence being
+   laid on the table, one piece at a time.
+══════════════════════════════════════════════ */
+let dropFired   = false;
+let dropTl      = null;  /* reference so we can kill it on reverse */
+
+const DROP_ORDER = ['brady','rivers','payton','alexander','page']; /* matches chart L→R */
+
+function fireDropTransition() {
+  if (dropFired) return;
+  dropFired = true;
+
+  const champions = [...document.querySelectorAll('[data-champion]')];
+  if (!champions.length) return;
+
+  champions.sort((a,b) =>
+    DROP_ORDER.indexOf(a.dataset.champion) - DROP_ORDER.indexOf(b.dataset.champion)
+  );
+
+  const wW = window.innerWidth;
+  const wH = window.innerHeight;
+  dropTl = gsap.timeline({ onComplete: () => {
+    /* All stamp words fade out — the argument is now the chart */
+    const stamps = [wordEls[0], wordEls[1], wordEls[2], wordEls[3]];
+    gsap.to(stamps, {
+      opacity: 0, y: -30, duration: 0.35, ease: 'power2.in', stagger: 0.07,
+      onComplete: fireGoatFallApart   /* GOAT falls apart last, as punctuation */
+    });
+  } });
+
+  /* ── Fade out all non-champion heads ── */
+  const bystanders = [...document.querySelectorAll('.player-card:not([data-champion])')];
+  dropTl.to(bystanders, {
+    opacity: 0, scale: 0.72,
+    duration: 0.35, ease: 'power2.in',
+    stagger: 0.04,
+  }, 0);
+
+  champions.forEach((card, i) => {
+    const rect = card.getBoundingClientRect();
+    const sz   = rect.width;
+
+    const targetCX = wW * (i + 0.5) / 5;
+    const targetCY = wH * 0.90;
+    const targetSz = clamp(wW * 0.058, 42, 72);
+
+    /* Clone — fixed at current screen position */
+    const ghost = card.cloneNode(true);
+    ghost.removeAttribute('data-champion');
+    ghost.style.cssText = `
+      position:fixed;
+      left:${rect.left}px;
+      top:${rect.top}px;
+      width:${sz}px;
+      height:${sz}px;
+      border-radius:50%;
+      z-index:200;
+      pointer-events:none;
+      margin:0; padding:0;
+      box-shadow:0 4px 20px rgba(26,22,20,.22);
+    `;
+    ghost.dataset.dropGhost = '1';
+    /* Store origin for reverse animation */
+    ghost.dataset.ox = rect.left + sz/2;
+    ghost.dataset.oy = rect.top  + sz/2;
+    document.body.appendChild(ghost);
+    card.style.opacity = '0';
+
+    const dx    = targetCX - (rect.left + sz/2);
+    const dy    = targetCY - (rect.top  + sz/2);
+    const scale = targetSz / sz;
+
+    /* Store target offset for reverse */
+    ghost.dataset.dx    = dx;
+    ghost.dataset.dy    = dy;
+    ghost.dataset.scale = scale;
+
+    dropTl.to(ghost, {
+      x: dx, y: dy, scale,
+      duration: 0.42, ease: 'power3.inOut',
+    }, 0.15 + i * 0.14);
+  });
+}
+
+function reverseDropTransition() {
+  if (!dropFired) return;
+
+  /* Kill forward animation if still running */
+  if (dropTl) { dropTl.kill(); dropTl = null; }
+
+  const ghosts    = [...document.querySelectorAll('[data-drop-ghost]')];
+  const champions = [...document.querySelectorAll('[data-champion]')];
+  const bystanders = [...document.querySelectorAll('.player-card:not([data-champion])')];
+
+  if (!ghosts.length) {
+    /* Already cleaned up — just restore visibility */
+    champions.forEach(c  => { c.style.opacity = ''; });
+    bystanders.forEach(b => { gsap.set(b, {opacity:1, scale:1}); });
+    dropFired = false;
+    return;
+  }
+
+  /* Restore all words on reverse */
+  restoreGoat();
+  const stamps = [wordEls[0], wordEls[1], wordEls[2], wordEls[3]];
+  gsap.to(stamps, { opacity: STAMP_OPACITY, y: 0, duration: 0.25, ease: 'power2.out' });
+
+  const tl = gsap.timeline({ onComplete: () => {
+    /* Remove ghosts, restore originals */
+    ghosts.forEach(g => g.remove());
+    champions.forEach(c  => { c.style.opacity = ''; });
+    dropFired = false;
+  }});
+
+  /* Fly each ghost back to its origin position */
+  ghosts.forEach((ghost, i) => {
+    tl.to(ghost, {
+      x: 0, y: 0, scale: 1,
+      duration: 0.38, ease: 'power3.inOut',
+    }, i * 0.10);
+  });
+
+  /* Fade bystanders back in */
+  tl.to(bystanders, {
+    opacity: 1, scale: 1,
+    duration: 0.30, ease: 'power2.out',
+    stagger: 0.03,
+  }, 0.25);
+}
+
+/* ══════════════════════════════════════════════
+   SCROLL DRIVER
+══════════════════════════════════════════════ */
+const section    = document.getElementById('intro-section');
+const centerCard = document.getElementById('center-card');
+
+const colEls = [
+  { el:document.getElementById('col-fl'), speed:1.35 },
+  { el:document.getElementById('col-nl'), speed:0.82 },
+  { el:document.getElementById('col-nr'), speed:0.82 },
+  { el:document.getElementById('col-fr'), speed:1.35 },
+];
+
+function onScroll() {
+  const rect  = section.getBoundingClientRect();
+  const wH    = window.innerHeight;
+  const wW    = window.innerWidth;
+  const total = section.offsetHeight - wH;
+  const gp    = clamp(-rect.top / total, 0, 1);
+
+  /* ── HEAD COLUMNS: rise from below ── */
+  colEls.forEach(({ el, speed }) => {
+    if (!el || el.offsetParent === null) return;
+    const startY =  wH * 1.15 * speed;
+    const endY   = -wH * 0.12 * speed;
+    const eased  = eio(clamp(gp * 1.1, 0, 1));
+    const y      = startY - eased * (startY - endY);
+    el.style.transform = `translateY(${y.toFixed(1)}px)`;
+  });
+
+  /* ── BRADY CENTER CARD: shrinks to circle ── */
+  const shrinkP    = eio(clamp(gp / 0.40, 0, 1));
+  const cardR      = clamp(wW * 0.07, 44, 96);
+  const scaleT     = (cardR*2) / wW;
+  const scale      = 1 - shrinkP * (1 - scaleT);
+  const insetX     = shrinkP * ((wW - cardR*2/scale) / 2);
+  const insetY     = shrinkP * ((wH - cardR*2/scale) / 2);
+  const radius     = (cardR / scale) * shrinkP;
+  centerCard.style.transform = `scale(${scale.toFixed(4)})`;
+  centerCard.style.clipPath  = `inset(${insetY.toFixed(1)}px ${insetX.toFixed(1)}px round ${radius.toFixed(1)}px)`;
+
+  /* ── WORDS: each in their own zone ── */
+  const wp0=wordP(gp,0), wp1=wordP(gp,1), wp2=wordP(gp,2),
+        wp3=wordP(gp,3), wp4=wordP(gp,4);
+
+  animThen(wp0, wH);
+  animWho(wp1, wH);
+  animIs(wp2, wH);
+  animThe(wp3, wH);
+  animGoat(wp4, wH);
+
+  /* ── DOMINO DROP: fires when GOAT stamps; resets on scroll-up ── */
+  if (gp >= 0.97) {
+    fireDropTransition();
+  } else if (gp < 0.94 && dropFired) {
+    reverseDropTransition();
+  }
+}
+
+window.addEventListener('scroll', onScroll, { passive:true });
+window.addEventListener('resize', onScroll, { passive:true });
+onScroll();
+</script>
+
+<!-- ── SECTION BRIDGE ── -->
+<div class="section-bridge"></div>
+
+<!-- ── CHART HEADER PREVIEW ── -->
+<div class="chart-preview" id="chart-preview">
+  <div class="chart-header-stub" id="chart-header-stub">
+    <div class="chart-player-stub">
+      <div class="stub-ring" style="background:#001840;border-color:#C8102E;color:#C8102E;">TB</div>
+      <span class="stub-name">Brady</span>
+    </div>
+    <div class="chart-player-stub">
+      <div class="stub-ring" style="background:#001B3D;border-color:#FFB612;color:#FFB612;">PR</div>
+      <span class="stub-name">Rivers</span>
+    </div>
+    <div class="chart-player-stub">
+      <div class="stub-ring" style="background:#0B1F4E;border-color:#E87722;color:#E87722;">WP</div>
+      <span class="stub-name">Payton</span>
+    </div>
+    <div class="chart-player-stub">
+      <div class="stub-ring" style="background:#002244;border-color:#69BE28;color:#69BE28;">SA</div>
+      <span class="stub-name">Alexander</span>
+    </div>
+    <div class="chart-player-stub">
+      <div class="stub-ring" style="background:#3D1E6B;border-color:#B5985A;color:#B5985A;">AP</div>
+      <span class="stub-name">Page</span>
+    </div>
+  </div>
+  <p class="chart-coming-soon">↓ The case — chart section</p>
+</div>
+
+</body>
+</html>

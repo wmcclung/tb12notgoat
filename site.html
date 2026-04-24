@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom Brady Is Not The GOAT</title>
+<style>
+:root { --cream:#F2EDE4; --red:#C8102E; --gold:#D4AF37; --bg:#07090C; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow-x:hidden;background:var(--bg);}
+body{font-family:Impact,Haettenschweiler,'Arial Narrow',Arial,sans-serif;}
+
+/* HERO */
+.hero{position:relative;height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 75% 55% at 50% 52%,#1F0B09 0%,var(--bg) 68%);}
+/* ── ANIMATED BG SLOT ── Drop library here at final pass. Options: react-tsparticles firefly, vanta.js CELLS. Target opacity 0.03–0.05 */
+.hero-pattern-slot{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(242,237,228,.04) 1px,transparent 1px);background-size:36px 36px;pointer-events:none;}
+.hero-vignette{position:absolute;inset:0;background:radial-gradient(ellipse 100% 40% at 50% 0%,rgba(0,0,0,.6) 0%,transparent 100%),radial-gradient(ellipse 100% 30% at 50% 100%,rgba(0,0,0,.5) 0%,transparent 100%);pointer-events:none;}
+.hero-scanlines{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);pointer-events:none;}
+.headline{position:relative;z-index:10;text-align:center;line-height:.88;user-select:none;}
+.line-preamble{font-size:clamp(22px,5vw,68px);letter-spacing:.16em;color:var(--cream);text-transform:uppercase;opacity:.82;}
+.line-not-wrap{display:block;overflow:visible;position:relative;}
+.line-not{font-size:clamp(80px,19vw,256px);letter-spacing:-.03em;color:var(--red);text-transform:uppercase;display:inline-block;position:relative;text-shadow:0 0 60px rgba(200,16,46,.5),0 0 120px rgba(200,16,46,.2),0 2px 0 rgba(0,0,0,.6);}
+.line-not::after{content:'';position:absolute;bottom:6px;left:-2px;right:-2px;height:5px;background:var(--red);transform:scaleX(0);transform-origin:left;}
+.line-not.struck::after{transform:scaleX(1);transition:transform .25s ease-out .05s;}
+.line-bottom{font-size:clamp(22px,5vw,68px);letter-spacing:.16em;color:var(--cream);text-transform:uppercase;opacity:.82;display:flex;align-items:center;justify-content:center;gap:clamp(6px,1.2vw,18px);position:relative;}
+#crown-anchor{position:relative;display:inline-flex;align-items:center;}
+#crown-svg{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);width:clamp(36px,6.5vw,80px);margin-bottom:clamp(-6px,-.5vw,-2px);transform-origin:50% 100%;filter:drop-shadow(0 0 10px rgba(212,175,55,.7)) drop-shadow(0 2px 4px rgba(0,0,0,.6));}
+.illo-wrap{position:relative;z-index:8;margin-top:clamp(20px,3.5vh,44px);width:clamp(180px,28vw,340px);height:clamp(140px,20vh,260px);border:1px dashed rgba(242,237,228,.15);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.illo-icon{font-size:clamp(28px,4vw,48px);opacity:.12;line-height:1;}
+.illo-label{font-family:'Courier New',monospace;font-size:clamp(9px,1vw,11px);letter-spacing:.14em;color:rgba(242,237,228,.28);text-transform:uppercase;text-align:center;line-height:1.7;}
+.illo-label em{display:block;font-style:normal;color:rgba(212,175,55,.45);font-size:clamp(10px,1.1vw,12px);letter-spacing:.1em;margin-bottom:2px;}
+.subtext{position:relative;z-index:10;margin-top:clamp(14px,2vh,24px);font-family:'Courier New',monospace;font-size:clamp(9px,1.1vw,13px);letter-spacing:.32em;color:rgba(242,237,228,.3);text-transform:uppercase;text-align:center;}
+.scroll-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:7px;}
+.scroll-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.38em;color:rgba(242,237,228,.22);text-transform:uppercase;}
+.scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,rgba(242,237,228,.28),transparent);animation:scrollDrop 2.4s ease-in-out infinite;}
+@keyframes scrollDrop{0%{opacity:0;transform:scaleY(0);transform-origin:top;}35%{opacity:1;transform:scaleY(1);transform-origin:top;}75%{opacity:0;transform:scaleY(1);transform-origin:top;}100%{opacity:0;}}
+.particle{position:fixed;border-radius:50%;pointer-events:none;z-index:100;}
+
+/* CHART SECTION */
+/* ── ANIMATED BG SLOT (chart) ── Same library, opacity ~0.025 so data stays readable */
+.chart-section{position:relative;background:var(--bg);}
+.table-header{position:sticky;top:0;z-index:50;background:rgba(7,9,12,.97);border-bottom:1px solid rgba(242,237,228,.05);backdrop-filter:blur(8px);padding:clamp(11px,1.7vh,19px) clamp(20px,4vw,64px);display:grid;grid-template-columns:clamp(130px,16vw,210px) repeat(5,1fr);gap:0 6px;align-items:center;}
+.player-head{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.portrait-ring{width:clamp(34px,4.2vw,54px);height:clamp(34px,4.2vw,54px);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(242,237,228,.1);transition:border-color .6s ease,box-shadow .6s ease;overflow:hidden;position:relative;}
+/* Casey's portrait art replaces the initials circle — same dimensions */
+.initials{font-size:clamp(10px,1.3vw,15px);letter-spacing:.04em;position:relative;z-index:1;}
+.player-name-label{font-family:'Courier New',monospace;font-size:clamp(7px,.9vw,11px);letter-spacing:.18em;color:rgba(242,237,228,.38);text-transform:uppercase;text-align:center;}
+.phead-rivers.lit .portrait-ring{border-color:rgba(0,133,202,.75);box-shadow:0 0 14px rgba(0,133,202,.4),0 0 32px rgba(0,133,202,.15);}
+/* mob-id (player ring + name inside each cell) — hidden on desktop where header does the job */
+.mob-id{display:none;}
+
+.trace-beam{position:absolute;left:clamp(20px,4vw,64px);top:0;bottom:0;width:1px;pointer-events:none;z-index:1;}
+.trace-fill{position:absolute;top:0;left:0;width:1px;height:0%;background:linear-gradient(to bottom,transparent 0%,rgba(200,16,46,.55) 8%,rgba(200,16,46,.32) 85%,transparent 100%);}
+
+.table-body{padding:clamp(24px,4vh,48px) clamp(20px,4vw,64px);position:relative;}
+
+.cat-row{display:grid;grid-template-columns:clamp(130px,16vw,210px) repeat(5,1fr);gap:0 6px;padding:clamp(36px,6vh,72px) 0;border-bottom:1px solid rgba(242,237,228,.04);position:relative;align-items:start;}
+.cat-row::before{content:'';position:absolute;left:-4px;top:clamp(40px,6vh,68px);width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px rgba(200,16,46,.65);opacity:0;transition:opacity .3s ease;}
+.cat-row.dotted::before{opacity:1;}
+
+.cat-label-col{padding-right:14px;padding-top:2px;}
+.cat-eyebrow{font-family:'Courier New',monospace;font-size:clamp(7px,.82vw,10px);letter-spacing:.35em;color:var(--red);text-transform:uppercase;opacity:.65;margin-bottom:6px;}
+.cat-title-el{font-size:clamp(10px,1.35vw,17px);letter-spacing:.08em;color:var(--cream);text-transform:uppercase;line-height:1.2;min-height:clamp(22px,2.6vw,38px);}
+.cat-cursor{display:inline-block;width:2px;height:.8em;background:var(--red);margin-left:3px;vertical-align:middle;animation:blink .7s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+.cat-sub-el{font-family:'Courier New',monospace;font-size:clamp(7px,.82vw,10px);letter-spacing:.12em;color:rgba(242,237,228,.2);text-transform:uppercase;margin-top:7px;line-height:1.6;}
+
+.p-cell{border:1px solid rgba(242,237,228,.06);border-radius:3px;padding:clamp(10px,1.5vh,18px) clamp(6px,.9vw,12px);min-height:clamp(76px,10vh,120px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;overflow:hidden;background:transparent;transition:background .55s ease,border-color .55s ease,box-shadow .55s ease;clip-path:inset(0 100% 0 0);opacity:0;}
+.cell-val{font-size:clamp(20px,2.8vw,44px);letter-spacing:.02em;color:rgba(242,237,228,.68);line-height:1.05;transition:color .45s ease;}
+.cell-val.sm{font-size:clamp(14px,1.7vw,24px);letter-spacing:.05em;}
+.cell-val.xs{font-family:'Courier New',monospace;font-size:clamp(9px,1.1vw,14px);letter-spacing:.04em;line-height:1.4;}
+.cell-flavor{font-family:'Courier New',monospace;font-size:clamp(7px,.82vw,10px);letter-spacing:.1em;color:rgba(242,237,228,.28);text-transform:uppercase;margin-top:6px;line-height:1.55;opacity:0;transition:opacity .4s ease;}
+
+/* COLOR TEMPERATURE SYSTEM
+   No neutral class — base cells stay dark/transparent.
+   Scale runs from gold-warmth (Brady wins years) through greens,
+   reaching deep saturated green for exceptional moments.
+   Reds reserved for Brady's low points only. */
+.cg-gold{background:rgba(180,155,35,.2)!important;border-color:rgba(212,175,55,.32)!important;}
+.cg-gold .cell-val{color:#D4C258;}
+.cg-gold .cell-flavor{color:rgba(212,175,55,.45);}
+
+.cg-faint{background:rgba(34,140,60,.13)!important;border-color:rgba(34,160,65,.2)!important;}
+.cg-faint .cell-val{color:rgba(242,237,228,.78);}
+.cg-faint .cell-flavor{color:rgba(242,237,228,.35);}
+
+.cg-mid{background:rgba(30,160,60,.26)!important;border-color:rgba(30,160,60,.38)!important;}
+.cg-mid .cell-val{color:#A8EDBA;}
+.cg-mid .cell-flavor{color:rgba(168,237,186,.5);}
+
+.cg-strong{background:rgba(18,180,60,.4)!important;border-color:rgba(18,180,60,.55)!important;}
+.cg-strong .cell-val{color:#6FEEA0;}
+.cg-strong .cell-flavor{color:rgba(111,238,160,.5);}
+
+.cg-deep{background:rgba(8,210,70,.46)!important;border-color:rgba(8,220,80,.62)!important;box-shadow:0 0 20px rgba(8,220,80,.14)!important;}
+.cg-deep .cell-val{color:#3DFFAA;}
+.cg-deep .cell-flavor{color:rgba(61,255,170,.58);}
+
+.cr-faint{background:rgba(200,16,46,.09)!important;border-color:rgba(200,16,46,.2)!important;}
+.cr-faint .cell-val{color:rgba(242,237,228,.42);}
+
+.cr-deep{background:rgba(200,16,46,.42)!important;border-color:rgba(200,16,46,.62)!important;box-shadow:0 0 18px rgba(200,16,46,.12)!important;}
+.cr-deep .cell-val{color:#FF8080;}
+.cr-deep .cell-flavor{color:rgba(255,128,128,.55);}
+
+/* Winner cells — gold pulse on entry, gold breathe if persist flag set */
+@keyframes goldPulse{0%{box-shadow:0 0 16px rgba(212,175,55,.2);}45%{box-shadow:0 0 52px rgba(212,175,55,.65),0 0 96px rgba(212,175,55,.25);}100%{box-shadow:0 0 16px rgba(212,175,55,.2);}}
+.cg-gold.pulse{animation:goldPulse 1.5s ease-in-out;}
+@keyframes goldBreathe{0%,100%{box-shadow:0 0 16px rgba(212,175,55,.2);}50%{box-shadow:0 0 38px rgba(212,175,55,.5),0 0 68px rgba(212,175,55,.18);}}
+.cg-gold.breathe{animation:goldBreathe 3.2s ease-in-out infinite;}
+/* Non-winner exceptional cells — keep green */
+@keyframes greenPulse{0%{box-shadow:0 0 20px rgba(8,220,80,.14);}45%{box-shadow:0 0 55px rgba(8,220,80,.55),0 0 100px rgba(8,220,80,.22);}100%{box-shadow:0 0 20px rgba(8,220,80,.14);}}
+.cg-deep.pulse{animation:greenPulse 1.5s ease-in-out;}
+@keyframes greenBreathe{0%,100%{box-shadow:0 0 20px rgba(8,220,80,.14);}50%{box-shadow:0 0 42px rgba(8,220,80,.48),0 0 72px rgba(8,220,80,.18);}}
+.cg-deep.breathe{animation:greenBreathe 3.2s ease-in-out infinite;}
+@keyframes redPulse{0%{box-shadow:0 0 18px rgba(200,16,46,.12);}45%{box-shadow:0 0 50px rgba(200,16,46,.6),0 0 90px rgba(200,16,46,.22);}100%{box-shadow:0 0 18px rgba(200,16,46,.12);}}
+.cr-deep.pulse{animation:redPulse 1.5s ease-in-out;}
+/* Late label — appears slowly after row settles */
+.cell-late-label{font-family:'Courier New',monospace;font-size:clamp(7px,.82vw,10px);letter-spacing:.14em;text-transform:uppercase;margin-top:7px;line-height:1.4;color:var(--red);opacity:0;transition:opacity 1.6s ease;}
+.cell-late-label.in{opacity:1;}
+
+.next-section{height:50vh;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(242,237,228,.04);}
+.next-label{font-family:'Courier New',monospace;font-size:12px;letter-spacing:.22em;color:rgba(242,237,228,.12);text-transform:uppercase;}
+.replay-hint{position:fixed;bottom:18px;right:20px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.18em;color:rgba(242,237,228,.18);text-transform:uppercase;z-index:999;cursor:pointer;transition:color .2s;}
+.replay-hint:hover{color:rgba(242,237,228,.5);}
+
+/* ── COLLAPSE ROW LABELS ──────────────────────────
+   Short labels that fade in during compression.
+   One per row, replacing the full category title.
+─────────────────────────────────────────────────── */
+.collapse-row-label{
+  font-family:'Courier New',monospace;
+  font-size:clamp(8px,1vw,12px);
+  letter-spacing:.22em;
+  color:rgba(242,237,228,.32);
+  text-transform:uppercase;
+  opacity:0;
+  white-space:nowrap;
+  margin-top:4px;
+  display:block;
+}
+
+/* ── GOAT OVERLAY ────────────────────────────────
+   Fixed over viewport. Hidden until collapse fires.
+   "CHOOSE YOUR" drops in fast (light), GOAT assembles
+   from particles then bounces with weight.
+─────────────────────────────────────────────────── */
+#goat-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:50;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  gap:clamp(4px,1vh,14px);
+}
+.choose-line{
+  display:flex;
+  gap:clamp(12px,2vw,28px);
+  align-items:baseline;
+}
+#choose-word, #your-word{
+  font-size:clamp(22px,4.5vw,64px);
+  letter-spacing:.16em;
+  color:var(--cream);
+  text-transform:uppercase;
+  opacity:.84;
+  display:inline-block;
+}
+#goat-line{
+  font-size:clamp(72px,14vw,210px);
+  letter-spacing:-.02em;
+  color:var(--gold);
+  text-transform:uppercase;
+  line-height:.9;
+  display:inline-block;
+  text-shadow:0 0 40px rgba(212,175,55,.3), 0 3px 0 rgba(0,0,0,.8);
+  will-change:transform;
+}
+
+/* table-collapsing helper */
+.table-collapsing .cat-label-col{ pointer-events:none; }
+.table-collapsing .p-cell{ border-radius:2px!important; border-color:transparent!important; }
+
+/* ════════════════════════════════════════════
+   MOBILE LAYOUT (<600px)
+   Grid becomes a vertical list.
+   Each category row = title + 5 player entries stacked.
+   Each entry is 80px tall: colored left bar | circle | name | value
+════════════════════════════════════════════ */
+@media(max-width:599px){
+  /* Hide sticky desktop header — player names are inline in mobile rows */
+  .table-header{ display:none; }
+  .table-body{ padding:16px 16px 32px; }
+  .trace-beam{ left:0; }
+
+  /* Category rows: no grid, just block */
+  .cat-row{
+    display:block;
+    padding:clamp(32px,5vh,56px) 0;
+    border-bottom:1px solid rgba(242,237,228,.04);
+  }
+  .cat-row::before{ left:calc(-16px + 3px); top:clamp(36px,5vh,52px); }
+  .cat-label-col{ padding-right:0; margin-bottom:16px; }
+  .cat-title-el{ font-size:clamp(16px,5vw,24px); letter-spacing:.06em; }
+
+  /* Player cells become horizontal strips */
+  .p-cell{
+    width:100%;
+    min-height:80px;
+    border-radius:3px;
+    margin-bottom:6px;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    text-align:left;
+    padding:12px 14px;
+    clip-path:none !important;
+    opacity:0;
+    /* Override the desktop clip-path animation with a simple slide+fade */
+    transform:translateX(-18px);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  .p-cell.mob-revealed{
+    opacity:1 !important;
+    transform:translateX(0) !important;
+  }
+
+  /* Colored left border instead of full background — easier to read */
+  .p-cell::before{
+    content:'';
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:3px;
+    border-radius:3px 0 0 3px;
+    background:rgba(242,237,228,.1);
+    transition:background .45s ease;
+  }
+
+  /* Mobile player name + portrait inline */
+  .mob-id{
+    display:flex; align-items:center; gap:9px;
+    min-width:clamp(80px,28vw,110px);
+    flex-shrink:0;
+  }
+  .mob-ring{
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    border:1.5px solid rgba(242,237,228,.18);
+    font-size:9px; letter-spacing:.04em; flex-shrink:0;
+    font-family:Impact,sans-serif;
+  }
+  .mob-name{
+    font-family:'Courier New',monospace;
+    font-size:clamp(8px,2.4vw,11px); letter-spacing:.14em;
+    color:rgba(242,237,228,.45); text-transform:uppercase;
+    line-height:1.3;
+  }
+
+  /* Value — big, right of identity */
+  .p-cell .cell-val{
+    font-size:clamp(18px,5.5vw,30px);
+    flex:1; text-align:right;
+    color:rgba(242,237,228,.72);
+    line-height:1;
+  }
+  .p-cell .cell-val.sm{ font-size:clamp(13px,3.8vw,20px); }
+  .p-cell .cell-val.xs{
+    font-family:'Courier New',monospace;
+    font-size:clamp(9px,2.6vw,13px);
+    text-align:right; line-height:1.35;
+  }
+
+  /* Flavor goes below value on its own line — shown as a second row */
+  .p-cell .cell-flavor{
+    position:absolute; bottom:7px; right:14px;
+    font-size:clamp(7px,2vw,9px); letter-spacing:.09em;
+    color:rgba(242,237,228,.28); text-transform:uppercase;
+    opacity:0; transition:opacity .4s ease .15s;
+  }
+  .mob-revealed .cell-flavor{ opacity:1; }
+
+  /* Late label positioning on mobile */
+  .cell-late-label{
+    position:absolute; bottom:7px; left:14px;
+    margin-top:0; font-size:clamp(7px,2vw,9px);
+  }
+
+  /* Color temperature — mobile uses left border color for subtle warmth */
+  .p-cell.cg-gold::before  { background:#D4AF37; }
+  .p-cell.cg-faint::before { background:rgba(34,160,65,.55); }
+  .p-cell.cg-mid::before   { background:rgba(30,160,60,.85); }
+  .p-cell.cg-strong::before{ background:#6FEEA0; }
+  .p-cell.cg-deep::before  { background:#3DFFAA; }
+  .p-cell.cr-faint::before { background:rgba(200,16,46,.4); }
+  .p-cell.cr-deep::before  { background:var(--red); }
+
+  /* Background tint still applies but subtler */
+  .p-cell.cg-gold  { background:rgba(180,155,35,.12)!important; }
+  .p-cell.cg-faint { background:rgba(34,140,60,.08)!important; }
+  .p-cell.cg-mid   { background:rgba(30,160,60,.16)!important; }
+  .p-cell.cg-strong{ background:rgba(18,180,60,.24)!important; }
+  .p-cell.cg-deep  { background:rgba(8,210,70,.28)!important; }
+  .p-cell.cr-faint { background:rgba(200,16,46,.06)!important; }
+  .p-cell.cr-deep  { background:rgba(200,16,46,.28)!important; }
+}
+
+/* ── Tablet (600–899px): grid holds but tighter ── */
+@media(min-width:600px) and (max-width:899px){
+  .table-header{padding:9px 16px;}
+  .table-body{padding:20px 16px 40px;}
+  .cat-row{padding:clamp(28px,4vh,48px) 0;}
+  .p-cell{min-height:clamp(64px,8vh,96px);padding:clamp(8px,1.2vh,14px) clamp(4px,.7vw,8px);}
+  .cell-val{font-size:clamp(16px,2.4vw,32px);}
+  .cell-val.sm{font-size:clamp(11px,1.6vw,20px);}
+  .cell-val.xs{font-size:clamp(8px,1.1vw,13px);}
+  .cat-title-el{font-size:clamp(10px,1.6vw,18px);}
+  .portrait-ring{width:clamp(28px,3.5vw,44px);height:clamp(28px,3.5vw,44px);}
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern-slot"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-scanlines"></div>
+  <div class="headline" id="headline">
+    <div class="line-preamble" id="line-preamble">Tom Brady is</div>
+    <div class="line-not-wrap"><span class="line-not" id="not-text">NOT</span></div>
+    <div class="line-bottom" id="line-bottom">
+      <span>The</span>
+      <span id="crown-anchor">GOAT
+        <svg id="crown-svg" viewBox="0 0 80 52" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="39" width="72" height="10" rx="2.5" fill="#C9991A"/>
+          <rect x="4" y="39" width="72" height="5" rx="2.5" fill="#D4AF37"/>
+          <path d="M 6 40 L 6 26 L 21 35 L 40 6 L 59 35 L 74 26 L 74 40 Z" fill="#A07810" opacity=".45"/>
+          <path d="M 5 40 L 5 24 L 20 34 L 40 4 L 60 34 L 75 24 L 75 40 Z" fill="#D4AF37" stroke="#C09020" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M 5 36 L 5 28 L 19 36 L 40 10 L 61 36 L 75 28 L 75 36 Z" fill="#F0CC50" opacity=".35"/>
+          <circle cx="40" cy="5" r="5" fill="#9B0020" stroke="#700015" stroke-width="1"/>
+          <circle cx="40" cy="5" r="2.8" fill="#FF3050" opacity=".55"/>
+          <circle cx="6.5" cy="23" r="3.2" fill="#1A3080" stroke="#0A1845" stroke-width=".8"/>
+          <circle cx="73.5" cy="23" r="3.2" fill="#1A3080" stroke="#0A1845" stroke-width=".8"/>
+          <circle cx="18" cy="43.5" r="2.2" fill="#E8C040"/>
+          <circle cx="40" cy="43.5" r="2.2" fill="#E8C040"/>
+          <circle cx="62" cy="43.5" r="2.2" fill="#E8C040"/>
+          <line x1="4" y1="44" x2="76" y2="44" stroke="#B08010" stroke-width=".8" opacity=".6"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+  <div class="illo-wrap" id="illo-wrap">
+    <div class="illo-icon">🏈</div>
+    <div class="illo-label"><em>Casey's illustration</em>Brady on throne — crown removed<br>Goat expression, cool but inhuman</div>
+  </div>
+  <p class="subtext" id="subtext">A data-driven case for someone else</p>
+  <div class="scroll-hint" id="scroll-hint">
+    <span class="scroll-label">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<section class="chart-section" id="chart-section">
+  <div class="trace-beam"><div class="trace-fill" id="trace-fill"></div></div>
+  <div class="table-header" id="table-header"><div></div></div>
+  <div class="table-body" id="table-body"></div>
+  <div class="table-bottom-space"></div>
+</section>
+
+<!-- GOAT reveal overlay — fixed over viewport, fires after collapse -->
+<div id="goat-overlay">
+  <div class="choose-line">
+    <span id="choose-word">CHOOSE</span>
+    <span id="your-word">YOUR</span>
+  </div>
+  <div id="goat-line">GOAT</div>
+</div>
+
+<section class="next-section"><p class="next-label">↓ 03 — Choose your GOAT</p></section>
+<div class="replay-hint" onclick="replay()">[ R ] replay</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const PLAYERS = [
+  { id:'brady',     name:'Brady',     initials:'TB', bg:'#001840', accent:'#C8102E' },
+  { id:'rivers',    name:'Rivers',    initials:'PR', bg:'#005A9C', accent:'#FFB612' },
+  { id:'payton',    name:'Payton',    initials:'WP', bg:'#0B1F4E', accent:'#E87722' },
+  { id:'alexander', name:'Alexander', initials:'SA', bg:'#001E3C', accent:'#69BE28' },
+  { id:'page',      name:'Page',      initials:'AP', bg:'#3D1E6B', accent:'#B5985A' },
+];
+
+const ROWS = [
+  {
+    id:'years', label:'YEARS IN NFL', sub:'career longevity',
+    collapseLabel:'Years',
+    order:['rivers','payton','alexander','page','brady'],
+    cells:{
+      brady:     {val:'23', color:'cg-gold', flavor:'dominant years', flavor2:'on-field GOAT'},
+      rivers:    {val:'17', color:'cg-faint'},
+      payton:    {val:'13', color:'cg-faint'},
+      alexander: {val:'9',  color:'neutral'},
+      page:      {val:'15', color:'cg-faint'},
+    }
+  },
+  {
+    id:'award', label:"NFL'S HIGHEST OFF-FIELD HONOR", sub:'community impact + excellence on and off the field',
+    collapseLabel:'NFL Award',
+    order:['rivers','alexander','page','brady','payton'],
+    cells:{
+      brady:     {val:'', color:'neutral'},
+      rivers:    {val:'Finalist',        color:'cg-faint', flavor:'2011 · Rivers of Hope Foundation'},
+      payton:    {val:'Won it.',         color:'cg-gold',  flavor:'Award renamed in his honor', dramatic:true},
+      alexander: {val:'Team nominee',    color:'cg-faint', flavor:'Seahawks community nominee'},
+      page:      {val:'—',              color:'neutral'},
+    }
+  },
+  {
+    id:'charities', label:'CHARITABLE IMPACT', sub:null,
+    collapseLabel:'Charity',
+    order:['brady','rivers','alexander','payton','page'],
+    cells:{
+      brady:     {val:'TB12 Foundation',          color:'cg-mid',    flavor:'injury recovery + pliability bodywork', flavor2:'free to athletes, military + first responders'},
+      rivers:    {val:'Rivers of Hope',            color:'cg-mid',    flavor:'$1M+ for foster children'},
+      payton:    {val:'Walter Payton Foundation',  color:'cg-gold',   flavor:'founded 1988 · continued by Connie since 1999', flavor2:'award bearing his name funds 32 charities yearly', dramatic:true},
+      alexander: {val:'Harvest Covenant',          color:'cg-mid',    flavor:'Co-op + Shaun Alexander Foundation'},
+      page:      {val:'Page Education Foundation', color:'cg-gold',   flavor:'$16M+ · 8,000+ scholars', dramatic:true},
+    }
+  },
+  {
+    id:'life', label:'LIFE AFTER FOOTBALL', sub:null,
+    collapseLabel:'Post-Game',
+    order:['brady','rivers','alexander','payton','page'],
+    cells:{
+      brady:     {val:'Broadcaster', color:'cg-faint', drainColor:true, flavor:'5% Raiders owner', lateLabel:'Logan Paul Podcast Guest'},
+      rivers:    {val:'HS Football Coach',     color:'cg-mid',    flavor:'Coaching his own son'},
+      payton:    {val:'Sweetness Inc.',         color:'cg-strong', flavor:'Bears board · IndyCar team co-owner', flavor2:'Roundhouse restaurant · organ donation advocacy'},
+      alexander: {val:'Harvest Covenant + VC', color:'cg-mid',    flavor:'Co-op · author · investor'},
+      page:      {val:'22 Years',              color:'cg-gold',   flavor:'MN Supreme Court Justice', flavor2:'1st Black justice in MN · Medal of Freedom 2018', dramatic:true, persist:true},
+    }
+  },
+  {
+    id:'kids', label:'NUMBER OF CHILDREN', sub:null,
+    collapseLabel:'Kids',
+    order:['payton','page','brady','rivers','alexander'],
+    cells:{
+      brady:     {val:'3',  color:'cg-faint'},
+      rivers:    {val:'10', color:'cg-strong'},
+      payton:    {val:'2',  color:'cg-faint'},
+      alexander: {val:'14', color:'cg-gold',   counter:true, dramatic:true},
+      page:      {val:'4',  color:'cg-faint'},
+    }
+  },
+  {
+    id:'cusses', label:'CUSSES', sub:null,
+    collapseLabel:'Language',
+    order:['payton','alexander','page','rivers','brady'],
+    cells:{
+      brady:     {val:'YES',     color:'cr-deep',  dramatic:true},
+      rivers:    {val:'NO',      color:'cg-gold',  flavor:'dadgummit', typewriteFlavor:true},
+      payton:    {val:'Unknown', color:'neutral'},
+      alexander: {val:'Unknown', color:'neutral'},
+      page:      {val:'Unknown', color:'neutral'},
+    }
+  },
+  {
+    id:'grandpa', label:'PLAYED AS A GRANDPA', sub:null,
+    collapseLabel:'Grandpa',
+    fastRow: true,
+    order:['brady','payton','alexander','page','rivers'],
+    cells:{
+      brady:     {val:'No',  color:'neutral'},
+      rivers:    {val:'YES', color:'cg-gold', flavor:'44 yrs old · 10 kids · 1 grandchild', dramatic:true},
+      payton:    {val:'No',  color:'neutral'},
+      alexander: {val:'No',  color:'neutral'},
+      page:      {val:'No',  color:'neutral'},
+    }
+  },
+];
+
+// ── BUILD DOM ──────────────────────────────────
+function renderTable() {
+  const header = document.getElementById('table-header');
+  const body   = document.getElementById('table-body');
+
+  PLAYERS.forEach(p => {
+    const d = document.createElement('div');
+    d.className = `player-head phead-${p.id}`;
+    d.id = `phead-${p.id}`;
+    d.innerHTML = `
+      <div class="portrait-ring" style="background:${p.bg};border-color:${p.accent}55;">
+        <span class="initials" style="color:${p.accent};">${p.initials}</span>
+      </div>
+      <span class="player-name-label">${p.name}</span>`;
+    header.appendChild(d);
+  });
+
+  ROWS.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'cat-row';
+    rowEl.id = `row-${row.id}`;
+
+    const lc = document.createElement('div');
+    lc.className = 'cat-label-col';
+    lc.innerHTML = `
+      <div class="cat-eyebrow">0${ri+1}</div>
+      <h3 class="cat-title-el" id="ct-${row.id}"></h3>
+      ${row.sub ? `<p class="cat-sub-el">${row.sub}</p>` : ''}
+      ${row.collapseLabel ? `<span class="collapse-row-label" id="clabel-${row.id}">${row.collapseLabel}</span>` : ''}`;
+    rowEl.appendChild(lc);
+
+    PLAYERS.forEach(pl => {
+      const p   = pl;
+      const p_id= pl.id;
+      const cd  = row.cells[p_id];
+      const vl  = cd.val.length;
+      const sz  = vl <= 3 ? '' : vl <= 10 ? ' sm' : ' xs';
+      const cel = document.createElement('div');
+      cel.className = 'p-cell';
+      cel.id = `cell-${row.id}-${p_id}`;
+      cel.innerHTML = `
+        <div class="mob-id">
+          <div class="mob-ring" style="background:${p.bg};border-color:${p.accent}55;color:${p.accent};">${p.initials}</div>
+          <span class="mob-name">${p.name}</span>
+        </div>
+        <span class="cell-val${sz}" id="val-${row.id}-${p_id}">${cd.val}</span>
+        ${(cd.flavor||cd.flavor2) ? `<span class="cell-flavor" id="flav-${row.id}-${p_id}">${cd.flavor||''}${cd.flavor2?'<br>'+cd.flavor2:''}</span>` : ''}
+        ${cd.lateLabel ? `<span class="cell-late-label" id="late-${row.id}-${p_id}">${cd.lateLabel}</span>` : ''}`;
+      rowEl.appendChild(cel);
+    });
+
+    body.appendChild(rowEl);
+  });
+}
+
+// ── HELPERS ────────────────────────────────────
+function typewrite(el, text, onDone) {
+  el.innerHTML = '';
+  const cur = document.createElement('span');
+  cur.className = 'cat-cursor';
+  el.appendChild(cur);
+  let i = 0;
+  const speed = Math.max(28, 85 - text.length * 1.3);
+  const t = setInterval(() => {
+    if (i >= text.length) { clearInterval(t); cur.remove(); if (onDone) onDone(); return; }
+    cur.insertAdjacentText('beforebegin', text[i++]);
+  }, speed);
+}
+
+function typewriteInto(el, text) {
+  el.textContent = '';
+  let i = 0;
+  const t = setInterval(() => {
+    if (i >= text.length) { clearInterval(t); return; }
+    el.textContent += text[i++];
+  }, 52);
+}
+
+function countUp(el, target, duration) {
+  const start = Date.now();
+  const iv = setInterval(() => {
+    const p = Math.min((Date.now()-start)/duration, 1);
+    el.textContent = Math.round((1-Math.pow(1-p,3))*target);
+    if (p >= 1) clearInterval(iv);
+  }, 16);
+}
+
+// ── CELL COLOR LOOKUP ──────────────────────────
+function getCellColorValue(cell) {
+  if (cell.classList.contains('cg-gold'))   return '#D4AF37';
+  if (cell.classList.contains('cg-deep'))   return '#3DFFAA';
+  if (cell.classList.contains('cg-strong')) return '#6FEEA0';
+  if (cell.classList.contains('cg-mid'))    return '#A8EDBA';
+  if (cell.classList.contains('cg-faint'))  return 'rgba(52,200,90,.6)';
+  if (cell.classList.contains('cr-deep'))   return '#C8102E';
+  if (cell.classList.contains('cr-faint'))  return 'rgba(200,16,46,.5)';
+  return 'rgba(242,237,228,.18)';
+}
+
+// ── SEQUENTIAL ROW STATE MACHINE ───────────────
+// Row N cannot fire until row N-1 has fully revealed
+// and a reading pause has elapsed.
+const READING_PAUSE_MS = 1600;
+const rowReady       = ROWS.map((_, i) => i === 0); // row 0 starts ready
+const rowScrollPassed = ROWS.map(() => false);       // tracks if scroll already past row
+
+function markRowReady(idx) {
+  if (idx >= ROWS.length) return;
+  rowReady[idx] = true;
+  if (rowScrollPassed[idx]) {
+    const rowEl = document.getElementById(`row-${ROWS[idx].id}`);
+    if (rowEl) revealRow(ROWS[idx], rowEl);
+  }
+}
+
+// ── REVEAL ROW ─────────────────────────────────
+const isMobile = () => window.innerWidth < 600;
+
+function revealRow(row, rowEl) {
+  rowEl.classList.add('dotted');
+  typewrite(document.getElementById(`ct-${row.id}`), row.label, () => {
+    row.order.forEach((pid, oi) => {
+      const cd    = row.cells[pid];
+      const cel   = document.getElementById(`cell-${row.id}-${pid}`);
+      const valEl = document.getElementById(`val-${row.id}-${pid}`);
+      const flEl  = document.getElementById(`flav-${row.id}-${pid}`);
+
+      const isLast   = oi === row.order.length - 1;
+      const extraDelay = row.fastRow ? 0 : (cd.dramatic ? (isLast ? 0.6 : 0.38) : 0);
+      // Mobile stagger is tighter — each entry reads quickly as a list
+      const stagger  = isMobile() ? (row.fastRow ? 0.05 : 0.1) : (row.fastRow ? 0.06 : 0.14);
+      const delay    = oi * stagger + extraDelay;
+
+      function onCellLanded() {
+        // Color temperature
+        if (cd.color !== 'neutral') {
+          cel.classList.add(cd.color);
+          if (cd.dramatic) requestAnimationFrame(() => cel.classList.add('pulse'));
+          if (cd.persist) {
+            setTimeout(() => { cel.classList.remove('pulse'); cel.classList.add('breathe'); }, 1600);
+          }
+        }
+        // Flavor text
+        if (flEl) {
+          setTimeout(() => {
+            flEl.style.opacity = '1';
+            if (cd.typewriteFlavor && cd.flavor) typewriteInto(flEl, cd.flavor);
+          }, cd.dramatic ? 500 : 190);
+        }
+        // Counter (Alexander 14)
+        if (cd.counter && valEl) {
+          valEl.textContent = '0';
+          setTimeout(() => countUp(valEl, parseInt(cd.val), 1700), 140);
+        }
+        // Late label — fires after row settles, also drains color if flagged
+        if (cd.lateLabel) {
+          const lateEl = document.getElementById(`late-${row.id}-${pid}`);
+          if (lateEl) {
+            const rowSettleMs = (row.order.length - 1) * stagger * 1000 + 600 + 480 + 900;
+            setTimeout(() => {
+              lateEl.classList.add('in');
+              // Drain the cell color back to neutral — reads as losing credibility
+              if (cd.drainColor) {
+                cel.style.transition = 'background 1.2s ease, border-color 1.2s ease, box-shadow 1.2s ease';
+                [...cel.classList].filter(c => c.startsWith('cg-') || c.startsWith('cr-'))
+                  .forEach(c => cel.classList.remove(c));
+              }
+            }, rowSettleMs);
+          }
+        }
+        // Final row: Rivers portrait glow
+        if (row.id === 'grandpa' && pid === 'rivers') {
+          setTimeout(() => document.getElementById('phead-rivers')?.classList.add('lit'), 520);
+        }
+        // Sequential row unlock — fires when last cell of this row lands
+        if (isLast) {
+          const rowIdx = ROWS.findIndex(r => r.id === row.id);
+          // Wait for reading pause before unlocking next row
+          setTimeout(() => markRowReady(rowIdx + 1), READING_PAUSE_MS);
+        }
+      }
+
+      if (isMobile()) {
+        // Mobile: CSS transition, no GSAP
+        setTimeout(() => {
+          cel.classList.add('mob-revealed');
+          onCellLanded();
+        }, delay * 1000);
+      } else {
+        // Desktop: GSAP clip-path wipe
+        gsap.fromTo(cel,
+          {clipPath:'inset(0 100% 0 0)', opacity:0},
+          {clipPath:'inset(0 0% 0 0)', opacity:1, duration:0.48, ease:'power3.out', delay,
+            onComplete: onCellLanded}
+        );
+      }
+    });
+  });
+}
+
+// ── COLLAPSE ANIMATION ─────────────────────────
+// Fires once when the last row has scrolled past viewport.
+// Three phases: text out → rows compress → grid holds + strip reveals.
+let collapseHasFired = false;
+
+function runCollapseAnimation() {
+  if (collapseHasFired) return;
+  collapseHasFired = true;
+
+  const body    = document.getElementById('table-body');
+  const rows    = document.querySelectorAll('.cat-row');
+  const cells   = document.querySelectorAll('.p-cell');
+  const labels  = document.querySelectorAll('.cat-label-col');
+  const vals    = document.querySelectorAll('.cell-val, .cell-flavor, .cell-late-label, .cat-title-el, .cat-eyebrow, .cat-sub-el');
+  const clabels = document.querySelectorAll('.collapse-row-label');
+  const header  = document.getElementById('table-header');
+
+  body.classList.add('table-collapsing');
+
+  const tl = gsap.timeline({ onComplete: runGoatReveal });
+
+  // Phase 1 — all text fades simultaneously
+  tl.to(vals, { opacity:0, duration:0.45, ease:'power2.in', stagger:0 })
+
+  // Phase 2a — label columns slide out left, collapse labels fade in
+  .to(labels, { opacity:0, x:-24, duration:0.4, ease:'power2.in' }, '-=0.2')
+  .to(clabels, { opacity:1, duration:0.35, ease:'power2.out', stagger:0.04 }, '-=0.1')
+
+  // Phase 2b — rows compress top-to-bottom
+  .to(rows, { paddingTop:0, paddingBottom:0, marginTop:2,
+    duration:0.55, ease:'power3.inOut', stagger:0.045 }, '-=0.25')
+
+  // Phase 2c — cells become tight color blocks
+  .to(cells, { minHeight:20, padding:'2px 3px', borderRadius:2,
+    duration:0.45, ease:'power3.inOut' }, '<')
+
+  // Phase 3a — header compresses
+  .to({}, { duration:0.2 })
+  .to(header, { paddingTop:6, paddingBottom:6, duration:0.3, ease:'power2.inOut' })
+
+  // Phase 3b — portrait rings shrink to dots
+  .to('.portrait-ring', { width:8, height:8, duration:0.3, ease:'power2.inOut' }, '<')
+  .to('.initials, .player-name-label', { opacity:0, duration:0.2, ease:'power2.in' }, '<')
+
+  // Hold — let the grid breathe before GOAT fires
+  .to({}, { duration:0.5 });
+}
+
+// ── SCROLL TRIGGERS ────────────────────────────
+function setupScrollTriggers() {
+  ROWS.forEach((row, idx) => {
+    const rowEl = document.getElementById(`row-${row.id}`);
+    if (!rowEl) return;
+    ScrollTrigger.create({
+      trigger: rowEl,
+      start: 'top 52%',
+      once: true,
+      onEnter: () => {
+        if (rowReady[idx]) {
+          revealRow(row, rowEl);
+        } else {
+          // Scroll passed before row was ready — fire when it unlocks
+          rowScrollPassed[idx] = true;
+        }
+      },
+    });
+  });
+
+  // Collapse trigger — fires when bottom of last row clears the viewport
+  const lastRow = document.getElementById(`row-${ROWS[ROWS.length-1].id}`);
+  if (lastRow) {
+    ScrollTrigger.create({
+      trigger: lastRow,
+      start: 'bottom 60%',
+      once: true,
+      onEnter: runCollapseAnimation,
+    });
+  }
+
+  ScrollTrigger.create({
+    trigger:'#chart-section', start:'top top', end:'bottom bottom',
+    onUpdate: self => { document.getElementById('trace-fill').style.height = (self.progress*100)+'%'; }
+  });
+}
+
+// ── GOAT REVEAL ────────────────────────────────
+// "CHOOSE YOUR" drops in (C — kinetic, light).
+// Grid cells lift off as particles and form "GOAT" (E — morph).
+// GOAT drops with weight and bounces (C — heavy).
+function runGoatReveal() {
+  const overlay  = document.getElementById('goat-overlay');
+  const chooseEl = document.getElementById('choose-word');
+  const yourEl   = document.getElementById('your-word');
+  const goatEl   = document.getElementById('goat-line');
+
+  // Activate overlay
+  overlay.style.display = 'flex';
+  gsap.set([chooseEl, yourEl, goatEl], { y:-60, opacity:0 });
+
+  const tl = gsap.timeline();
+
+  // ── CHOOSE drops in (fast, light)
+  tl.to(chooseEl, { y:0, opacity:1, duration:0.3, ease:'power4.out' })
+    .to(yourEl,   { y:0, opacity:1, duration:0.3, ease:'power4.out' }, '-=0.18')
+    .to({}, { duration:0.55 })
+
+  // ── Particle morph: grid cells → GOAT letterform
+  .add(() => {
+    // Sample Impact "GOAT" letterform
+    const GW = 800, GH = 200;
+    const offscreen = document.createElement('canvas');
+    offscreen.width = GW; offscreen.height = GH;
+    const octx = offscreen.getContext('2d');
+    octx.font = '900 165px Impact, Haettenschweiler, Arial Black';
+    octx.fillStyle = '#fff';
+    octx.textAlign = 'center';
+    octx.textBaseline = 'alphabetic';
+    octx.fillText('GOAT', GW / 2, 160);
+    const imgData = octx.getImageData(0, 0, GW, GH).data;
+
+    const samples = [];
+    for (let x = 0; x < GW; x += 14) {
+      for (let y = 0; y < GH; y += 14) {
+        if (imgData[(y * GW + x) * 4 + 3] > 128) samples.push({ nx: x / GW, ny: y / GH });
+      }
+    }
+    gsap.utils.shuffle(samples);
+
+    const cells = [...document.querySelectorAll('.p-cell')].filter(c => {
+      const r = c.getBoundingClientRect();
+      return r.width > 2 && r.height > 2;
+    });
+
+    if (!cells.length || !samples.length) {
+      // Fallback — just drop GOAT directly
+      gsap.to(goatEl, { y:0, opacity:1, duration:0.5, ease:'bounce.out' });
+      return;
+    }
+
+    // Measure where GOAT text sits in viewport (it's opacity:0 but positioned)
+    gsap.set(goatEl, { opacity:0, y:0 });
+    requestAnimationFrame(() => {
+      const gr = goatEl.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      // Build viewport canvas
+      const cvs = document.createElement('canvas');
+      cvs.width  = window.innerWidth  * dpr;
+      cvs.height = window.innerHeight * dpr;
+      cvs.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:200;';
+      document.body.appendChild(cvs);
+      const ctx = cvs.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const N = Math.min(cells.length, samples.length, 55);
+      const pts = [];
+
+      cells.slice(0, N).forEach((cell, i) => {
+        const cr = cell.getBoundingClientRect();
+        const s  = samples[i];
+        pts.push({
+          x:     cr.left + cr.width  / 2,
+          y:     cr.top  + cr.height / 2,
+          tx:    gr.left + s.nx * gr.width,
+          ty:    gr.top  + s.ny * gr.height,
+          r:     Math.max(cr.width, cr.height) / 2 + 1,
+          color: getCellColorValue(cell),
+        });
+      });
+
+      // Render loop — GSAP ticker draws particles each frame
+      const ticker = () => {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        pts.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      };
+      gsap.ticker.add(ticker);
+
+      // Animate each particle toward its letter position
+      const ptl = gsap.timeline({
+        onComplete() {
+          gsap.ticker.remove(ticker);
+          // Crossfade: canvas out, real GOAT text in
+          gsap.to(cvs, { opacity:0, duration:0.3, onComplete:() => cvs.remove() });
+          gsap.to(goatEl, { opacity:1, duration:0.12 });
+
+          // C-style weight drop — echoes the NOT hero moment
+          gsap.fromTo(goatEl,
+            { y:-32, scale:1.07 },
+            {
+              y:0, scale:1,
+              duration:0.58, ease:'bounce.out',
+              onComplete() {
+                // Half-intensity screen shake
+                gsap.fromTo('#goat-overlay',
+                  { x:0, y:0 },
+                  { x:'random(-4,4)', y:'random(-2,2)',
+                    duration:0.05, repeat:5, yoyo:true, ease:'none',
+                    onComplete:() => gsap.set('#goat-overlay',{ x:0, y:0 }) }
+                );
+                // Gold glow flash
+                gsap.fromTo(goatEl,
+                  { filter:'drop-shadow(0 0 0px rgba(212,175,55,0))' },
+                  { filter:'drop-shadow(0 0 40px rgba(212,175,55,0.95))',
+                    duration:0.28, yoyo:true, repeat:1, ease:'power2.inOut',
+                    onComplete:() => gsap.set(goatEl,{ filter:'drop-shadow(0 0 12px rgba(212,175,55,0.3))' }) }
+                );
+              }
+            }
+          );
+        }
+      });
+
+      pts.forEach((p, i) => {
+        ptl.to(p, {
+          x: p.tx, y: p.ty, r: 4 + Math.random() * 2.5,
+          duration: 0.72 + Math.random() * 0.3,
+          ease: 'power2.inOut',
+        }, i * 0.018);
+      });
+    });
+  });
+}
+
+// ── HERO ───────────────────────────────────────
+function spawnParticles() {
+  const r=document.getElementById('crown-svg').getBoundingClientRect();
+  const cx=r.left+r.width*.5, cy=r.top+r.height*.5;
+  for(let i=0;i<10;i++){
+    const p=document.createElement('div'), sz=3+Math.random()*4;
+    p.className='particle';
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${Math.random()>.4?'#D4AF37':'#F2EDE4'};opacity:1;`;
+    document.body.appendChild(p);
+    const a=(Math.PI*2/10)*i+(Math.random()-.5)*.8, d=50+Math.random()*90;
+    gsap.to(p,{x:Math.cos(a)*d,y:Math.sin(a)*d-50,opacity:0,duration:.6+Math.random()*.5,ease:'power2.out',onComplete:()=>p.remove()});
+  }
+}
+
+function shake() {
+  gsap.fromTo('#headline',{x:0,y:0},{x:'random(-7,7)',y:'random(-3,3)',duration:.055,repeat:6,yoyo:true,ease:'none',onComplete:()=>gsap.set('#headline',{x:0,y:0})});
+}
+
+function runSequence() {
+  const notEl=document.getElementById('not-text');
+  notEl.classList.remove('struck');
+  gsap.set('#line-preamble',{opacity:0,y:22});
+  gsap.set('#line-bottom',{opacity:0,y:22});
+  gsap.set('#not-text',{y:-420,opacity:1});
+  gsap.set('#crown-svg',{x:0,y:0,rotation:0,opacity:1,scale:1});
+  gsap.set('#illo-wrap',{opacity:0,y:14});
+  gsap.set('#subtext',{opacity:0});
+  gsap.set('#scroll-hint',{opacity:0});
+  gsap.timeline({delay:.5})
+    .to('#line-preamble',{opacity:.82,y:0,duration:.75,ease:'power3.out'})
+    .to('#line-bottom',{opacity:.82,y:0,duration:.7,ease:'power3.out'},'-=.3')
+    .to({},{duration:.7})
+    .to('#not-text',{y:0,duration:.48,ease:'bounce.out'})
+    .to('#crown-svg',{x:gsap.utils.random(160,220),y:gsap.utils.random(-160,-100),rotation:gsap.utils.random(260,320),scale:.7,opacity:0,duration:.8,ease:'power3.in'},'-=.06')
+    .add(()=>{spawnParticles();shake();notEl.classList.add('struck');},'<')
+    .to('#illo-wrap',{opacity:1,y:0,duration:.65,ease:'power2.out'},'+=.18')
+    .to('#subtext',{opacity:1,duration:.5,ease:'power2.out'},'-=.3')
+    .to('#scroll-hint',{opacity:1,duration:.5},'+=.5');
+}
+
+// ── REPLAY ─────────────────────────────────────
+function replay() {
+  ScrollTrigger.getAll().forEach(t=>t.kill());
+  collapseHasFired = false;
+
+  // Reset sequential row state
+  ROWS.forEach((_, i) => { rowReady[i] = i === 0; rowScrollPassed[i] = false; });
+
+  // Reset cells
+  document.querySelectorAll('.p-cell').forEach(c=>{
+    c.className='p-cell'; c.style.cssText='';
+    if(!isMobile()) gsap.set(c,{clipPath:'inset(0 100% 0 0)',opacity:0});
+    else { c.style.opacity='0'; c.style.transform='translateX(-18px)'; }
+  });
+  document.querySelectorAll('.cell-flavor').forEach(f=>f.style.opacity='0');
+  document.querySelectorAll('.cell-late-label').forEach(l=>l.classList.remove('in'));
+  document.querySelectorAll('.collapse-row-label').forEach(l=>l.style.opacity='0');
+  document.querySelectorAll('.cat-title-el').forEach(t=>t.innerHTML='');
+
+  // Reset row collapse state
+  document.querySelectorAll('.cat-row').forEach(r=>{
+    r.classList.remove('dotted');
+    gsap.set(r,{clearProps:'all'});
+  });
+  gsap.set('.cat-label-col',{opacity:1, x:0, clearProps:'all'});
+  gsap.set('.cat-eyebrow, .cat-sub-el',{opacity:1, clearProps:'all'});
+  gsap.set('#table-header',{clearProps:'all'});
+  gsap.set('.portrait-ring',{clearProps:'all'});
+  gsap.set('.initials, .player-name-label',{opacity:1, clearProps:'all'});
+
+  // Reset GOAT overlay
+  const overlay = document.getElementById('goat-overlay');
+  overlay.style.display = 'none';
+  gsap.set(['#choose-word','#your-word','#goat-line'],{clearProps:'all'});
+  gsap.set('#goat-line',{filter:'none'});
+
+  document.getElementById('table-body').classList.remove('table-collapsing');
+  document.querySelectorAll('.player-head').forEach(h=>h.classList.remove('lit'));
+  document.getElementById('trace-fill').style.height='0%';
+
+  // Remove any stray particle canvas
+  document.querySelectorAll('canvas[style*="position:fixed"]').forEach(c=>c.remove());
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>{setupScrollTriggers();ScrollTrigger.refresh();},400);
+  runSequence();
+}
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('load',()=>{
+  renderTable();
+  // Init cell visibility based on breakpoint
+  document.querySelectorAll('.p-cell').forEach(c=>{
+    if(isMobile()){ c.style.opacity='0'; c.style.transform='translateX(-18px)'; }
+    else gsap.set(c,{clipPath:'inset(0 100% 0 0)',opacity:0});
+  });
+  runSequence();
+  setupScrollTriggers();
+});
+document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R')replay();});
+</script>
+</body>
+</html>

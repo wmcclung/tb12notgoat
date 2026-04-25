@@ -2200,17 +2200,16 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
       <h3>Credits</h3>
       <dl>
         <dt>Created by</dt>
-        <!-- TODO: replace with your name + optional link, e.g.:
-             <dd><a href="https://example.com">Your Name</a></dd> -->
-        <dd class="placeholder">[ name + link to be added ]</dd>
+        <dd><a href="https://github.com/wmcclung/tb12notgoat" target="_blank" rel="noopener">Will McClung</a></dd>
 
         <dt>Illustrations by</dt>
-        <!-- TODO: illustrator name + link -->
-        <dd class="placeholder">[ illustrator name + link to be added ]</dd>
+        <dd><a href="https://thecitygoblin.myportfolio.com/" target="_blank" rel="noopener">Casey Rooney</a></dd>
 
         <dt>Rive puppet illustration drawn by</dt>
-        <!-- TODO: rigger / puppet illustrator name + link -->
-        <dd class="placeholder">[ rigger name + link to be added ]</dd>
+        <dd>Morgan Zavoral</dd>
+
+        <dt>Get in touch</dt>
+        <dd><a href="mailto:wpmcclung@gmail.com">wpmcclung@gmail.com</a></dd>
       </dl>
     </section>
 
@@ -2221,11 +2220,21 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
          Plain HTML — paragraphs, links, lists. -->
     <section class="about-section about-notes">
       <h3>Notes</h3>
-      <!-- TODO: replace this <p> with your notes about how you used AI to
-           build this site, plus any links you want readers to follow.
-           Multiple <p> tags are fine. -->
-      <p class="placeholder" style="font-style:italic;color:rgba(242,237,228,.4);">
-        [ space for notes about AI use, sources, links — to be filled in ]
+      <p>
+        Built over roughly three months in collaboration with Claude (Anthropic) across three surfaces:
+        <strong>Claude Code</strong> in the terminal for code generation, edits, and deploys;
+        <strong>Claude.ai</strong> for planning conversations and design briefs;
+        and <strong>Claude in Chrome</strong> for live audits on the deployed site.
+        I described what I wanted in plain language, Claude wrote and debugged the code, and
+        the back-and-forth iterated until the page felt right. The art is the part that isn't AI &mdash;
+        the candidate portraits, hero composition, and puppet rig were all hand-illustrated.
+      </p>
+      <p>
+        The product idea, the gag, the animation moments, and the taste calls are mine. The scroll wiring,
+        the database, the deploy configuration, and most of the CSS are where Claude did the heavy lifting.
+        The references below are what a developer would need to rebuild any individual section &mdash;
+        each names the library, the canonical docs, the design pattern in plain words, and the file in this repo
+        where it lives.
       </p>
     </section>
 
@@ -2241,37 +2250,49 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
       <article class="about-ref">
         <h4>Hero impact &mdash; scroll-driven cross-fade</h4>
         <ul>
-          <li><strong>Library</strong> GSAP + ScrollTrigger</li>
+          <li><strong>Library</strong> GSAP 3.12 + ScrollTrigger</li>
           <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">gsap.com/docs/v3/Plugins/ScrollTrigger/</a></li>
-          <li><strong>Pattern</strong> Scrub timeline (timeline progress = scroll progress); cross-fade between two stacked images via opacity tweens</li>
-          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code></li>
-          <!-- TODO: paste the link to the example/codepen/tutorial that inspired this section. -->
-          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+          <li><strong>Pattern</strong> Scrub timeline (timeline progress = scroll progress).
+            Two <code>&lt;img&gt;</code> elements are stacked at the same position &mdash; normal Brady on top, shocked Brady underneath. Three tweens share one timeline:
+            (1) the word <em>NOT</em> drops in via <code>y</code> + <code>opacity</code>,
+            (2) the two Brady images cross-fade via opposing opacity tweens,
+            (3) a CSS <code>::after</code> strike-through bar on "the" scales from 0 to 1.
+            <code>scrub: true</code> on the ScrollTrigger ties timeline progress to scroll progress so the user controls the pace.</li>
+          <li><strong>Why this approach</strong> Stacked images cross-fade more cheaply than swapping <code>src</code> (no re-layout, no network round-trip). Sharing one timeline keeps the three tweens in lockstep regardless of scroll speed.</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code> (scroll trigger), <code>_impactTl()</code> (timeline), <code>.line-not</code> CSS, the two <code>&lt;img&gt;</code> elements <code>#hero-brady-img</code> and <code>#hero-brady-img-shocked</code></li>
+          <!-- TODO: paste the link to the codepen/tutorial/blog-post that inspired this specific section. -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
         </ul>
       </article>
 
       <article class="about-ref">
         <h4>Accolades pin &mdash; stamp-down on scroll</h4>
         <ul>
-          <li><strong>Library</strong> GSAP + ScrollTrigger</li>
-          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">ScrollTrigger pinning + scrub</a></li>
-          <li><strong>Pattern</strong> Pinned section with a scrubbed timeline driving sequential <code>fromTo()</code> tweens for each accolade</li>
-          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger</li>
+          <li><strong>Library</strong> GSAP + ScrollTrigger (pin + scrub)</li>
+          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">ScrollTrigger</a> &mdash; see the <code>pin</code> and <code>scrub</code> options</li>
+          <li><strong>Pattern</strong> The accolades section gets <code>pin: true, scrub: true, end: '+=Npx'</code>.
+            The user feels they're scrolling through the section, but actual page scroll is driving timeline progress while the pinned element holds in place.
+            Inside that span, a chain of <code>fromTo()</code> tweens sequences each accolade (championships, MVPs, Super Bowl wins) onto the page with a discrete progress mark on the timeline.
+            Each sticker uses a scale + filter-blur transform to feel like a physical stamp landing.</li>
+          <li><strong>Why this approach</strong> Pinning + scrub is far more reliable than <code>position: sticky</code> for orchestrated multi-element sequences &mdash; it gives precise control over <em>when</em> within the scroll each element fires.</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger and the <code>.word-slot</code>/<code>.cards-col</code> markup it drives</li>
           <!-- TODO: inspiration link -->
-          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
         </ul>
       </article>
 
       <article class="about-ref">
         <h4>Puppet dance &mdash; vector character animation</h4>
         <ul>
-          <li><strong>Library</strong> Rive (<code>@rive-app/canvas</code>)</li>
+          <li><strong>Library</strong> Rive runtime (<code>@rive-app/canvas</code>) loaded via unpkg CDN</li>
           <li><strong>Docs</strong> <a href="https://rive.app/docs" target="_blank" rel="noopener">rive.app/docs</a></li>
-          <li><strong>Editor</strong> <a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> (designer rigs the layered art into a state machine)</li>
-          <li><strong>Pattern</strong> Linear timeline scrubbed by scroll velocity; fast scroll triggers a hidden "celebration" branch</li>
-          <li><strong>In repo</strong> <code>index.html</code> Rive init &middot; <code>Assets/puppet/*.riv</code></li>
+          <li><strong>Editor</strong> <a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> &mdash; the designer rigs the layered art into a state machine inside the editor; the runtime plays the resulting <code>.riv</code> file</li>
+          <li><strong>Pattern</strong> The character is rigged from twelve named bones (head, head_hype, torso, upper_arm L/R, forearm L/R, hand_L/R open/closed, legs).
+            On the page, scroll position drives the dance timeline's progress; a separate JS loop tracks scroll <em>velocity</em> and triggers a "celebration" state-machine branch above a threshold &mdash; the easter egg you see on rapid-scroll.</li>
+          <li><strong>Why this approach</strong> A full Rive character is ~50 KB versus 5+ MB for a comparable GIF, stays sharp at any size because it's vector, and can respond to multiple inputs (scroll, click, hover) without re-rigging.</li>
+          <li><strong>In repo</strong> <code>index.html</code> Rive init + scrub loop &middot; <code>Assets/puppet/*.riv</code> (rigged source files)</li>
           <!-- TODO: inspiration link -->
-          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
         </ul>
       </article>
 
@@ -2279,25 +2300,29 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
         <h4>Vote API &mdash; shared real-time totals</h4>
         <ul>
           <li><strong>Server</strong> Node + Express &mdash; <a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></li>
-          <li><strong>Database</strong> Postgres via <code>pg</code> &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
-          <li><strong>Hosting</strong> Railway &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
-          <li><strong>Pattern</strong> Optimistic UI + <code>POST /api/vote</code> upsert; <code>GET /api/votes</code> with <code>Cache-Control: no-store</code> to bypass edge CDN</li>
-          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code></li>
+          <li><strong>Database</strong> Postgres via <code>pg</code> (node-postgres) &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
+          <li><strong>Hosting</strong> Railway (Node service + managed Postgres on the same project) &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
+          <li><strong>Schema</strong> <code>votes (player_id TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMPTZ)</code> &mdash; one row per candidate, count incremented atomically</li>
+          <li><strong>Pattern</strong> Two endpoints. <code>POST /api/vote</code> performs an UPSERT (<code>INSERT ... ON CONFLICT ... DO UPDATE SET count = count + 1</code>) so concurrent voters can't lose writes. <code>GET /api/votes</code> returns the full tally. Express middleware sets <code>Cache-Control: no-store</code> on <code>/api/*</code> so the edge CDN can't serve stale totals (without it, desktop and mobile users saw different counts). A small in-memory rate limiter (Map keyed on <code>X-Forwarded-For</code>) blocks trivial spam.</li>
+          <li><strong>Why this approach</strong> A relational database is overkill for five integers, but it gives correct concurrent writes for free and lets any SQL tool inspect the table.</li>
+          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code>, <code>buildResults()</code></li>
           <!-- TODO: inspiration link -->
-          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
         </ul>
       </article>
 
       <article class="about-ref">
         <h4>Mobile viewport &mdash; URL-bar jitter fix</h4>
         <ul>
-          <li><strong>APIs</strong> <code>visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
+          <li><strong>APIs</strong> <code>window.visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
           <li><strong>Docs</strong> <a href="https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API" target="_blank" rel="noopener">MDN: Visual Viewport API</a></li>
-          <li><strong>Reference</strong> <a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: viewport units</a></li>
-          <li><strong>Pattern</strong> Grow-only <code>--vh-px</code> custom property published from JS so URL-bar retraction can't shrink the pinned section</li>
+          <li><strong>Reference</strong> <a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: large, small, and dynamic viewport units</a></li>
+          <li><strong>Pattern</strong> A <code>&lt;script&gt;</code> at the very top of <code>&lt;head&gt;</code> reads <code>window.visualViewport.height</code> (falling back to <code>window.innerHeight</code>) and publishes it as a CSS custom property, <code>--vh-px</code>.
+            The value is <em>grow-only</em>: once the URL bar retracts and the viewport gets taller, that height becomes the new high-water mark and never shrinks back. CSS uses <code>var(--vh-px, 100svh)</code> for any pinned-section height. <code>orientationchange</code> resets the high-water mark.</li>
+          <li><strong>Why this approach</strong> Without the shim, the URL bar's transition between expanded and collapsed states makes <code>svh</code>/<code>dvh</code> resolve to wildly different values on the same load &mdash; producing the "everything in the corner of the screen" mobile bug. <code>visualViewport</code> is the only API that reports the actually-visible region rather than the layout viewport.</li>
           <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
           <!-- TODO: inspiration link -->
-          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
         </ul>
       </article>
 

@@ -2288,18 +2288,19 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile + desktop now share the same pin length. The earlier
-         +=5000 on mobile was trying to prevent flick-past but the
-         cost was fatal to the fall's weight — NOT barely moved per
-         thumb-swipe, killing the punch of the impact. Matches the
-         original D-drive version that felt right. If flicks blow
-         past the hold we can re-tune a shorter bump (e.g. +=2200). */
-      end:                 '+=1800',
+      /* Mobile pin duration — bumped hard to +=5000 (was +=2400). A
+         mobile thumb-flick carries ~2000-3500px of inertia; at +=3800
+         a firm flick still reached the pin end. +=5000 pushes the
+         dwell zone past typical flick inertia so the user reliably
+         stops inside the hold phase instead of rocketing past. */
+      end:                 window.innerWidth <= 767 ? '+=5000' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,
       animation:           _notDropTl,
       invalidateOnRefresh: true,
+      /* Smooths the pin release into the intro section below. */
+      anticipatePin:       1,
       onUpdate: self => {
         if (self.progress >= IMPACT && !_impactFired) fireImpact();
         else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();

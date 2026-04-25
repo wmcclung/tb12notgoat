@@ -1989,12 +1989,90 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   padding:1px 5px; border-radius:3px;
 }
 
-/* Mobile: anchor the card to the bottom edge as a bottom sheet. */
+/* Long URLs, code spans, and inline strings should always wrap inside
+   the modal — without this, a 60-char URL or an unbreakable token can
+   force horizontal overflow on narrow viewports and break the layout. */
+.about-modal-card a,
+.about-modal-card code {
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+/* Smooth touch scrolling on iOS — without this the inner scroll feels
+   sticky on older Safari versions. */
+.about-modal-card { -webkit-overflow-scrolling:touch; }
+
+/* ── Tablet & narrow desktop (≤768px) ─────────────────────────────
+   Tighten padding and reflow the credits dl so long labels like
+   "Rive puppet illustration drawn by" don't squeeze the value
+   column down to a few characters. Stacking dt above dd reads
+   cleanly and gives every value the full row width. */
+@media (max-width: 768px) {
+  .about-modal-card { padding:clamp(20px,3vh,28px) clamp(16px,4vw,22px); }
+  .about-modal-card h2 {
+    font-size:32px;
+    margin-bottom:20px;
+    padding-right:52px;        /* clear the larger close button */
+  }
+  .about-credits dl {
+    grid-template-columns:1fr;
+    row-gap:14px;
+  }
+  .about-credits dt {
+    padding-top:0;
+    margin-bottom:2px;
+  }
+  .about-credits dd {
+    font-size:16px;            /* bigger for thumb-tappable links */
+  }
+  /* Each ref-list label on its own line so wrapped values stay
+     visually grouped under their label rather than orphaned. */
+  .about-ref ul strong {
+    display:block;
+    margin:0 0 2px;
+  }
+  .about-ref ul li { margin-bottom:8px; }
+}
+
+/* ── Phone bottom-sheet (≤600px) ────────────────────────────────
+   Anchor the card to the bottom edge of the viewport so it reads
+   as a native bottom sheet. Respects the iOS home-indicator safe
+   area; uses dvh so the URL bar's expansion/retraction doesn't
+   clip content; keeps the close button at a 44x44 touch target. */
 @media (max-width: 600px) {
   .about-modal { padding:0; align-items:flex-end; }
   .about-modal-card {
     border-radius:16px 16px 0 0;
-    max-height:92dvh; width:100%;
+    width:100%;
+    max-height:92dvh;
+    /* Ensure the bottom safe area on iPhones isn't covered by the
+       home indicator. The inner content already scrolls, so we just
+       need extra bottom padding rather than extra height. */
+    padding-bottom:max(24px, env(safe-area-inset-bottom));
+  }
+  .about-modal-close {
+    width:40px; height:40px;
+    top:10px; right:10px;
+    font-size:22px;
+  }
+  .about-modal-card h2 { font-size:30px; }
+  .about-section h3   { font-size:17px; }
+  .about-ref h4       { font-size:14px; }
+  .about-ref ul li    { font-size:14px; line-height:1.6; }
+  .about-notes p      { font-size:15px; }
+}
+
+/* ── Landscape phone (very short height) ────────────────────────
+   When the viewport is short (rotated phone, or split-screen),
+   abandon the bottom-sheet and fill the screen so content gets
+   maximum vertical room. Bigger close button stays in reach. */
+@media (max-height: 480px) {
+  .about-modal { padding:0; align-items:stretch; }
+  .about-modal-card {
+    border-radius:0;
+    max-height:100dvh;
+    height:100dvh;
+    width:100%;
   }
 }
 

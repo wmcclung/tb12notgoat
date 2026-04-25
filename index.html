@@ -149,11 +149,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   letter-spacing:-.01em; color:#C8102E;
   text-transform:uppercase; display:inline-block; position:relative; line-height:.9;
   text-shadow:0 0 60px rgba(200,16,46,.5),0 0 120px rgba(200,16,46,.2),0 2px 0 rgba(0,0,0,.6);
-  /* Pre-promote to a GPU layer so the first scroll-triggered y tween
-     doesn't pay the one-time layer-creation cost (felt as 'resistance'
-     on mobile's first scroll-down). */
-  will-change:transform, opacity;
-  transform:translateZ(0);
 }
 .line-not::after {
   content:''; position:absolute; bottom:6px; left:-2px; right:-2px;
@@ -2304,16 +2299,6 @@ gsap.registerPlugin(ScrollTrigger);
         else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();
       },
     });
-
-    /* Pre-warm the scrub timeline so the FIRST scroll doesn't pay
-       GSAP's one-time tween-compilation cost — which on mobile felt
-       as "resistance" on the first pass, then effortless on the
-       second. Jumping to end and back compiles all tweens and
-       records their from/to values, then returns the UI to initial
-       state. Runs with suppressEvents (the 2nd arg `false`) so our
-       onUpdate and callbacks don't fire during the warm-up. */
-    _notDropTl.progress(1, false);
-    _notDropTl.progress(0, false);
   }
 
   /* Immediate visual-only reset (hides NOT etc.) without creating the ST */

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>How this was made — Tom Brady Is Not The GOAT</title>
+<meta name="description" content="Credits, notes on how AI was used to build the site, animation references for developers, and a structured Responsible-AI citation.">
+
+<!--
+  about.html
+  ──────────
+  Single static page linked from the post-vote results screen.
+  Five sections:
+    01  Credits
+    02  Notes (~2 paragraphs on AI use)
+    03  Animation references (per visible moment on the site)
+    04  Responsible AI citation (structured ledger)
+    05  Prompts that worked (verbatim from the build)
+
+  Visual language matches the home page so this reads as the same
+  product. Aggressively mobile-tested — single-column credits grid
+  on phones, overflow-wrap:anywhere on every text node, smaller
+  monospace labels at narrow widths, dvh/safe-area for iOS.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { background:#07090C; color:#F2EDE4; }
+body {
+  font-family:'Space Grotesk', system-ui, sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  padding-bottom:max(80px, env(safe-area-inset-bottom));
+}
+:focus { outline:none; }
+:focus-visible {
+  outline:2px solid rgba(242,237,228,.65);
+  outline-offset:3px;
+  border-radius:2px;
+}
+
+/* Defensive wrapping. Every text-bearing element in the page allows
+   anywhere-break — long URLs, monospace labels with letter-spacing,
+   and code tokens cannot force horizontal overflow on narrow viewports. */
+a, code, p, li, dt, dd, h1, h2, h3, h4 {
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+.wrap {
+  max-width:760px;
+  margin:0 auto;
+  padding:0 clamp(18px, 5vw, 32px);
+}
+
+/* Top nav: a single back link. */
+.topnav {
+  padding:18px 0 8px;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:11px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.topnav a {
+  color:rgba(242,237,228,.55);
+  text-decoration:none;
+  transition:color .2s;
+}
+.topnav a:hover { color:#F2EDE4; }
+
+/* Title. Quiet, not a hero. */
+.title {
+  padding:clamp(28px,7vh,64px) 0 clamp(20px,5vh,40px);
+  border-bottom:1px solid rgba(242,237,228,.08);
+}
+.title .label {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:11px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:rgba(200,16,46,.85);
+  margin-bottom:14px;
+}
+.title h1 {
+  font-family:'Shrikhand', cursive;
+  font-size:clamp(36px, 6vw, 64px);
+  line-height:.95;
+  font-weight:400;
+  color:#F2EDE4;
+  margin-bottom:14px;
+}
+.title h1 .red { color:#C8102E; }
+.title .stand {
+  color:rgba(242,237,228,.7);
+  font-size:clamp(15px, 1.7vw, 17px);
+  max-width:60ch;
+}
+
+section { padding:clamp(28px,6vh,56px) 0; border-bottom:1px solid rgba(242,237,228,.06); }
+section:last-of-type { border-bottom:none; }
+
+h2 {
+  font-family:'Germania One', cursive;
+  font-size:clamp(22px,2.6vw,30px);
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:#F2EDE4;
+  font-weight:400;
+  margin-bottom:18px;
+}
+h2 .num {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:.45em;
+  letter-spacing:.18em;
+  color:rgba(200,16,46,.85);
+  margin-right:10px;
+  vertical-align:middle;
+}
+
+p { margin-bottom:14px; color:rgba(242,237,228,.84); }
+p strong { color:#F2EDE4; font-weight:600; }
+p em { color:#F2EDE4; font-style:italic; }
+
+a.inline {
+  color:#F2EDE4;
+  text-decoration:none;
+  border-bottom:1px solid rgba(200,16,46,.55);
+  transition:border-color .2s;
+}
+a.inline:hover { border-color:#F2EDE4; }
+
+code {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:.92em;
+  background:rgba(242,237,228,.06);
+  padding:1px 6px;
+  border-radius:4px;
+  color:#F2EDE4;
+}
+
+/* ── Credits dl ────────────────────────────────────────────────
+   Two-column grid on tablet/desktop, single-column on phones so
+   long monospace labels (e.g. "RIVE PUPPET ILLUSTRATION DRAWN BY")
+   never squeeze the value column down to a sliver. */
+dl.kv {
+  display:grid;
+  grid-template-columns:max-content 1fr;
+  column-gap:clamp(16px,3vw,28px);
+  row-gap:10px;
+}
+dl.kv dt {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:rgba(242,237,228,.5);
+  padding-top:3px;
+  min-width:0;
+}
+dl.kv dd { color:rgba(242,237,228,.94); font-size:15px; min-width:0; }
+dl.kv dd a {
+  color:#F2EDE4;
+  text-decoration:none;
+  border-bottom:1px solid rgba(200,16,46,.55);
+  transition:border-color .2s;
+}
+dl.kv dd a:hover { border-color:#F2EDE4; }
+
+@media (max-width: 600px) {
+  dl.kv {
+    grid-template-columns:1fr;
+    row-gap:14px;
+  }
+  dl.kv dt {
+    padding-top:0;
+    margin-bottom:2px;
+    font-size:10px;
+    letter-spacing:.1em;
+  }
+  dl.kv dd { font-size:16px; }
+}
+
+/* ── Animation reference blocks ────────────────────────────────
+   One block per visible moment on the site. The list inside each
+   block has bold uppercase labels acting as captions for each
+   property, then plain text values that wrap freely. */
+.refs { display:flex; flex-direction:column; gap:18px; }
+.ref {
+  padding:18px 20px;
+  border:1px solid rgba(242,237,228,.1);
+  border-radius:10px;
+  background:rgba(242,237,228,.02);
+}
+.ref h3 {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:#F2EDE4;
+  margin-bottom:14px;
+}
+.ref h3 .tag {
+  font-size:10px;
+  font-weight:400;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:rgba(200,16,46,.85);
+  margin-left:8px;
+}
+.ref ul {
+  list-style:none;
+  padding:0;
+  margin:0;
+  font-size:14px;
+  line-height:1.65;
+}
+.ref ul li { color:rgba(242,237,228,.84); margin-bottom:8px; }
+.ref ul li:last-child { margin-bottom:0; }
+.ref ul strong {
+  display:block;
+  margin:0 0 2px;
+  color:rgba(200,16,46,.85);
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.ref a {
+  color:#F2EDE4;
+  text-decoration:none;
+  border-bottom:1px solid rgba(200,16,46,.55);
+  transition:border-color .2s;
+}
+.ref a:hover { border-color:#F2EDE4; }
+.ref code {
+  font-size:12.5px;
+}
+.ref .todo {
+  color:rgba(242,237,228,.4);
+  font-style:italic;
+  font-size:13px;
+}
+
+@media (max-width: 600px) {
+  .ref { padding:14px 16px; }
+  .ref ul { font-size:13.5px; }
+  .ref ul strong { font-size:10px; letter-spacing:.08em; }
+}
+
+/* ── Citation block ────────────────────────────────────────────
+   The Responsible-AI structured ledger. Visually weighted as the
+   primary disclosure surface — same kv grid but with red border
+   and tinted background so it reads as canonical. */
+.cite-wrap {
+  padding:clamp(18px,3vh,24px) clamp(16px,3vw,24px);
+  border:1px solid rgba(200,16,46,.25);
+  border-radius:10px;
+  background:rgba(200,16,46,.04);
+}
+.cite-wrap dl.kv dt { color:rgba(200,16,46,.8); }
+
+/* Prompts list — verbatim, monospace, terminal-ish. */
+.prompts-heading {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:13px;
+  letter-spacing:.04em;
+  color:#F2EDE4;
+  margin:28px 0 6px;
+}
+.prompts-stand {
+  font-size:14px;
+  color:rgba(242,237,228,.7);
+  margin-bottom:10px;
+}
+.prompts {
+  list-style:none;
+  padding:14px 16px;
+  margin:0;
+  border:1px dashed rgba(242,237,228,.15);
+  border-radius:8px;
+  background:#0E1218;
+}
+.prompts li {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:13px;
+  color:rgba(242,237,228,.85);
+  padding:5px 0;
+  border-bottom:1px solid rgba(242,237,228,.05);
+}
+.prompts li:last-child { border-bottom:none; }
+.prompts li::before {
+  content:'> ';
+  color:rgba(200,16,46,.85);
+}
+
+@media (max-width: 600px) {
+  .cite-wrap { padding:16px 14px; }
+  .prompts { padding:12px 14px; }
+  .prompts li { font-size:12.5px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="page navigation">
+  <div class="wrap">
+    <a href="/">← Back to the vote</a>
+  </div>
+</nav>
+
+<header class="title">
+  <div class="wrap">
+    <div class="label">Project notes</div>
+    <h1>How this was <span class="red">made</span></h1>
+    <p class="stand">
+      Credits, a couple of notes on how AI was used in the build, and
+      a per-section reference any developer can use to rebuild the
+      animations on the home page.
+    </p>
+  </div>
+</header>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     01 — CREDITS
+     Names + links match the credits in the on-site About modal.
+     ════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">01</span> Credits</h2>
+    <dl class="kv">
+      <dt>Created by</dt>
+      <dd><a href="https://github.com/wmcclung/tb12notgoat" target="_blank" rel="noopener">Will McClung</a></dd>
+
+      <dt>Illustrations by</dt>
+      <dd><a href="https://thecitygoblin.myportfolio.com/" target="_blank" rel="noopener">Casey Rooney</a></dd>
+
+      <dt>Rive puppet illustration drawn by</dt>
+      <dd>Morgan Zavoral</dd>
+
+      <dt>Get in touch</dt>
+      <dd><a href="mailto:rivers@riversgoat.com">rivers@riversgoat.com</a></dd>
+    </dl>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     02 — NOTES
+     Two paragraphs. AI surfaces, human/AI division, pointer to refs.
+     ════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">02</span> Notes</h2>
+    <p>
+      Built over roughly three months in collaboration with Claude (Anthropic)
+      across three surfaces: <strong>Claude Code</strong> in the terminal for
+      code generation, edits, and deploys; <strong>Claude.ai</strong> for
+      planning conversations and design briefs; and <strong>Claude in Chrome</strong>
+      for live audits on the deployed site. I described what I wanted in plain
+      language, Claude wrote and debugged the code, and the back-and-forth
+      iterated until the page felt right. The art is the part that isn't AI
+      &mdash; the candidate portraits, hero composition, and puppet rig were
+      all hand-illustrated.
+    </p>
+    <p>
+      The product idea, the gag, the animation moments, and the taste calls
+      are mine. The scroll wiring, the database, the deploy configuration,
+      and most of the CSS are where Claude did the heavy lifting. The
+      references below are what a developer would need to rebuild any
+      individual section &mdash; each names the library, the canonical docs,
+      the design pattern in plain words, and the file in this repo where
+      it lives.
+    </p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     03 — ANIMATION REFERENCES
+     Five blocks, one per visible moment. Each lists library, docs,
+     pattern (in technical depth), why-this-approach, in-repo file
+     pointers, and a TODO slot for the user's specific inspiration.
+     ════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">03</span> Animation references</h2>
+
+    <div class="refs">
+
+      <article class="ref">
+        <h3>Hero impact <span class="tag">scroll-driven cross-fade</span></h3>
+        <ul>
+          <li><strong>Library</strong> GSAP 3.12 + ScrollTrigger</li>
+          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">gsap.com/docs/v3/Plugins/ScrollTrigger/</a></li>
+          <li><strong>Pattern</strong>
+            Scrub timeline (timeline progress = scroll progress).
+            Two <code>&lt;img&gt;</code> elements are stacked at the same position &mdash; normal Brady on top, shocked Brady underneath. Three tweens share one timeline:
+            (1) the word <em>NOT</em> drops in via <code>y</code> + <code>opacity</code>,
+            (2) the two Brady images cross-fade via opposing opacity tweens,
+            (3) a CSS <code>::after</code> strike-through bar on "the" scales from 0 to 1.
+            <code>scrub: true</code> on the ScrollTrigger ties timeline progress to scroll progress so the user controls the pace.
+          </li>
+          <li><strong>Why this approach</strong> Stacked images cross-fade more cheaply than swapping <code>src</code> (no re-layout, no network round-trip). Sharing one timeline keeps the three tweens in lockstep regardless of scroll speed.</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code> (scroll trigger), <code>_impactTl()</code> (timeline), <code>.line-not</code> CSS, the two <code>&lt;img&gt;</code> elements <code>#hero-brady-img</code> and <code>#hero-brady-img-shocked</code></li>
+          <!-- TODO: paste your specific inspiration link (codepen, tutorial, blog post). -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+        </ul>
+      </article>
+
+      <article class="ref">
+        <h3>Accolades pin <span class="tag">stamp-down on scroll</span></h3>
+        <ul>
+          <li><strong>Library</strong> GSAP + ScrollTrigger (pin + scrub)</li>
+          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">ScrollTrigger</a> &mdash; see the <code>pin</code> and <code>scrub</code> options</li>
+          <li><strong>Pattern</strong>
+            The accolades section gets <code>pin: true, scrub: true, end: '+=Npx'</code>.
+            The user feels they're scrolling through the section, but actual page scroll is driving timeline progress while the pinned element holds in place.
+            Inside that span, a chain of <code>fromTo()</code> tweens sequences each accolade (championships, MVPs, Super Bowl wins) onto the page with a discrete progress mark on the timeline.
+            Each sticker uses a scale + filter-blur transform to feel like a physical stamp landing.
+          </li>
+          <li><strong>Why this approach</strong> Pinning + scrub is far more reliable than <code>position: sticky</code> for orchestrated multi-element sequences &mdash; it gives precise control over when within the scroll each element fires.</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger and the <code>.word-slot</code> / <code>.cards-col</code> markup it drives</li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+        </ul>
+      </article>
+
+      <article class="ref">
+        <h3>Puppet dance <span class="tag">vector character animation</span></h3>
+        <ul>
+          <li><strong>Library</strong> Rive runtime (<code>@rive-app/canvas</code>) loaded via unpkg CDN</li>
+          <li><strong>Docs</strong> <a href="https://rive.app/docs" target="_blank" rel="noopener">rive.app/docs</a></li>
+          <li><strong>Editor</strong> <a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> &mdash; the designer rigs the layered art into a state machine inside the editor; the runtime plays the resulting <code>.riv</code> file</li>
+          <li><strong>Pattern</strong>
+            The character is rigged from twelve named bones (head, head_hype, torso, upper_arm L/R, forearm L/R, hand_L/R open/closed, legs).
+            On the page, scroll position drives the dance timeline's progress; a separate JS loop tracks scroll <em>velocity</em> and triggers a "celebration" state-machine branch above a threshold &mdash; the easter egg you see on rapid-scroll.
+          </li>
+          <li><strong>Why this approach</strong> A full Rive character is ~50 KB versus 5+ MB for a comparable GIF, stays sharp at any size because it's vector, and can respond to multiple inputs (scroll, click, hover) without re-rigging.</li>
+          <li><strong>In repo</strong> <code>index.html</code> Rive init + scrub loop &middot; <code>Assets/puppet/*.riv</code> (rigged source files)</li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+        </ul>
+      </article>
+
+      <article class="ref">
+        <h3>Vote API <span class="tag">shared real-time totals</span></h3>
+        <ul>
+          <li><strong>Server</strong> Node + Express &mdash; <a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></li>
+          <li><strong>Database</strong> Postgres via <code>pg</code> (node-postgres) &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
+          <li><strong>Hosting</strong> Railway (Node service + managed Postgres on the same project) &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
+          <li><strong>Schema</strong> <code>votes (player_id TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMPTZ)</code> &mdash; one row per candidate, count incremented atomically</li>
+          <li><strong>Pattern</strong>
+            Two endpoints. <code>POST /api/vote</code> performs an UPSERT (<code>INSERT ... ON CONFLICT ... DO UPDATE SET count = count + 1</code>) so concurrent voters can't lose writes. <code>GET /api/votes</code> returns the full tally. Express middleware sets <code>Cache-Control: no-store</code> on <code>/api/*</code> so the edge CDN can't serve stale totals (without it, desktop and mobile users saw different counts). A small in-memory rate limiter (Map keyed on <code>X-Forwarded-For</code>) blocks trivial spam.
+          </li>
+          <li><strong>Why this approach</strong> A relational database is overkill for five integers, but it gives correct concurrent writes for free and lets any SQL tool inspect the table.</li>
+          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code>, <code>buildResults()</code></li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+        </ul>
+      </article>
+
+      <article class="ref">
+        <h3>Mobile viewport <span class="tag">URL-bar jitter fix</span></h3>
+        <ul>
+          <li><strong>APIs</strong> <code>window.visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
+          <li><strong>Docs</strong> <a href="https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API" target="_blank" rel="noopener">MDN: Visual Viewport API</a></li>
+          <li><strong>Reference</strong> <a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: large, small, and dynamic viewport units</a></li>
+          <li><strong>Pattern</strong>
+            A <code>&lt;script&gt;</code> at the very top of <code>&lt;head&gt;</code> reads <code>window.visualViewport.height</code> (falling back to <code>window.innerHeight</code>) and publishes it as a CSS custom property, <code>--vh-px</code>.
+            The value is <em>grow-only</em>: once the URL bar retracts and the viewport gets taller, that height becomes the new high-water mark and never shrinks back. CSS uses <code>var(--vh-px, 100svh)</code> for any pinned-section height. <code>orientationchange</code> resets the high-water mark.
+          </li>
+          <li><strong>Why this approach</strong> Without the shim, the URL bar's transition between expanded and collapsed states makes <code>svh</code>/<code>dvh</code> resolve to wildly different values on the same load &mdash; producing the "everything in the corner of the screen" mobile bug. <code>visualViewport</code> is the only API that reports the actually-visible region rather than the layout viewport.</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     04 — RESPONSIBLE AI CITATION
+     Structured ledger: project, author, level of effort + level of
+     dev, models, surfaces, role split, non-AI humans, third-party,
+     data policy. Followed by a list of the actual prompts that
+     worked across the build.
+     ════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">04</span> Responsible AI &mdash; cite the build</h2>
+
+    <div class="cite-wrap">
+      <dl class="kv">
+        <dt>Project</dt>
+        <dd>Tom Brady Is Not The GOAT (<a href="https://www.tb12notgoat.com">tb12notgoat.com</a>)</dd>
+
+        <dt>Human author</dt>
+        <dd>Will McClung &mdash; <a href="mailto:rivers@riversgoat.com">rivers@riversgoat.com</a></dd>
+
+        <dt>Level of effort</dt>
+        <dd>~3 months part-time (Feb&ndash;Apr 2026), evenings + weekends, multi-session daily work with Claude across surfaces</dd>
+
+        <dt>Level of dev</dt>
+        <dd>Non-developer. Product + design background. Daily AI tool user. Can read code, write briefs, push back when output is wrong; no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
+
+        <dt>AI models</dt>
+        <dd>Claude (Anthropic) &mdash; <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>
+
+        <dt>AI surfaces</dt>
+        <dd>
+          Claude Code (CLI) &mdash; in-repo edits, debugging, deploys<br>
+          Claude on the web (claude.ai) &mdash; planning, briefs, copy<br>
+          Claude in Chrome (extension) &mdash; live audits on the deployed site
+        </dd>
+
+        <dt>Human role</dt>
+        <dd>All product decisions, art direction, design briefs, taste calls, review of every code change before commit, mobile testing, copy edits</dd>
+
+        <dt>AI role</dt>
+        <dd>Majority of code generation, debugging, refactoring, deployment configuration, scroll-animation wiring, server + database, draft of this page</dd>
+
+        <dt>Non-AI humans</dt>
+        <dd>Casey Rooney (illustrations), Morgan Zavoral (Rive puppet)</dd>
+
+        <dt>Third-party</dt>
+        <dd>GSAP, Rive runtime, Express, node-postgres, Railway, Postgres</dd>
+
+        <dt>Data policy</dt>
+        <dd>No analytics. No third-party tracking. Vote counts stored as anonymous integers. No user account. <code>localStorage</code> records only the user's own vote choice for the current device</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     05 — PROMPTS
+     The actual style of brief that worked across the build. Plain
+     symptoms, contrast, constraints. Almost no technical jargon.
+     ════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">05</span> Prompts that worked</h2>
+    <p class="prompts-stand">
+      Verbatim from the build. The pattern: a specific symptom, a contrast (where it works vs. doesn't), and a constraint (what not to break). Almost no technical jargon &mdash; Claude diagnosed the cause, I held the taste line.
+    </p>
+    <ol class="prompts">
+      <li>"On mobile the first scroll has resistance. The second one feels normal. Desktop is fine. Don't change desktop."</li>
+      <li>"The shocked Brady transition goes in and out and feels like a struggle. It used to feel good in the old file."</li>
+      <li>"Yes, do this &mdash; let's test one at a time."</li>
+      <li>"Desktop sees 2 votes. Mobile sees 10. Same database."</li>
+      <li>"These are not two separate sections. The animation we built is replacing the existing one."</li>
+      <li>"I voted for Alexander on the live site and it didn't add one but it knew it was my vote."</li>
+      <li>"Make the comments dev-friendly. The point of everything is that this is animation design inspo for devs and non-technical people."</li>
+    </ol>
+  </div>
+</section>
+
+</body>
+</html>

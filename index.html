@@ -1843,14 +1843,9 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 }
 .vote-reset-btn.visible { display:block; }
 
-/* ═══════════════════════════════════════════════════════════════
-   ABOUT MODAL
-   Opens from a small "About this project" button on the post-vote
-   results screen. Hidden by default via the `hidden` attribute on
-   #about-modal; JS toggles `.is-open` to drive the fade + scale
-   transition. On mobile (≤600px) the card snaps to the bottom of
-   the screen as a sheet for thumb reachability.
-═══════════════════════════════════════════════════════════════ */
+/* "About this project" button on the post-vote results screen.
+   Used as an <a href="/about"> in JS; class works for either <a>
+   or <button> so we don't need a separate selector. */
 .vote-about-btn {
   display:inline-flex; align-items:center; gap:10px;
   margin-top:clamp(8px,1.5vh,16px);
@@ -1859,6 +1854,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   font-size:clamp(10px,1.05vw,12px);
   letter-spacing:.22em; text-transform:uppercase;
   color:rgba(242,237,228,.72);
+  text-decoration:none;                      /* class applies to <a> too */
   border:1px solid rgba(242,237,228,.18);
   border-radius:30px;
   background:rgba(242,237,228,.02);
@@ -1874,231 +1870,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 .vote-about-btn:focus-visible {
   outline:2px solid rgba(242,237,228,.65);
   outline-offset:3px;
-}
-
-.about-modal {
-  position:fixed; inset:0; z-index:1000;
-  display:flex; align-items:center; justify-content:center;
-  padding:clamp(12px,3vh,32px);
-  pointer-events:none;
-}
-.about-modal:not([hidden]) { pointer-events:auto; }
-.about-modal-overlay {
-  position:absolute; inset:0;
-  background:rgba(7,9,12,.85);
-  backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
-  opacity:0; transition:opacity .25s ease;
-}
-.about-modal.is-open .about-modal-overlay { opacity:1; }
-.about-modal-card {
-  position:relative;
-  background:#0E1218; color:#F2EDE4;
-  border:1px solid rgba(242,237,228,.12);
-  border-radius:14px;
-  width:min(640px,100%);
-  max-height:calc(100% - 24px);
-  overflow-y:auto;
-  padding:clamp(24px,4vh,36px) clamp(20px,4vw,32px);
-  font-family:'Space Grotesk',system-ui,sans-serif;
-  line-height:1.6;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);
-  transform:scale(.96) translateY(8px);
-  opacity:0;
-  transition:opacity .25s ease, transform .25s ease;
-}
-.about-modal.is-open .about-modal-card { opacity:1; transform:scale(1) translateY(0); }
-.about-modal-close {
-  position:absolute; top:14px; right:14px;
-  width:32px; height:32px;
-  border:none;
-  background:rgba(242,237,228,.08);
-  color:#F2EDE4;
-  border-radius:50%;
-  font-size:18px; line-height:1;
-  cursor:pointer;
-  transition:background .2s;
-}
-.about-modal-close:hover { background:rgba(200,16,46,.4); }
-.about-modal-card h2 {
-  font-family:'Shrikhand',cursive;
-  font-size:clamp(28px,4.4vw,40px);
-  line-height:1; font-weight:400;
-  color:#F2EDE4;
-  margin:0 0 24px; padding-right:40px;     /* clear close button */
-}
-.about-section { margin-bottom:28px; }
-.about-section:last-child { margin-bottom:0; }
-.about-section h3 {
-  font-family:'Germania One',cursive;
-  font-size:18px; letter-spacing:.08em; text-transform:uppercase;
-  color:#F2EDE4; font-weight:400;
-  margin:0 0 12px;
-  padding-bottom:8px;
-  border-bottom:1px solid rgba(242,237,228,.1);
-}
-.about-credits dl {
-  display:grid;
-  grid-template-columns:max-content 1fr;
-  column-gap:18px; row-gap:8px;
-}
-.about-credits dt {
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-  color:rgba(242,237,228,.55);
-  padding-top:3px;
-}
-.about-credits dd { color:rgba(242,237,228,.92); font-size:15px; }
-.about-credits dd.placeholder, .about-ref .todo {
-  color:rgba(242,237,228,.4);
-  font-style:italic;
-  font-size:13.5px;
-}
-.about-credits dd a, .about-notes a, .about-ref a {
-  color:#F2EDE4;
-  text-decoration:none;
-  border-bottom:1px solid rgba(200,16,46,.55);
-  transition:border-color .2s;
-}
-.about-credits dd a:hover, .about-notes a:hover, .about-ref a:hover { border-color:#F2EDE4; }
-.about-notes p { margin:0 0 12px; color:rgba(242,237,228,.82); font-size:15px; }
-.about-notes p:last-child { margin-bottom:0; }
-.about-ref {
-  margin-bottom:18px; padding-bottom:14px;
-  border-bottom:1px solid rgba(242,237,228,.06);
-}
-.about-ref:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
-.about-ref h4 {
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-  font-size:13px; letter-spacing:.04em;
-  color:#F2EDE4; font-weight:700;
-  margin:0 0 10px;
-}
-.about-ref ul { list-style:none; padding:0; margin:0; font-size:13.5px; line-height:1.7; }
-.about-ref ul li { color:rgba(242,237,228,.82); }
-.about-ref ul strong {
-  color:rgba(200,16,46,.85);
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-  font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-  font-weight:700;
-  margin-right:6px;
-}
-.about-ref code {
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-  font-size:12px;
-  background:rgba(242,237,228,.06);
-  padding:1px 5px; border-radius:3px;
-}
-
-/* Modal must NEVER allow horizontal scroll. Setting overflow-y:auto
-   on the card implicitly enables overflow-x:auto in browsers, so a
-   too-wide child (long monospace label, unbreakable URL) makes the
-   card internally horizontally scrollable — and a touch glitch can
-   shift it sideways, hiding the start of every line. Explicitly
-   pinning overflow-x:hidden plus aggressive wrapping on every
-   text-bearing descendant makes that impossible. */
-.about-modal-card {
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-}
-.about-modal-card * { min-width:0; }
-.about-modal-card a,
-.about-modal-card code,
-.about-modal-card li,
-.about-modal-card dt,
-.about-modal-card dd,
-.about-modal-card p,
-.about-modal-card h2,
-.about-modal-card h3,
-.about-modal-card h4 {
-  overflow-wrap:anywhere;
-  word-break:break-word;
-}
-
-/* ── Tablet & narrow desktop (≤768px) ─────────────────────────────
-   Tighten padding and reflow the credits dl so long labels like
-   "Rive puppet illustration drawn by" don't squeeze the value
-   column down to a few characters. Stacking dt above dd reads
-   cleanly and gives every value the full row width. */
-@media (max-width: 768px) {
-  .about-modal-card { padding:clamp(20px,3vh,28px) clamp(16px,4vw,22px); }
-  .about-modal-card h2 {
-    font-size:32px;
-    margin-bottom:20px;
-    padding-right:52px;        /* clear the larger close button */
-  }
-  .about-credits dl {
-    grid-template-columns:1fr;
-    row-gap:14px;
-  }
-  .about-credits dt {
-    padding-top:0;
-    margin-bottom:2px;
-  }
-  .about-credits dd {
-    font-size:16px;            /* bigger for thumb-tappable links */
-  }
-  /* Each ref-list label on its own line so wrapped values stay
-     visually grouped under their label rather than orphaned. */
-  .about-ref ul strong {
-    display:block;
-    margin:0 0 2px;
-  }
-  .about-ref ul li { margin-bottom:8px; }
-}
-
-/* ── Phone bottom-sheet (≤600px) ────────────────────────────────
-   Anchor the card to the bottom edge of the viewport so it reads
-   as a native bottom sheet. Respects the iOS home-indicator safe
-   area; uses dvh so the URL bar's expansion/retraction doesn't
-   clip content; keeps the close button at a 44x44 touch target. */
-@media (max-width: 600px) {
-  .about-modal { padding:0; align-items:flex-end; }
-  .about-modal-card {
-    border-radius:16px 16px 0 0;
-    width:100%;
-    max-height:92dvh;
-    /* Ensure the bottom safe area on iPhones isn't covered by the
-       home indicator. The inner content already scrolls, so we just
-       need extra bottom padding rather than extra height. */
-    padding-bottom:max(24px, env(safe-area-inset-bottom));
-  }
-  .about-modal-close {
-    width:40px; height:40px;
-    top:10px; right:10px;
-    font-size:22px;
-  }
-  .about-modal-card h2 { font-size:30px; }
-  .about-section h3   { font-size:17px; }
-  .about-ref h4       { font-size:14px; }
-  .about-ref ul li    { font-size:14px; line-height:1.6; }
-  .about-notes p      { font-size:15px; }
-  /* Tighter letter-spacing + smaller font on phone-sized credits
-     labels so "RIVE PUPPET ILLUSTRATION DRAWN BY" fits a 360px line
-     instead of trying to render at ~440px and forcing horizontal
-     overflow inside the card. */
-  .about-credits dt {
-    font-size:10px;
-    letter-spacing:.1em;
-  }
-  /* Same idea for the inline pattern labels in the references list. */
-  .about-ref ul strong {
-    letter-spacing:.08em;
-    font-size:10px;
-  }
-}
-
-/* ── Landscape phone (very short height) ────────────────────────
-   When the viewport is short (rotated phone, or split-screen),
-   abandon the bottom-sheet and fill the screen so content gets
-   maximum vertical room. Bigger close button stays in reach. */
-@media (max-height: 480px) {
-  .about-modal { padding:0; align-items:stretch; }
-  .about-modal-card {
-    border-radius:0;
-    max-height:100dvh;
-    height:100dvh;
-    width:100%;
-  }
 }
 
 /* Vote header — tighter on landscape phones */
@@ -2282,156 +2053,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 
 </section>
 
-
-<!-- ══════════════════════════════════════════════════════════════════════
-     ABOUT MODAL
-     Opens when the user clicks "About this project →" on the post-vote
-     results screen. Three sections — credits, free-form notes, animation
-     references. Every editable spot is marked with a TODO comment so you
-     can find and fill in your own copy/links without hunting.
-══════════════════════════════════════════════════════════════════════ -->
-<div class="about-modal" id="about-modal" hidden aria-hidden="true">
-  <div class="about-modal-overlay" data-about-close></div>
-  <div class="about-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
-    <button class="about-modal-close" data-about-close type="button" aria-label="Close">×</button>
-    <h2 id="about-modal-title">About this project</h2>
-
-    <!-- ─── CREDITS ─────────────────────────────────────────────────────
-         Three labels exactly as requested. Replace each <dd> with your
-         name + an optional <a href="..."> link. -->
-    <section class="about-section about-credits">
-      <h3>Credits</h3>
-      <dl>
-        <dt>Created by</dt>
-        <dd><a href="https://github.com/wmcclung/tb12notgoat" target="_blank" rel="noopener">Will McClung</a></dd>
-
-        <dt>Illustrations by</dt>
-        <dd><a href="https://thecitygoblin.myportfolio.com/" target="_blank" rel="noopener">Casey Rooney</a></dd>
-
-        <dt>Rive puppet illustration drawn by</dt>
-        <dd>Morgan Zavoral</dd>
-
-        <dt>Get in touch</dt>
-        <dd><a href="mailto:rivers@riversgoat.com">rivers@riversgoat.com</a></dd>
-      </dl>
-    </section>
-
-    <!-- ─── NOTES ───────────────────────────────────────────────────────
-         Free-form section. Drop in your own copy about how AI was used
-         in the build, links to your build log, design briefs, blog posts,
-         tweet threads, anything you want a reader to follow.
-         Plain HTML — paragraphs, links, lists. -->
-    <section class="about-section about-notes">
-      <h3>Notes</h3>
-      <p>
-        Built over roughly three months in collaboration with Claude (Anthropic) across three surfaces:
-        <strong>Claude Code</strong> in the terminal for code generation, edits, and deploys;
-        <strong>Claude.ai</strong> for planning conversations and design briefs;
-        and <strong>Claude in Chrome</strong> for live audits on the deployed site.
-        I described what I wanted in plain language, Claude wrote and debugged the code, and
-        the back-and-forth iterated until the page felt right. The art is the part that isn't AI &mdash;
-        the candidate portraits, hero composition, and puppet rig were all hand-illustrated.
-      </p>
-      <p>
-        The product idea, the gag, the animation moments, and the taste calls are mine. The scroll wiring,
-        the database, the deploy configuration, and most of the CSS are where Claude did the heavy lifting.
-        The references below are what a developer would need to rebuild any individual section &mdash;
-        each names the library, the canonical docs, the design pattern in plain words, and the file in this repo
-        where it lives.
-      </p>
-    </section>
-
-    <!-- ─── ANIMATION REFERENCES ────────────────────────────────────────
-         Per visible moment on the site. Each block lists the library, the
-         canonical docs link, the design pattern in use, and a TODO slot
-         for the SPECIFIC inspiration source you used (a Codepen, a
-         tutorial, a tweet, a blog post). Devs can read this block as a
-         starting point for building the same thing. -->
-    <section class="about-section about-references">
-      <h3>Animation references</h3>
-
-      <article class="about-ref">
-        <h4>Hero impact &mdash; scroll-driven cross-fade</h4>
-        <ul>
-          <li><strong>Library</strong> GSAP 3.12 + ScrollTrigger</li>
-          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">gsap.com/docs/v3/Plugins/ScrollTrigger/</a></li>
-          <li><strong>Pattern</strong> Scrub timeline (timeline progress = scroll progress).
-            Two <code>&lt;img&gt;</code> elements are stacked at the same position &mdash; normal Brady on top, shocked Brady underneath. Three tweens share one timeline:
-            (1) the word <em>NOT</em> drops in via <code>y</code> + <code>opacity</code>,
-            (2) the two Brady images cross-fade via opposing opacity tweens,
-            (3) a CSS <code>::after</code> strike-through bar on "the" scales from 0 to 1.
-            <code>scrub: true</code> on the ScrollTrigger ties timeline progress to scroll progress so the user controls the pace.</li>
-          <li><strong>Why this approach</strong> Stacked images cross-fade more cheaply than swapping <code>src</code> (no re-layout, no network round-trip). Sharing one timeline keeps the three tweens in lockstep regardless of scroll speed.</li>
-          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code> (scroll trigger), <code>_impactTl()</code> (timeline), <code>.line-not</code> CSS, the two <code>&lt;img&gt;</code> elements <code>#hero-brady-img</code> and <code>#hero-brady-img-shocked</code></li>
-          <!-- TODO: paste the link to the codepen/tutorial/blog-post that inspired this specific section. -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-      <article class="about-ref">
-        <h4>Accolades pin &mdash; stamp-down on scroll</h4>
-        <ul>
-          <li><strong>Library</strong> GSAP + ScrollTrigger (pin + scrub)</li>
-          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">ScrollTrigger</a> &mdash; see the <code>pin</code> and <code>scrub</code> options</li>
-          <li><strong>Pattern</strong> The accolades section gets <code>pin: true, scrub: true, end: '+=Npx'</code>.
-            The user feels they're scrolling through the section, but actual page scroll is driving timeline progress while the pinned element holds in place.
-            Inside that span, a chain of <code>fromTo()</code> tweens sequences each accolade (championships, MVPs, Super Bowl wins) onto the page with a discrete progress mark on the timeline.
-            Each sticker uses a scale + filter-blur transform to feel like a physical stamp landing.</li>
-          <li><strong>Why this approach</strong> Pinning + scrub is far more reliable than <code>position: sticky</code> for orchestrated multi-element sequences &mdash; it gives precise control over <em>when</em> within the scroll each element fires.</li>
-          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger and the <code>.word-slot</code>/<code>.cards-col</code> markup it drives</li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-      <article class="about-ref">
-        <h4>Puppet dance &mdash; vector character animation</h4>
-        <ul>
-          <li><strong>Library</strong> Rive runtime (<code>@rive-app/canvas</code>) loaded via unpkg CDN</li>
-          <li><strong>Docs</strong> <a href="https://rive.app/docs" target="_blank" rel="noopener">rive.app/docs</a></li>
-          <li><strong>Editor</strong> <a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> &mdash; the designer rigs the layered art into a state machine inside the editor; the runtime plays the resulting <code>.riv</code> file</li>
-          <li><strong>Pattern</strong> The character is rigged from twelve named bones (head, head_hype, torso, upper_arm L/R, forearm L/R, hand_L/R open/closed, legs).
-            On the page, scroll position drives the dance timeline's progress; a separate JS loop tracks scroll <em>velocity</em> and triggers a "celebration" state-machine branch above a threshold &mdash; the easter egg you see on rapid-scroll.</li>
-          <li><strong>Why this approach</strong> A full Rive character is ~50 KB versus 5+ MB for a comparable GIF, stays sharp at any size because it's vector, and can respond to multiple inputs (scroll, click, hover) without re-rigging.</li>
-          <li><strong>In repo</strong> <code>index.html</code> Rive init + scrub loop &middot; <code>Assets/puppet/*.riv</code> (rigged source files)</li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-      <article class="about-ref">
-        <h4>Vote API &mdash; shared real-time totals</h4>
-        <ul>
-          <li><strong>Server</strong> Node + Express &mdash; <a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></li>
-          <li><strong>Database</strong> Postgres via <code>pg</code> (node-postgres) &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
-          <li><strong>Hosting</strong> Railway (Node service + managed Postgres on the same project) &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
-          <li><strong>Schema</strong> <code>votes (player_id TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMPTZ)</code> &mdash; one row per candidate, count incremented atomically</li>
-          <li><strong>Pattern</strong> Two endpoints. <code>POST /api/vote</code> performs an UPSERT (<code>INSERT ... ON CONFLICT ... DO UPDATE SET count = count + 1</code>) so concurrent voters can't lose writes. <code>GET /api/votes</code> returns the full tally. Express middleware sets <code>Cache-Control: no-store</code> on <code>/api/*</code> so the edge CDN can't serve stale totals (without it, desktop and mobile users saw different counts). A small in-memory rate limiter (Map keyed on <code>X-Forwarded-For</code>) blocks trivial spam.</li>
-          <li><strong>Why this approach</strong> A relational database is overkill for five integers, but it gives correct concurrent writes for free and lets any SQL tool inspect the table.</li>
-          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code>, <code>buildResults()</code></li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-      <article class="about-ref">
-        <h4>Mobile viewport &mdash; URL-bar jitter fix</h4>
-        <ul>
-          <li><strong>APIs</strong> <code>window.visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
-          <li><strong>Docs</strong> <a href="https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API" target="_blank" rel="noopener">MDN: Visual Viewport API</a></li>
-          <li><strong>Reference</strong> <a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: large, small, and dynamic viewport units</a></li>
-          <li><strong>Pattern</strong> A <code>&lt;script&gt;</code> at the very top of <code>&lt;head&gt;</code> reads <code>window.visualViewport.height</code> (falling back to <code>window.innerHeight</code>) and publishes it as a CSS custom property, <code>--vh-px</code>.
-            The value is <em>grow-only</em>: once the URL bar retracts and the viewport gets taller, that height becomes the new high-water mark and never shrinks back. CSS uses <code>var(--vh-px, 100svh)</code> for any pinned-section height. <code>orientationchange</code> resets the high-water mark.</li>
-          <li><strong>Why this approach</strong> Without the shim, the URL bar's transition between expanded and collapsed states makes <code>svh</code>/<code>dvh</code> resolve to wildly different values on the same load &mdash; producing the "everything in the corner of the screen" mobile bug. <code>visualViewport</code> is the only API that reports the actually-visible region rather than the layout viewport.</li>
-          <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-    </section>
-  </div>
-</div>
 
 <div class="replay-hint" onclick="replay()" title="Press R to replay" style="display:none">[ R ] replay</div>
 
@@ -4397,18 +4018,17 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     resultsEl.appendChild(lb);
 
-    /* "About this project" button — opens the credits/notes/references
-       modal defined at the bottom of <body>. Hidden in kiosk mode so the
-       conference setup keeps the screen on the vote loop. */
+    /* "About this project" link — navigates to the standalone /about page
+       (about.html). Hidden in kiosk mode so the conference setup keeps the
+       screen on the vote loop. The .vote-about-btn class works for either
+       <a> or <button>, so we keep the same styling. */
     if (!isKiosk) {
-      var aboutBtn = document.createElement('button');
-      aboutBtn.type      = 'button';
-      aboutBtn.className = 'vote-about-btn';
-      aboutBtn.innerHTML = 'About this project <span aria-hidden="true">→</span>';
-      aboutBtn.addEventListener('click', function(){
-        if (window.openAboutModal) window.openAboutModal(aboutBtn);
-      });
-      resultsEl.appendChild(aboutBtn);
+      var aboutLink = document.createElement('a');
+      aboutLink.className = 'vote-about-btn';
+      aboutLink.href      = '/about';
+      aboutLink.innerHTML = 'About this project <span aria-hidden="true">→</span>';
+      aboutLink.setAttribute('aria-label', 'About this project — read credits and how it was built');
+      resultsEl.appendChild(aboutLink);
     }
 
     // Reset button (kiosk only)
@@ -5304,55 +4924,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   }
 
   window.addEventListener('load', function() { setTimeout(initParty, 60); });
-})();
-</script>
-
-<!-- About modal open/close. Triggered from the post-vote results screen.
-     Closes via the × button, the overlay, or the Escape key. Locks page
-     scroll while open. Exposes `window.openAboutModal(triggerEl)` so the
-     buildResults() injection can call it from the existing IIFE scope. -->
-<script>
-(function(){
-  var modal = document.getElementById('about-modal');
-  if (!modal) return;
-  var lastFocus = null;
-
-  function open(trigger) {
-    lastFocus = trigger || document.activeElement;
-    modal.removeAttribute('hidden');
-    modal.setAttribute('aria-hidden', 'false');
-    /* Force a layout flush so the transition runs from the unhidden
-       starting state — without this the modal would just appear with no
-       fade because the browser collapses the hidden→visible transition. */
-    modal.getBoundingClientRect();
-    modal.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', onKey);
-    var closeBtn = modal.querySelector('.about-modal-close');
-    if (closeBtn) closeBtn.focus();
-  }
-  function close() {
-    modal.classList.remove('is-open');
-    /* Wait for the transition to finish before hiding — keeps the fade-out
-       visible. 250ms matches the CSS transition duration on the card. */
-    setTimeout(function(){
-      modal.setAttribute('hidden', '');
-      modal.setAttribute('aria-hidden', 'true');
-    }, 260);
-    document.body.style.overflow = '';
-    document.removeEventListener('keydown', onKey);
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
-  }
-  function onKey(e) { if (e.key === 'Escape') close(); }
-
-  modal.addEventListener('click', function(e){
-    /* Both the overlay and the × button carry data-about-close, so a
-       single delegated handler covers tap-outside-to-dismiss + the
-       explicit close control. */
-    if (e.target.closest('[data-about-close]')) close();
-  });
-
-  window.openAboutModal = open;
 })();
 </script>
 

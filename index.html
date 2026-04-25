@@ -4029,6 +4029,11 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
         if (pl.id === 'brady') return;
         var bar = document.getElementById('vote-bar-' + pl.id);
         if (!bar) return;
+        /* Kill any pending initial tween on this bar — the first render
+           schedules tweens with ~0.35-0.55s delay based on local votes,
+           and if the server responds before those fire, the delayed
+           tween otherwise runs later and overrides our server update. */
+        gsap.killTweensOf(bar);
         var pct = newMax > 0 ? (serverVotes[pl.id] || 0) / newMax * 100 : 0;
         gsap.to(bar, { width: pct + '%', duration: 0.5, ease: 'power2.out' });
       });

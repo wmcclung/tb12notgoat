@@ -54,6 +54,18 @@ if (process.env.DATABASE_URL) {
 /* ── Middleware ── */
 app.use(express.json({ limit: '2kb' })); // vote payloads are tiny; cap to block abuse
 
+/* Prevent Fastly / Railway's edge CDN from caching the vote API —
+   without explicit no-cache headers the edge serves stale JSON for
+   up to the default TTL, which showed up as different clients
+   seeing different totals (desktop cached at 2 while mobile saw 10).
+   Applies only to /api/* — static assets keep their long cache below. */
+app.use('/api', function(req, res, next) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
 /* Light rate limiting — one vote per IP per 2 seconds. Stops trivial
    hold-enter spam without requiring a full rate-limiter dep. */
 const lastVoteByIp = new Map();

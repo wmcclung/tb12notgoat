@@ -2033,28 +2033,22 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script>
 gsap.registerPlugin(ScrollTrigger);
-/* GSAP's mobile scroll normalization — shields ScrollTrigger from the
-   URL-bar animation jitter on touch devices during the scroll-driven
-   intro pin. Without this, innerHeight returns intermediate values
-   during URL bar retract, GSAP measures at one of them, and the pin
-   locks at the wrong size until the user scrolls back (which forces
-   a re-measure). */
-ScrollTrigger.normalizeScroll(true);
-/* BUT: normalizeScroll also blocks native scrolling past the last
-   trigger on the page, which was trapping mobile users inside the
-   vote section (couldn't reach the full leaderboard). Release it
-   once the user scrolls into the vote section; re-enable if they
-   scroll back up past it. */
-window.addEventListener('load', function() {
-  var vote = document.getElementById('vote-section');
-  if (!vote) return;
-  ScrollTrigger.create({
-    trigger: vote,
-    start: 'top 85%',
-    onEnter:     function() { ScrollTrigger.normalizeScroll(false); },
-    onLeaveBack: function() { ScrollTrigger.normalizeScroll(true);  }
-  });
-});
+/* normalizeScroll intentionally NOT enabled here.
+   It replaces native scroll with a GSAP-managed scroll, which needs a
+   full pass through every ScrollTrigger to cache measurements — so the
+   FIRST scroll down through each section felt sluggish and the shocked-
+   Brady transition oscillated at the impact threshold. Subsequent passes
+   were smooth because the cache was warm. That asymmetry is fatal to
+   first impressions on mobile.
+
+   We originally added normalizeScroll to shield the intro pin from
+   mobile URL-bar animation jitter. But we layered three other URL-bar
+   defenses that are sufficient on their own:
+     1. --vh-px grow-only CSS custom property (top of <head>)
+     2. JS-set inline stage height from window.innerHeight on load+resize
+     3. will-change / translateZ(0) on the pinned elements
+   Without normalizeScroll, native Android momentum scrolling is back
+   and every section feels consistent on first scroll through. */
 </script>
 
 <!-- ── 01 HERO JS ── -->

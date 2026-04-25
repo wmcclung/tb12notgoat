@@ -9,7 +9,11 @@ const path    = require('path');
 const { Pool } = require('pg');
 
 const app = express();
-const PORT = parseInt(process.env.PORT, 10) || 3000;
+/* Force port 3000 to match the custom domain mapping (www.tb12notgoat.com
+   → Port 3000, set manually in Railway Networking for security-flag
+   compliance). Railway's automatic $PORT injection would otherwise have
+   Node listen on a different port and Railway's edge would 502. */
+const PORT = 3000;
 
 /* Known player ids — reject anything else at the API boundary so we
    never write garbage rows to the votes table. Keep in sync with the

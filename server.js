@@ -67,16 +67,13 @@ app.use('/api', function(req, res, next) {
 });
 
 /* Light rate limiting — one vote per IP per 2 seconds. Stops trivial
-   hold-enter spam without requiring a full rate-limiter dep. Now logs
-   429s explicitly so we can tell from Railway logs whether a missing
-   vote was rate-limited (vs an actual DB miss). */
+   hold-enter spam without requiring a full rate-limiter dep. */
 const lastVoteByIp = new Map();
 function rateLimitVote(req, res, next) {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || 'anon';
   const now = Date.now();
   const prev = lastVoteByIp.get(ip) || 0;
   if (now - prev < 2000) {
-    console.warn('[tb12] vote RATE-LIMITED ip=' + ip + ' since=' + (now - prev) + 'ms');
     return res.status(429).json({ error: 'slow down' });
   }
   lastVoteByIp.set(ip, now);
@@ -90,21 +87,11 @@ function rateLimitVote(req, res, next) {
 
 /* ── API ── */
 
-/* POST /api/vote — record one vote for player_id. Upserts the row.
-   Logs every attempt with player + outcome so Railway logs make it easy
-   to diagnose missing votes. (Earlier symptom: a real vote for a valid
-   player landed on the results page showing 0 — the silent-fail loop
-   the new logging closes.) */
+/* POST /api/vote — record one vote for player_id. Upserts the row. */
 app.post('/api/vote', rateLimitVote, async (req, res) => {
   const pid = req.body && req.body.player_id;
-  if (!ALLOWED.includes(pid)) {
-    console.warn('[tb12] vote REJECTED — invalid player_id:', JSON.stringify(pid));
-    return res.status(400).json({ error: 'invalid player_id' });
-  }
-  if (!pool) {
-    console.warn('[tb12] vote REJECTED — db not configured, pid=', pid);
-    return res.status(503).json({ error: 'db not configured' });
-  }
+  if (!ALLOWED.includes(pid)) return res.status(400).json({ error: 'invalid player_id' });
+  if (!pool) return res.status(503).json({ error: 'db not configured' });
   try {
     const r = await pool.query(
       `INSERT INTO votes (player_id, count)
@@ -114,10 +101,9 @@ app.post('/api/vote', rateLimitVote, async (req, res) => {
          RETURNING count`,
       [pid]
     );
-    console.log('[tb12] vote OK pid=' + pid + ' newCount=' + r.rows[0].count);
     res.json({ ok: true, player_id: pid, count: r.rows[0].count });
   } catch (err) {
-    console.error('[tb12] vote DB ERROR pid=' + pid + ' msg=' + err.message);
+    console.error('[tb12] vote error:', err.message);
     res.status(500).json({ error: 'db error' });
   }
 });

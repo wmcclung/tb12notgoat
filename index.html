@@ -1848,41 +1848,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 }
 .vote-reset-btn.visible { display:block; }
 
-/* "How this was made" → /about — sits below the leaderboard on the
-   results screen so visitors who finish the vote can read about the
-   project, the libraries, and the design intent. Same monospace
-   treatment as the rest of the results UI but more legible than the
-   kiosk-only reset button (this one is a real CTA). */
-.vote-about-link {
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  margin-top:clamp(8px,1.5vh,16px);
-  padding:10px 16px;
-  font-family:'JetBrains Mono',ui-monospace,monospace;
-  font-size:clamp(10px,1.05vw,12px);
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:rgba(242,237,228,.72);
-  text-decoration:none;
-  border:1px solid rgba(242,237,228,.18);
-  border-radius:30px;
-  background:rgba(242,237,228,.02);
-  transition:color .2s, border-color .2s, background .2s, transform .2s;
-  opacity:0;                     /* faded in by GSAP after rows land */
-}
-.vote-about-link .arrow { transition:transform .2s; }
-.vote-about-link:hover {
-  color:#F2EDE4;
-  border-color:rgba(200,16,46,.55);
-  background:rgba(200,16,46,.08);
-}
-.vote-about-link:hover .arrow { transform:translateX(3px); }
-.vote-about-link:focus-visible {
-  outline:2px solid rgba(242,237,228,.65);
-  outline-offset:3px;
-}
-
 /* Vote header — tighter on landscape phones */
 @media (orientation: landscape) and (max-height: 500px) {
   .vote-header {
@@ -3531,60 +3496,19 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .catch(function(e) { console.warn('[vote] fetchServerVotes failed:', e.message); return null; });
   }
-  /* Tracks whether the user's POST /api/vote actually persisted on the
-     server. If not, we keep the optimistic local bump visible (the
-     server-repaint logic below uses this flag to avoid clobbering the
-     user's own vote with a stale 0). */
-  var _serverWriteOk = { pid: null, ok: false };
-
-  function postVoteOnce(pid) {
-    /* fetch only rejects on network errors — a 4xx/5xx response resolves
-       normally. We must inspect r.ok ourselves or silent failures will
-       leave the database out of sync with the UI (the symptom that
-       caused Alexander to show 0 after a real vote). */
-    return fetch('/api/vote', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ player_id: pid }),
-      cache:   'no-store',
-    }).then(function(r) {
-      if (!r.ok) {
-        return r.text().then(function(body) {
-          throw new Error('HTTP ' + r.status + ' ' + (body || '').slice(0, 120));
-        });
-      }
-      return r.json();
-    });
-  }
-
   function writeVote(pid) {
-    /* Optimistic local bump so the UI responds instantly. The server
-       write can still fail (rate limit, transient DB error); the retry
-       below covers transient cases, and _serverWriteOk records the
-       final outcome so the leaderboard repaint can avoid overwriting
-       the user's chosen vote with a stale 0. */
+    /* Optimistic local bump so the UI responds instantly even on slow
+       networks. If the server write fails we still show the vote locally
+       for this user — not ideal, but better than no feedback. */
     var v = getVotes();
     v[pid] = (v[pid] || 0) + 1;
     setLocalVotes(v);
-    _serverWriteOk = { pid: pid, ok: false };
-
-    return postVoteOnce(pid).catch(function(e) {
-      console.warn('[vote] first write failed, retrying once:', e.message);
-      /* One retry after 2.5s — must clear the server's 2-second rate-
-         limit window (server.js rateLimitVote) so we don't just 429
-         again on the retry. Covers transient 5xx and rate-limit
-         collisions with another voter on the same egress IP. */
-      return new Promise(function(res){ setTimeout(res, 2500); })
-        .then(function(){ return postVoteOnce(pid); });
-    }).then(function(json) {
-      _serverWriteOk = { pid: pid, ok: true, count: json && json.count };
-      console.log('[vote] persisted on server:', pid, '→', json && json.count);
-    }).catch(function(e) {
-      console.error('[vote] BOTH writes failed for', pid + ':', e.message);
-      /* Leave _serverWriteOk.ok = false so the repaint keeps the
-         optimistic count visible rather than dropping it to whatever
-         the server happens to have. */
-    });
+    fetch('/api/vote', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ player_id: pid }),
+      keepalive: true,  /* finishes even if the page unloads mid-request */
+    }).catch(function(e) { console.warn('[vote] writeVote server failed:', e.message); });
   }
   function getSession() {
     try { return JSON.parse(sessionStore.getItem('goat_session') || 'null'); } catch(e) { return null; }
@@ -4072,19 +3996,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     resultsEl.appendChild(lb);
 
-    /* "How this was made" link — opens the About page (/about) where
-       visitors can read the design + tech story behind the site. Hidden
-       in kiosk mode so the conference setup doesn't have a tap-target
-       that takes the kiosk browser away from the vote page. */
-    if (!isKiosk) {
-      var aboutLink = document.createElement('a');
-      aboutLink.className   = 'vote-about-link';
-      aboutLink.href        = '/about';
-      aboutLink.innerHTML   = 'How this was made <span class="arrow" aria-hidden="true">→</span>';
-      aboutLink.setAttribute('aria-label', 'How this was made — read the about page');
-      resultsEl.appendChild(aboutLink);
-    }
-
     // Reset button (kiosk only)
     var resetBtn = document.createElement('button');
     resetBtn.className   = 'vote-reset-btn' + (isKiosk ? ' visible' : '');
@@ -4094,18 +4005,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     // Animate section and rows in
     gsap.to(resultsEl, { opacity: 1, duration: 0.35, ease: 'power2.out' });
-    /* Fade the About CTA in last so it reads as the final action, after
-       the leaderboard rows have landed. Slight upward drift makes it feel
-       like the page settled into place rather than appearing all at once. */
-    if (!isKiosk) {
-      var aboutEl = resultsEl.querySelector('.vote-about-link');
-      if (aboutEl) {
-        gsap.fromTo(aboutEl,
-          { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
-            delay: 0.35 + ranked.length * 0.06 + 0.15 });
-      }
-    }
 
     ranked.forEach(function(pl, idx) {
       var row = document.getElementById('vote-lb-row-' + pl.id);
@@ -4126,41 +4025,15 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     fetchServerVotes().then(function(serverVotes) {
       if (!serverVotes) return;
       if (voteState !== 'results') return;  /* user moved on; don't repaint */
-
-      /* Defensive copy of the server response. If the user's own write
-         hasn't landed (or hasn't confirmed) yet, floor THEIR chosen
-         player's count to at least the optimistic local value so we
-         never visually erase their vote. Without this floor, a slow or
-         rate-limited POST left Alexander showing 0 while the green
-         "Your Vote" pill was attached to him — the bug we're fixing. */
-      var displayVotes = {};
-      VOTE_PLAYERS.forEach(function(pl){
-        displayVotes[pl.id] = serverVotes[pl.id] || 0;
-      });
-      if (chosenPlayer && chosenPlayer !== 'brady') {
-        var localChosen = (getVotes()[chosenPlayer] || 0);
-        var serverConfirmed =
-          (_serverWriteOk.pid === chosenPlayer && _serverWriteOk.ok);
-        /* Two cases that justify a floor:
-           1. Server hasn't confirmed our write yet (race with this fetch).
-           2. Server explicitly failed our write — keep optimistic UI. */
-        if (!serverConfirmed && displayVotes[chosenPlayer] < localChosen) {
-          displayVotes[chosenPlayer] = localChosen;
-          console.warn('[vote] flooring', chosenPlayer,
-            'count to', localChosen, '— server reported',
-            (serverVotes[chosenPlayer] || 0));
-        }
-      }
-
-      setLocalVotes(serverVotes);            /* keep fallback in sync (raw) */
+      setLocalVotes(serverVotes);            /* keep fallback in sync */
       var newMax = Math.max.apply(null,
         VOTE_PLAYERS.filter(function(pl){ return pl.id !== 'brady'; })
-                    .map(function(pl){ return displayVotes[pl.id] || 0; })
+                    .map(function(pl){ return serverVotes[pl.id] || 0; })
                     .concat([1])
       );
       VOTE_PLAYERS.forEach(function(pl) {
         var countEl = document.getElementById('vote-lb-count-' + pl.id);
-        if (countEl) countEl.textContent = pl.id === 'brady' ? '0' : (displayVotes[pl.id] || 0);
+        if (countEl) countEl.textContent = pl.id === 'brady' ? '0' : (serverVotes[pl.id] || 0);
         if (pl.id === 'brady') return;
         var bar = document.getElementById('vote-bar-' + pl.id);
         if (!bar) return;
@@ -4169,7 +4042,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
            and if the server responds before those fire, the delayed
            tween otherwise runs later and overrides our server update. */
         gsap.killTweensOf(bar);
-        var pct = newMax > 0 ? (displayVotes[pl.id] || 0) / newMax * 100 : 0;
+        var pct = newMax > 0 ? (serverVotes[pl.id] || 0) / newMax * 100 : 0;
         gsap.to(bar, { width: pct + '%', duration: 0.5, ease: 'power2.out' });
       });
     });

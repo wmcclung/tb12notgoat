@@ -1843,6 +1843,161 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 }
 .vote-reset-btn.visible { display:block; }
 
+/* ═══════════════════════════════════════════════════════════════
+   ABOUT MODAL
+   Opens from a small "About this project" button on the post-vote
+   results screen. Hidden by default via the `hidden` attribute on
+   #about-modal; JS toggles `.is-open` to drive the fade + scale
+   transition. On mobile (≤600px) the card snaps to the bottom of
+   the screen as a sheet for thumb reachability.
+═══════════════════════════════════════════════════════════════ */
+.vote-about-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  margin-top:clamp(8px,1.5vh,16px);
+  padding:10px 16px;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(10px,1.05vw,12px);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(242,237,228,.72);
+  border:1px solid rgba(242,237,228,.18);
+  border-radius:30px;
+  background:rgba(242,237,228,.02);
+  cursor:pointer;
+  transition:color .2s, border-color .2s, background .2s;
+  opacity:0;                                 /* faded in by GSAP */
+}
+.vote-about-btn:hover {
+  color:#F2EDE4;
+  border-color:rgba(200,16,46,.55);
+  background:rgba(200,16,46,.08);
+}
+.vote-about-btn:focus-visible {
+  outline:2px solid rgba(242,237,228,.65);
+  outline-offset:3px;
+}
+
+.about-modal {
+  position:fixed; inset:0; z-index:1000;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(12px,3vh,32px);
+  pointer-events:none;
+}
+.about-modal:not([hidden]) { pointer-events:auto; }
+.about-modal-overlay {
+  position:absolute; inset:0;
+  background:rgba(7,9,12,.85);
+  backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  opacity:0; transition:opacity .25s ease;
+}
+.about-modal.is-open .about-modal-overlay { opacity:1; }
+.about-modal-card {
+  position:relative;
+  background:#0E1218; color:#F2EDE4;
+  border:1px solid rgba(242,237,228,.12);
+  border-radius:14px;
+  width:min(640px,100%);
+  max-height:calc(100% - 24px);
+  overflow-y:auto;
+  padding:clamp(24px,4vh,36px) clamp(20px,4vw,32px);
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  line-height:1.6;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  transform:scale(.96) translateY(8px);
+  opacity:0;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.about-modal.is-open .about-modal-card { opacity:1; transform:scale(1) translateY(0); }
+.about-modal-close {
+  position:absolute; top:14px; right:14px;
+  width:32px; height:32px;
+  border:none;
+  background:rgba(242,237,228,.08);
+  color:#F2EDE4;
+  border-radius:50%;
+  font-size:18px; line-height:1;
+  cursor:pointer;
+  transition:background .2s;
+}
+.about-modal-close:hover { background:rgba(200,16,46,.4); }
+.about-modal-card h2 {
+  font-family:'Shrikhand',cursive;
+  font-size:clamp(28px,4.4vw,40px);
+  line-height:1; font-weight:400;
+  color:#F2EDE4;
+  margin:0 0 24px; padding-right:40px;     /* clear close button */
+}
+.about-section { margin-bottom:28px; }
+.about-section:last-child { margin-bottom:0; }
+.about-section h3 {
+  font-family:'Germania One',cursive;
+  font-size:18px; letter-spacing:.08em; text-transform:uppercase;
+  color:#F2EDE4; font-weight:400;
+  margin:0 0 12px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(242,237,228,.1);
+}
+.about-credits dl {
+  display:grid;
+  grid-template-columns:max-content 1fr;
+  column-gap:18px; row-gap:8px;
+}
+.about-credits dt {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(242,237,228,.55);
+  padding-top:3px;
+}
+.about-credits dd { color:rgba(242,237,228,.92); font-size:15px; }
+.about-credits dd.placeholder, .about-ref .todo {
+  color:rgba(242,237,228,.4);
+  font-style:italic;
+  font-size:13.5px;
+}
+.about-credits dd a, .about-notes a, .about-ref a {
+  color:#F2EDE4;
+  text-decoration:none;
+  border-bottom:1px solid rgba(200,16,46,.55);
+  transition:border-color .2s;
+}
+.about-credits dd a:hover, .about-notes a:hover, .about-ref a:hover { border-color:#F2EDE4; }
+.about-notes p { margin:0 0 12px; color:rgba(242,237,228,.82); font-size:15px; }
+.about-notes p:last-child { margin-bottom:0; }
+.about-ref {
+  margin-bottom:18px; padding-bottom:14px;
+  border-bottom:1px solid rgba(242,237,228,.06);
+}
+.about-ref:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+.about-ref h4 {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:13px; letter-spacing:.04em;
+  color:#F2EDE4; font-weight:700;
+  margin:0 0 10px;
+}
+.about-ref ul { list-style:none; padding:0; margin:0; font-size:13.5px; line-height:1.7; }
+.about-ref ul li { color:rgba(242,237,228,.82); }
+.about-ref ul strong {
+  color:rgba(200,16,46,.85);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  font-weight:700;
+  margin-right:6px;
+}
+.about-ref code {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:12px;
+  background:rgba(242,237,228,.06);
+  padding:1px 5px; border-radius:3px;
+}
+
+/* Mobile: anchor the card to the bottom edge as a bottom sheet. */
+@media (max-width: 600px) {
+  .about-modal { padding:0; align-items:flex-end; }
+  .about-modal-card {
+    border-radius:16px 16px 0 0;
+    max-height:92dvh; width:100%;
+  }
+}
+
 /* Vote header — tighter on landscape phones */
 @media (orientation: landscape) and (max-height: 500px) {
   .vote-header {
@@ -2023,6 +2178,132 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   <div class="results-state"></div>
 
 </section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     ABOUT MODAL
+     Opens when the user clicks "About this project →" on the post-vote
+     results screen. Three sections — credits, free-form notes, animation
+     references. Every editable spot is marked with a TODO comment so you
+     can find and fill in your own copy/links without hunting.
+══════════════════════════════════════════════════════════════════════ -->
+<div class="about-modal" id="about-modal" hidden aria-hidden="true">
+  <div class="about-modal-overlay" data-about-close></div>
+  <div class="about-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+    <button class="about-modal-close" data-about-close type="button" aria-label="Close">×</button>
+    <h2 id="about-modal-title">About this project</h2>
+
+    <!-- ─── CREDITS ─────────────────────────────────────────────────────
+         Three labels exactly as requested. Replace each <dd> with your
+         name + an optional <a href="..."> link. -->
+    <section class="about-section about-credits">
+      <h3>Credits</h3>
+      <dl>
+        <dt>Created by</dt>
+        <!-- TODO: replace with your name + optional link, e.g.:
+             <dd><a href="https://example.com">Your Name</a></dd> -->
+        <dd class="placeholder">[ name + link to be added ]</dd>
+
+        <dt>Illustrations by</dt>
+        <!-- TODO: illustrator name + link -->
+        <dd class="placeholder">[ illustrator name + link to be added ]</dd>
+
+        <dt>Rive puppet illustration drawn by</dt>
+        <!-- TODO: rigger / puppet illustrator name + link -->
+        <dd class="placeholder">[ rigger name + link to be added ]</dd>
+      </dl>
+    </section>
+
+    <!-- ─── NOTES ───────────────────────────────────────────────────────
+         Free-form section. Drop in your own copy about how AI was used
+         in the build, links to your build log, design briefs, blog posts,
+         tweet threads, anything you want a reader to follow.
+         Plain HTML — paragraphs, links, lists. -->
+    <section class="about-section about-notes">
+      <h3>Notes</h3>
+      <!-- TODO: replace this <p> with your notes about how you used AI to
+           build this site, plus any links you want readers to follow.
+           Multiple <p> tags are fine. -->
+      <p class="placeholder" style="font-style:italic;color:rgba(242,237,228,.4);">
+        [ space for notes about AI use, sources, links — to be filled in ]
+      </p>
+    </section>
+
+    <!-- ─── ANIMATION REFERENCES ────────────────────────────────────────
+         Per visible moment on the site. Each block lists the library, the
+         canonical docs link, the design pattern in use, and a TODO slot
+         for the SPECIFIC inspiration source you used (a Codepen, a
+         tutorial, a tweet, a blog post). Devs can read this block as a
+         starting point for building the same thing. -->
+    <section class="about-section about-references">
+      <h3>Animation references</h3>
+
+      <article class="about-ref">
+        <h4>Hero impact &mdash; scroll-driven cross-fade</h4>
+        <ul>
+          <li><strong>Library</strong> GSAP + ScrollTrigger</li>
+          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">gsap.com/docs/v3/Plugins/ScrollTrigger/</a></li>
+          <li><strong>Pattern</strong> Scrub timeline (timeline progress = scroll progress); cross-fade between two stacked images via opacity tweens</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code></li>
+          <!-- TODO: paste the link to the example/codepen/tutorial that inspired this section. -->
+          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+        </ul>
+      </article>
+
+      <article class="about-ref">
+        <h4>Accolades pin &mdash; stamp-down on scroll</h4>
+        <ul>
+          <li><strong>Library</strong> GSAP + ScrollTrigger</li>
+          <li><strong>Docs</strong> <a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">ScrollTrigger pinning + scrub</a></li>
+          <li><strong>Pattern</strong> Pinned section with a scrubbed timeline driving sequential <code>fromTo()</code> tweens for each accolade</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger</li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+        </ul>
+      </article>
+
+      <article class="about-ref">
+        <h4>Puppet dance &mdash; vector character animation</h4>
+        <ul>
+          <li><strong>Library</strong> Rive (<code>@rive-app/canvas</code>)</li>
+          <li><strong>Docs</strong> <a href="https://rive.app/docs" target="_blank" rel="noopener">rive.app/docs</a></li>
+          <li><strong>Editor</strong> <a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> (designer rigs the layered art into a state machine)</li>
+          <li><strong>Pattern</strong> Linear timeline scrubbed by scroll velocity; fast scroll triggers a hidden "celebration" branch</li>
+          <li><strong>In repo</strong> <code>index.html</code> Rive init &middot; <code>Assets/puppet/*.riv</code></li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+        </ul>
+      </article>
+
+      <article class="about-ref">
+        <h4>Vote API &mdash; shared real-time totals</h4>
+        <ul>
+          <li><strong>Server</strong> Node + Express &mdash; <a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></li>
+          <li><strong>Database</strong> Postgres via <code>pg</code> &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
+          <li><strong>Hosting</strong> Railway &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
+          <li><strong>Pattern</strong> Optimistic UI + <code>POST /api/vote</code> upsert; <code>GET /api/votes</code> with <code>Cache-Control: no-store</code> to bypass edge CDN</li>
+          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code></li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+        </ul>
+      </article>
+
+      <article class="about-ref">
+        <h4>Mobile viewport &mdash; URL-bar jitter fix</h4>
+        <ul>
+          <li><strong>APIs</strong> <code>visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
+          <li><strong>Docs</strong> <a href="https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API" target="_blank" rel="noopener">MDN: Visual Viewport API</a></li>
+          <li><strong>Reference</strong> <a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: viewport units</a></li>
+          <li><strong>Pattern</strong> Grow-only <code>--vh-px</code> custom property published from JS so URL-bar retraction can't shrink the pinned section</li>
+          <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
+          <!-- TODO: inspiration link -->
+          <li><strong>Inspiration</strong> <span class="todo">[ paste source link ]</span></li>
+        </ul>
+      </article>
+
+    </section>
+  </div>
+</div>
 
 <div class="replay-hint" onclick="replay()" title="Press R to replay" style="display:none">[ R ] replay</div>
 
@@ -3988,6 +4269,20 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     resultsEl.appendChild(lb);
 
+    /* "About this project" button — opens the credits/notes/references
+       modal defined at the bottom of <body>. Hidden in kiosk mode so the
+       conference setup keeps the screen on the vote loop. */
+    if (!isKiosk) {
+      var aboutBtn = document.createElement('button');
+      aboutBtn.type      = 'button';
+      aboutBtn.className = 'vote-about-btn';
+      aboutBtn.innerHTML = 'About this project <span aria-hidden="true">→</span>';
+      aboutBtn.addEventListener('click', function(){
+        if (window.openAboutModal) window.openAboutModal(aboutBtn);
+      });
+      resultsEl.appendChild(aboutBtn);
+    }
+
     // Reset button (kiosk only)
     var resetBtn = document.createElement('button');
     resetBtn.className   = 'vote-reset-btn' + (isKiosk ? ' visible' : '');
@@ -3997,6 +4292,18 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     // Animate section and rows in
     gsap.to(resultsEl, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+    /* Fade the About CTA in last so it reads as a final action after the
+       leaderboard rows have landed. Slight upward drift makes it feel
+       like the page settles rather than appears all at once. */
+    if (!isKiosk) {
+      var aboutEl = resultsEl.querySelector('.vote-about-btn');
+      if (aboutEl) {
+        gsap.fromTo(aboutEl,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
+            delay: 0.35 + ranked.length * 0.06 + 0.15 });
+      }
+    }
 
     ranked.forEach(function(pl, idx) {
       var row = document.getElementById('vote-lb-row-' + pl.id);
@@ -4869,6 +5176,55 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   }
 
   window.addEventListener('load', function() { setTimeout(initParty, 60); });
+})();
+</script>
+
+<!-- About modal open/close. Triggered from the post-vote results screen.
+     Closes via the × button, the overlay, or the Escape key. Locks page
+     scroll while open. Exposes `window.openAboutModal(triggerEl)` so the
+     buildResults() injection can call it from the existing IIFE scope. -->
+<script>
+(function(){
+  var modal = document.getElementById('about-modal');
+  if (!modal) return;
+  var lastFocus = null;
+
+  function open(trigger) {
+    lastFocus = trigger || document.activeElement;
+    modal.removeAttribute('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    /* Force a layout flush so the transition runs from the unhidden
+       starting state — without this the modal would just appear with no
+       fade because the browser collapses the hidden→visible transition. */
+    modal.getBoundingClientRect();
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    var closeBtn = modal.querySelector('.about-modal-close');
+    if (closeBtn) closeBtn.focus();
+  }
+  function close() {
+    modal.classList.remove('is-open');
+    /* Wait for the transition to finish before hiding — keeps the fade-out
+       visible. 250ms matches the CSS transition duration on the card. */
+    setTimeout(function(){
+      modal.setAttribute('hidden', '');
+      modal.setAttribute('aria-hidden', 'true');
+    }, 260);
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onKey);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+
+  modal.addEventListener('click', function(e){
+    /* Both the overlay and the × button carry data-about-close, so a
+       single delegated handler covers tap-outside-to-dismiss + the
+       explicit close control. */
+    if (e.target.closest('[data-about-close]')) close();
+  });
+
+  window.openAboutModal = open;
 })();
 </script>
 

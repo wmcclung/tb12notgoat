@@ -3,27 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>How I made this — Tom Brady Is Not The GOAT</title>
-<meta name="description" content="An honest accounting of an AI-paired project: what I did, what Claude did, how long it took, and what I am and am not capable of as a non-developer.">
+<title>How this was made — Tom Brady Is Not The GOAT</title>
+<meta name="description" content="Colophon and AI build citation: contact, asset credits, per-section build references, and a responsible-AI citation covering effort, developer level, and prompts used.">
 
 <!--
   about.html
   ──────────
-  This page exists for one reason: to be honest about who built this
-  site and how. Linked from the post-vote screen on the home page.
-  The structure follows the principles I try to apply to AI-paired
-  work generally:
+  Flat colophon. Five sections, no prose padding:
 
-    1. Disclose the human's actual capability up front.
-    2. Claim ownership of the work that is mine (idea, taste, calls).
-    3. Disclose, by surface and by example, what the AI did.
-    4. Be honest about time and effort.
-    5. Credit non-AI human contributors by name.
-    6. Note what is still unfinished or imperfect.
-    7. Cite the AI authorship in a structured, machine-readable form
-       at the end.
+    01  Get in touch        — contact + project link
+    02  Assets              — credit + link
+    03  Rive puppet design  — credit + link
+    04  What I used         — per moment on the site, the library / docs /
+                              file location a developer would need to
+                              build or reference the same thing
+    05  Responsible AI      — citation: effort, developer level, prompts
 
-  Voice: first person, plain, no marketing.
+  Linked from the post-vote results screen on /.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,13 +27,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-/* Palette + typography matched to the home page so the About reads
-   as the same product, not a separate doc. */
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { background:#07090C; color:#F2EDE4; }
 body {
-  font-family:'Space Grotesk', system-ui, sans-serif;
-  font-size:17px;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:14px;
   line-height:1.65;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
@@ -50,12 +44,11 @@ body {
   border-radius:2px;
 }
 
-.wrap { max-width:720px; margin:0 auto; padding:0 clamp(20px, 5vw, 32px); }
+.wrap { max-width:780px; margin:0 auto; padding:0 clamp(20px, 5vw, 32px); }
 
-/* Top nav: a single back link. No logo, no menu. */
+/* Top nav */
 .topnav {
-  padding:18px 0 8px;
-  font-family:'JetBrains Mono', ui-monospace, monospace;
+  padding:18px 0;
   font-size:11px;
   letter-spacing:.22em;
   text-transform:uppercase;
@@ -67,42 +60,38 @@ body {
 }
 .topnav a:hover { color:#F2EDE4; }
 
-/* Title block. Quiet, not a hero. */
+/* Title */
 .title {
-  padding:clamp(36px, 8vh, 72px) 0 clamp(28px, 5vh, 48px);
-}
-.title .label {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:11px;
-  letter-spacing:.28em;
-  text-transform:uppercase;
-  color:rgba(200,16,46,.85);
-  margin-bottom:14px;
+  padding:clamp(28px,6vh,56px) 0 clamp(20px,4vh,40px);
+  border-bottom:1px solid rgba(242,237,228,.08);
 }
 .title h1 {
   font-family:'Shrikhand', cursive;
-  font-size:clamp(40px, 7vw, 72px);
+  font-size:clamp(36px,6vw,64px);
   line-height:.95;
-  color:#F2EDE4;
-  margin-bottom:14px;
   font-weight:400;
+  color:#F2EDE4;
+  margin-bottom:10px;
 }
+.title h1 .red { color:#C8102E; }
 .title .stand {
-  color:rgba(242,237,228,.7);
-  font-size:clamp(15px, 1.6vw, 17px);
-  max-width:54ch;
+  font-family:'Space Grotesk', system-ui, sans-serif;
+  font-size:15px;
+  color:rgba(242,237,228,.6);
+  max-width:60ch;
 }
 
-section { padding:clamp(28px, 6vh, 56px) 0; }
-section + section { border-top:1px solid rgba(242,237,228,.06); }
+/* Section */
+section { padding:clamp(28px,6vh,56px) 0; border-bottom:1px solid rgba(242,237,228,.06); }
+section:last-of-type { border-bottom:none; }
 
 h2 {
   font-family:'Germania One', cursive;
-  font-size:clamp(22px, 2.6vw, 30px);
-  letter-spacing:.05em;
+  font-size:clamp(22px,2.6vw,30px);
+  letter-spacing:.06em;
   text-transform:uppercase;
   color:#F2EDE4;
-  margin-bottom:14px;
+  margin-bottom:18px;
   font-weight:400;
 }
 h2 .num {
@@ -113,162 +102,113 @@ h2 .num {
   margin-right:10px;
   vertical-align:middle;
 }
-h3 {
-  font-family:'Space Grotesk', system-ui, sans-serif;
-  font-size:17px;
-  font-weight:600;
-  margin:22px 0 6px;
-  color:#F2EDE4;
+
+/* The page's central element: a definition list rendered as a two-column
+   key/value grid. Used for contact, credits, per-section build refs,
+   and the AI citation block. */
+dl.kv {
+  display:grid;
+  grid-template-columns:max-content 1fr;
+  column-gap:clamp(16px,3vw,28px);
+  row-gap:8px;
+  font-size:14px;
 }
-
-p { margin-bottom:14px; color:rgba(242,237,228,.84); }
-p strong { color:#F2EDE4; font-weight:600; }
-p em { color:#F2EDE4; font-style:italic; }
-
-a.inline {
+@media (max-width: 540px) {
+  dl.kv { grid-template-columns:1fr; row-gap:4px; }
+  dl.kv dt { padding-top:10px; }
+  dl.kv dd { padding-bottom:6px; }
+  dl.kv dt:first-child { padding-top:0; }
+}
+dl.kv dt {
+  font-size:11px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:rgba(242,237,228,.45);
+  padding-top:3px;
+  white-space:nowrap;
+}
+dl.kv dd { color:rgba(242,237,228,.92); word-break:break-word; }
+dl.kv dd a {
   color:#F2EDE4;
   text-decoration:none;
   border-bottom:1px solid rgba(200,16,46,.55);
   transition:border-color .2s;
 }
-a.inline:hover { border-color:#F2EDE4; }
-
-ul.bullets { list-style:none; padding:0; margin:10px 0 18px; }
-ul.bullets li {
-  position:relative;
-  padding-left:18px;
-  margin-bottom:8px;
-  color:rgba(242,237,228,.84);
-}
-ul.bullets li::before {
-  content:'—';
-  position:absolute;
-  left:0; top:0;
-  color:rgba(200,16,46,.7);
-}
-
-code {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:.92em;
-  background:rgba(242,237,228,.06);
-  padding:1px 6px;
-  border-radius:4px;
-  color:#F2EDE4;
-}
-
-/* Two-column "I did / Claude did" comparison.
-   This is the page's core honesty device. Same row, two voices. */
-.split {
-  display:grid;
-  grid-template-columns:1fr;
-  gap:14px;
-  margin:18px 0 22px;
-}
-@media (min-width:680px) {
-  .split { grid-template-columns:1fr 1fr; gap:18px; }
-}
-.split > div {
-  padding:18px 20px;
-  border-radius:10px;
-  border:1px solid rgba(242,237,228,.1);
-}
-.split .me      { background:rgba(242,237,228,.025); }
-.split .claude  { background:rgba(200,16,46,.04); border-color:rgba(200,16,46,.18); }
-.split .col-label {
-  display:block;
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:10px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:rgba(242,237,228,.55);
-  margin-bottom:10px;
-}
-.split .claude .col-label { color:rgba(200,16,46,.85); }
-.split p { font-size:14.5px; line-height:1.55; margin-bottom:8px; }
-.split p:last-child { margin-bottom:0; }
-
-/* Surface table — Claude Code / Claude.ai / Claude in Chrome. */
-.surfaces { display:flex; flex-direction:column; gap:14px; margin:6px 0 8px; }
-.surface {
-  padding:16px 18px;
-  border:1px solid rgba(242,237,228,.1);
-  border-radius:10px;
-  background:rgba(242,237,228,.015);
-}
-.surface .name {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:13px;
-  letter-spacing:.04em;
-  font-weight:700;
-  color:#F2EDE4;
-  margin-bottom:4px;
-}
-.surface .role {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:10px;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:rgba(200,16,46,.85);
-  margin-bottom:8px;
-}
-.surface p {
-  font-size:14.5px;
-  margin:0;
-  color:rgba(242,237,228,.78);
-}
-
-/* Credits block — simple two-column "label : value". */
-.credits {
-  margin:14px 0 0;
-  font-size:15px;
-}
-.credits dl {
-  display:grid;
-  grid-template-columns:max-content 1fr;
-  column-gap:24px;
-  row-gap:10px;
-}
-.credits dt {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:11px;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:rgba(242,237,228,.55);
-  padding-top:3px;
-  white-space:nowrap;
-}
-.credits dd { color:rgba(242,237,228,.92); }
-.credits dd a {
-  color:#F2EDE4;
-  text-decoration:none;
-  border-bottom:1px solid rgba(200,16,46,.55);
-}
-.credits dd a:hover { border-color:#F2EDE4; }
-.credits .placeholder {
+dl.kv dd a:hover { border-color:#F2EDE4; }
+dl.kv dd.placeholder {
   color:rgba(242,237,228,.4);
   font-style:italic;
 }
 
-/* Formal citation footer — monospace, machine-readable, dated. */
-.citation {
-  margin-top:48px;
-  padding:20px;
-  border:1px solid rgba(242,237,228,.12);
-  border-radius:10px;
-  background:#0E1218;
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:12px;
-  line-height:1.7;
-  color:rgba(242,237,228,.7);
-  white-space:pre-wrap;
-  word-break:break-word;
+/* Per-moment block in the "what I used" section.
+   Each block is a small heading + a kv list. */
+.moment {
+  padding:18px 20px;
+  margin-bottom:14px;
+  border:1px solid rgba(242,237,228,.1);
+  border-radius:8px;
+  background:rgba(242,237,228,.02);
 }
-.citation .key { color:rgba(200,16,46,.85); }
+.moment:last-child { margin-bottom:0; }
+.moment h3 {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:#F2EDE4;
+  margin-bottom:14px;
+}
+.moment h3 .tag {
+  font-size:10px;
+  font-weight:400;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:rgba(200,16,46,.85);
+  margin-left:8px;
+}
+
+/* The AI citation block — same kv grid but visually weighted, since
+   it's the primary disclosure surface. */
+.cite-wrap {
+  padding:20px;
+  border:1px solid rgba(200,16,46,.25);
+  border-radius:10px;
+  background:rgba(200,16,46,.04);
+}
+.cite-wrap dl.kv dt { color:rgba(200,16,46,.8); }
+
+/* Prompts list — shown verbatim, monospaced. */
+.prompts {
+  margin-top:8px;
+  padding:14px 16px;
+  border:1px dashed rgba(242,237,228,.15);
+  border-radius:8px;
+  background:#0E1218;
+}
+.prompts li {
+  list-style:none;
+  font-size:13px;
+  color:rgba(242,237,228,.85);
+  padding:5px 0;
+  border-bottom:1px solid rgba(242,237,228,.05);
+}
+.prompts li:last-child { border-bottom:none; }
+.prompts li::before {
+  content:'> ';
+  color:rgba(200,16,46,.85);
+}
+
+a.inline {
+  color:#F2EDE4;
+  text-decoration:none;
+  border-bottom:1px solid rgba(200,16,46,.55);
+}
+a.inline:hover { border-bottom-color:#F2EDE4; }
 </style>
 </head>
 <body>
 
-<nav class="topnav" aria-label="page navigation">
+<nav class="topnav">
   <div class="wrap">
     <a href="/">← Back to the vote</a>
   </div>
@@ -276,355 +216,231 @@ code {
 
 <header class="title">
   <div class="wrap">
-    <div class="label">Project notes</div>
-    <h1>How I made this</h1>
+    <h1>How this <span class="red">was made</span></h1>
     <p class="stand">
-      An honest accounting of an AI-paired project. Who I am, what I'm not,
-      what I built, what Claude built, and how long it actually took. I'm
-      writing this so the project can be evaluated on what it really is.
+      Colophon and AI build citation. Everything a developer would need
+      to reference each section, plus a responsible-AI disclosure of
+      effort, developer level, and prompts used.
     </p>
   </div>
 </header>
 
-<!-- ── 01 — Capability disclosure. The first thing a reader should know. ── -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     01 — GET IN TOUCH
+     ════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2><span class="num">01</span> What I am, and what I'm not</h2>
-    <p>
-      <strong>I am not a software developer.</strong> I have not worked as
-      one, I do not have a CS degree, and I would not pass a coding interview.
-      Before this project I had not written a Node server, deployed a
-      database, or used GSAP or Rive.
-    </p>
-    <p>
-      What I do have is a working sense for product, animation, and
-      <em>taste</em>. I know when something feels good and when it feels off.
-      I can write a clear brief. I can read code well enough to follow what
-      it's doing and push back when it's wrong. I have been using Claude
-      daily, across surfaces, for long enough to have a working method for
-      pairing with it.
-    </p>
-    <p>
-      That mix &mdash; product instinct + AI fluency, without engineering
-      training &mdash; is what built this site. It's not a hidden detail. It
-      is the project.
-    </p>
+    <h2><span class="num">01</span> Get in touch</h2>
+    <dl class="kv">
+      <dt>Email</dt>
+      <dd><a href="mailto:wpmcclung@gmail.com">wpmcclung@gmail.com</a></dd>
+
+      <dt>GitHub project</dt>
+      <!-- TODO: paste the public GitHub URL of this repo here. -->
+      <dd class="placeholder">[ link to be added ]</dd>
+    </dl>
   </div>
 </section>
 
-<!-- ── 02 — Claim ownership of the parts that are mine. ── -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     02 — ASSETS
+     Hand-illustrated portraits, crown, goat, throne, shocked Brady,
+     puppet source files. Credit the illustrator + link their site.
+     ════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2><span class="num">02</span> What is mine</h2>
-    <p>
-      Every decision about <em>what this site should feel like</em> is mine.
-      The premise (a vote site that argues against Brady), the candidates,
-      the gag of the shocked reaction, the choice to scroll-drive the
-      animation rather than autoplay it, the puppet dance, the tone, the
-      pacing &mdash; that's the work I did before any code was written, and
-      it's the work I kept doing every day after.
-    </p>
-    <p>
-      The art direction is mine. The brief that went to the designer
-      (twelve named puppet layers, head turns, hands open and closed,
-      hero composition with throne and crown) is mine. The decision that
-      Brady should look <em>shocked</em> rather than sad when "NOT" drops in
-      is mine. The candidates' personality treatments &mdash; lightning for
-      Rivers, hammer effects for Page, party lights for the Brady easter
-      egg &mdash; are all mine.
-    </p>
-    <p>
-      None of that came from Claude. Claude wrote a great deal of code in
-      service of those decisions.
-    </p>
+    <h2><span class="num">02</span> Assets</h2>
+    <dl class="kv">
+      <dt>Illustrator</dt>
+      <!-- TODO: paste illustrator name here. -->
+      <dd class="placeholder">[ name to be added ]</dd>
+
+      <dt>Webpage</dt>
+      <!-- TODO: paste illustrator's website / portfolio URL. -->
+      <dd class="placeholder">[ link to be added ]</dd>
+    </dl>
   </div>
 </section>
 
-<!-- ── 03 — The split. The page's main honesty device. ── -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     03 — RIVE PUPPET DESIGN
+     The dancing Brady puppet — rigged from layered SVGs into a
+     scroll-driven Rive state machine. Credit the rigger separately
+     from the illustrator (often the same person, often not).
+     ════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2><span class="num">03</span> What I did, what Claude did</h2>
-    <p>
-      Five concrete examples of how the work actually divided. Each is a
-      real moment from the build, not a generalization.
-    </p>
+    <h2><span class="num">03</span> Rive puppet design</h2>
+    <dl class="kv">
+      <dt>Rigger</dt>
+      <!-- TODO: paste Rive rigger name here. -->
+      <dd class="placeholder">[ name to be added ]</dd>
 
-    <h3>The "NOT" drop in the hero</h3>
-    <div class="split">
-      <div class="me">
-        <span class="col-label">Me</span>
-        <p>
-          Decided the page should open with "Tom Brady is the GOAT" and
-          then, on first scroll, the user should see the word
-          <strong>NOT</strong> drop in. Decided Brady should react. Decided
-          the reaction should be shocked, not sad.
-        </p>
-      </div>
-      <div class="claude">
-        <span class="col-label">Claude</span>
-        <p>
-          Wrote the GSAP timeline, the cross-fade between the two Brady
-          images, the strike-through-on-"the" line, the
-          mobile-specific timing tweaks, and the GPU pre-warm fix when the
-          first scroll on phones felt sluggish.
-        </p>
-      </div>
-    </div>
-
-    <h3>The puppet</h3>
-    <div class="split">
-      <div class="me">
-        <span class="col-label">Me</span>
-        <p>
-          Decided there should be a dancing Brady puppet, that the dance
-          should play in time with scrolling, and that fast scrolling
-          should fire a hidden celebration easter egg. Wrote the layered
-          design brief for the designer.
-        </p>
-      </div>
-      <div class="claude">
-        <span class="col-label">Claude</span>
-        <p>
-          Wrote the Rive runtime integration, debugged the file format
-          and animation-name mismatches, fixed the canvas re-sync when
-          the drawing surface drifted, and wrote the velocity-detection
-          logic that triggers the celebration branch.
-        </p>
-      </div>
-    </div>
-
-    <h3>The vote, the database, the leaderboard</h3>
-    <div class="split">
-      <div class="me">
-        <span class="col-label">Me</span>
-        <p>
-          Decided there should be a real shared vote, that Brady should
-          always be pinned to the bottom of the leaderboard regardless
-          of his score, and that voting for Brady should redirect to a
-          related joke site instead of recording a count.
-        </p>
-      </div>
-      <div class="claude">
-        <span class="col-label">Claude</span>
-        <p>
-          Wrote the Express server, the Postgres schema, the
-          <code>POST /api/vote</code> upsert, the rate limiter, the cache
-          headers that fixed mobile and desktop showing different totals,
-          and the optimistic-UI pattern with retry-on-failure.
-        </p>
-      </div>
-    </div>
-
-    <h3>Mobile</h3>
-    <div class="split">
-      <div class="me">
-        <span class="col-label">Me</span>
-        <p>
-          Tested the site on my phone obsessively. Reported, in plain
-          language, what felt wrong: <em>the first scroll has resistance,
-          the second one doesn't</em>; <em>the puppet gets cut off</em>;
-          <em>the leaderboard clips below the screen.</em>
-        </p>
-      </div>
-      <div class="claude">
-        <span class="col-label">Claude</span>
-        <p>
-          Diagnosed each of those reports as a specific technical cause
-          (URL-bar viewport jitter, GSAP first-tween compilation cost,
-          GPU-layer promotion timing) and wrote the fixes. Many of those
-          fixes are commented in the source so the next reader sees the
-          symptom and the cause together.
-        </p>
-      </div>
-    </div>
-
-    <h3>This page</h3>
-    <div class="split">
-      <div class="me">
-        <span class="col-label">Me</span>
-        <p>
-          Pushed back on a first draft that was too marketing, too
-          enthusiastic, and made up percentage breakdowns. Asked for a
-          rewrite that leads with AI transparency and is honest about
-          my ability.
-        </p>
-      </div>
-      <div class="claude">
-        <span class="col-label">Claude</span>
-        <p>
-          Wrote the structure, the prose, the CSS, and the citation
-          footer below. I edited heavily.
-        </p>
-      </div>
-    </div>
+      <dt>Webpage</dt>
+      <!-- TODO: paste rigger's website / portfolio / Rive community URL. -->
+      <dd class="placeholder">[ link to be added ]</dd>
+    </dl>
   </div>
 </section>
 
-<!-- ── 04 — Surfaces. Specific tools, specific roles. ── -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     04 — WHAT I USED TO MAKE THIS
+     One block per visible moment on the site. For each: which
+     library, which docs page a developer should read, the design
+     pattern in use, and the file/location in this repo so they
+     can read the actual implementation alongside the docs.
+     ════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2><span class="num">04</span> The Claude surfaces I used</h2>
-    <p>
-      "Built with Claude" is too vague to be useful. I worked across
-      three Claude surfaces, each doing different work.
-    </p>
+    <h2><span class="num">04</span> What I used to make this</h2>
 
-    <div class="surfaces">
-      <div class="surface">
-        <div class="name">Claude Code</div>
-        <div class="role">in the terminal</div>
-        <p>
-          The actual code editor. Read files, edited files, ran commands,
-          deployed to Railway, debugged production bugs by tailing logs.
-          The vast majority of the codebase was written here through a
-          back-and-forth of briefs from me and edits from Claude.
-        </p>
-      </div>
-
-      <div class="surface">
-        <div class="name">Claude on the web</div>
-        <div class="role">claude.ai</div>
-        <p>
-          Planning and design conversations &mdash; what should this section
-          feel like, how should the vote flow, what would a real reader
-          notice. Briefs got refined here before I took them into the
-          terminal. Also where I drafted the brief for the designer.
-        </p>
-      </div>
-
-      <div class="surface">
-        <div class="name">Claude in Chrome</div>
-        <div class="role">browser extension</div>
-        <p>
-          On the deployed site itself &mdash; live audits of layout, scroll
-          behavior, animation feel. Useful for "this looks broken in
-          Brave on Windows" diagnostics that the local dev environment
-          couldn't reproduce.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── 05 — Time honesty. ── -->
-<section>
-  <div class="wrap">
-    <h2><span class="num">05</span> How long this took</h2>
-    <p>
-      <strong>Three months</strong>, working evenings and weekends around
-      a full-time job. Not a weekend project. Not "vibe-coded in an
-      afternoon." Three months of iteration, including:
-    </p>
-    <ul class="bullets">
-      <li>About a week getting the original hand-illustrated assets ready and converting <code>.ai</code> files to layered SVG.</li>
-      <li>About two weeks rigging the Brady puppet in Rive once the layered art was in.</li>
-      <li>The hero scroll sequence took the better part of a month to get to the version on the page now.</li>
-      <li>The vote backend (Express + Postgres on Railway) was about four days of false starts before it worked end to end.</li>
-      <li>Mobile took longer than everything else combined. Easily four weeks of incremental fixes.</li>
-    </ul>
-    <p>
-      I am not counting the amount of Claude wrote in lines of code, because
-      that number is meaningless. The real measure is: this is a project I
-      could not have built alone in any amount of time, and it is also a
-      project no AI built without me.
-    </p>
-  </div>
-</section>
-
-<!-- ── 06 — What's animated, briefly. Factual, no marketing. ── -->
-<section>
-  <div class="wrap">
-    <h2><span class="num">06</span> What's actually on the site</h2>
-    <p>
-      Four animated moments, in order:
-    </p>
-    <ul class="bullets">
-      <li><strong>Hero impact.</strong> "NOT" drops in red, "the" gets struck through, Brady cross-fades to a shocked photo. Driven by GSAP ScrollTrigger.</li>
-      <li><strong>Accolades pin.</strong> Championship rings, MVPs, Super Bowl wins stamp in one at a time as the user scrolls a pinned section.</li>
-      <li><strong>Puppet section.</strong> Cartoon Brady dances on a Rive timeline that follows scroll. Fast scrolling triggers a hidden celebration branch.</li>
-      <li><strong>Vote and results.</strong> Real votes, recorded in Postgres, rendered as a leaderboard with animated bars. Brady is pinned at the bottom regardless of score.</li>
-    </ul>
-  </div>
-</section>
-
-<!-- ── 07 — Limits. What is not great. ── -->
-<section>
-  <div class="wrap">
-    <h2><span class="num">07</span> What is still imperfect</h2>
-    <p>
-      A senior engineer would have written less code than I have, and more
-      defensively. There are likely edge cases I have not seen. The CSS in
-      <code>index.html</code> is one large file because I never split it,
-      and the JavaScript is plain ES5-style because that is what I could
-      review confidently. I do not have automated tests. I do not have a
-      build step. The error handling on the vote endpoint is the minimum
-      that worked.
-    </p>
-    <p>
-      None of those choices are clever decisions. They are limits of what I
-      could verify myself. Where I could not read the code, I refused to
-      ship it.
-    </p>
-  </div>
-</section>
-
-<!-- ── 08 — Credits. ── -->
-<section>
-  <div class="wrap">
-    <h2><span class="num">08</span> Credits and contact</h2>
-    <div class="credits">
-      <dl>
-        <dt>Get in touch</dt>
-        <dd><a href="mailto:wpmcclung@gmail.com">wpmcclung@gmail.com</a></dd>
-
-        <dt>GitHub project</dt>
-        <!-- TODO: paste your public GitHub URL here when the repo is public. -->
-        <dd class="placeholder">[ link to be added ]</dd>
-
-        <dt>Hand-illustrated assets</dt>
-        <!-- TODO: paste designer name + link/handle. Covers the five
-             candidate portraits, the crown, the goat, the throne, the
-             shocked Brady, and the puppet rig source files. -->
-        <dd class="placeholder">[ designer name + link to be added ]</dd>
-
-        <dt>Rive puppet design</dt>
-        <!-- TODO: paste Rive rigger name + link/handle. -->
-        <dd class="placeholder">[ rigger name + link to be added ]</dd>
+    <div class="moment">
+      <h3>Hero impact <span class="tag">scroll-driven cross-fade</span></h3>
+      <dl class="kv">
+        <dt>Library</dt>            <dd>GSAP + ScrollTrigger</dd>
+        <dt>Docs</dt>                <dd><a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/" target="_blank" rel="noopener">gsap.com/docs/v3/Plugins/ScrollTrigger/</a></dd>
+        <dt>Pattern</dt>             <dd>Scrub timeline (timeline progress = scroll progress)</dd>
+        <dt>Reference</dt>           <dd><a href="https://gsap.com/docs/v3/GSAP/Timeline/" target="_blank" rel="noopener">gsap.com/docs/v3/GSAP/Timeline/</a></dd>
+        <dt>In this repo</dt>        <dd>index.html — <code>_createHeroST()</code></dd>
       </dl>
     </div>
+
+    <div class="moment">
+      <h3>Accolades pin <span class="tag">stamp-down on scroll</span></h3>
+      <dl class="kv">
+        <dt>Library</dt>             <dd>GSAP + ScrollTrigger</dd>
+        <dt>Docs</dt>                 <dd><a href="https://gsap.com/docs/v3/Plugins/ScrollTrigger/#pin" target="_blank" rel="noopener">ScrollTrigger pinning</a></dd>
+        <dt>Pattern</dt>              <dd>Pinned scrub timeline with sequential <code>fromTo()</code> tweens</dd>
+        <dt>In this repo</dt>         <dd>index.html — <code>.section-stage</code> ScrollTrigger</dd>
+      </dl>
+    </div>
+
+    <div class="moment">
+      <h3>Puppet dance <span class="tag">vector character animation</span></h3>
+      <dl class="kv">
+        <dt>Library</dt>              <dd>Rive (<code>@rive-app/canvas</code>)</dd>
+        <dt>Docs</dt>                  <dd><a href="https://rive.app/docs" target="_blank" rel="noopener">rive.app/docs</a></dd>
+        <dt>Web runtime</dt>           <dd><a href="https://rive.app/community/doc/web-canvas/docs9bM6Z2hOe" target="_blank" rel="noopener">rive.app/community/doc/web-canvas</a></dd>
+        <dt>Editor</dt>                <dd><a href="https://rive.app/" target="_blank" rel="noopener">rive.app</a> (designer rigs the layered art into a state machine)</dd>
+        <dt>Pattern</dt>               <dd>Linear timeline scrubbed by scroll velocity; fast scroll triggers a hidden "celebration" branch</dd>
+        <dt>In this repo</dt>          <dd>index.html (Rive init + scrub) · Assets/puppet/*.riv (rigs)</dd>
+      </dl>
+    </div>
+
+    <div class="moment">
+      <h3>Vote API <span class="tag">shared real-time totals</span></h3>
+      <dl class="kv">
+        <dt>Server</dt>                <dd>Node + Express</dd>
+        <dt>Docs</dt>                   <dd><a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></dd>
+        <dt>Database</dt>               <dd>Postgres via <code>pg</code> (node-postgres)</dd>
+        <dt>DB docs</dt>                <dd><a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></dd>
+        <dt>Pattern</dt>                <dd>Optimistic UI + <code>POST /api/vote</code> with retry on non-2xx; <code>GET /api/votes</code> with <code>Cache-Control: no-store</code> to bypass edge CDN</dd>
+        <dt>In this repo</dt>           <dd>server.js · index.html — <code>writeVote()</code>, <code>fetchServerVotes()</code></dd>
+      </dl>
+    </div>
+
+    <div class="moment">
+      <h3>Hosting + deploy <span class="tag">single service, custom domain</span></h3>
+      <dl class="kv">
+        <dt>Platform</dt>               <dd>Railway (Node + managed Postgres)</dd>
+        <dt>Docs</dt>                    <dd><a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></dd>
+        <dt>Build</dt>                   <dd>Dockerfile (<code>node:20-alpine</code>)</dd>
+        <dt>In this repo</dt>            <dd>Dockerfile · package.json</dd>
+      </dl>
+    </div>
+
+    <div class="moment">
+      <h3>Mobile viewport <span class="tag">URL-bar jitter fix</span></h3>
+      <dl class="kv">
+        <dt>APIs</dt>                    <dd><code>visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</dd>
+        <dt>Docs</dt>                    <dd><a href="https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API" target="_blank" rel="noopener">MDN: Visual Viewport API</a></dd>
+        <dt>Reference</dt>               <dd><a href="https://web.dev/blog/viewport-units" target="_blank" rel="noopener">web.dev: large, small, and dynamic viewport units</a></dd>
+        <dt>Pattern</dt>                 <dd>Grow-only <code>--vh-px</code> custom property published from JS so URL-bar retraction can't shrink the pinned section</dd>
+        <dt>In this repo</dt>            <dd>index.html — first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></dd>
+      </dl>
+    </div>
+
+    <div class="moment">
+      <h3>Performance smoothing <span class="tag">first-scroll without jank</span></h3>
+      <dl class="kv">
+        <dt>APIs</dt>                    <dd><code>&lt;link rel="preload"&gt;</code>, <code>will-change</code>, <code>transform: translateZ(0)</code></dd>
+        <dt>Docs</dt>                    <dd><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload" target="_blank" rel="noopener">MDN: rel=preload</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change" target="_blank" rel="noopener">MDN: will-change</a></dd>
+        <dt>Pattern</dt>                 <dd>Preload heavy hero asset; pre-promote animated elements to GPU layer; pre-warm GSAP timeline by jumping to end and back so first scroll doesn't pay tween-compilation cost</dd>
+        <dt>In this repo</dt>            <dd>index.html — <code>&lt;head&gt;</code> preloads · <code>.illo-wrap</code>, <code>.line-not</code> CSS · <code>_createHeroST()</code> pre-warm</dd>
+      </dl>
+    </div>
+
   </div>
 </section>
 
-<!-- ── Formal citation. Machine-readable, dated, structured. ────────
-     This is the kind of citation footer I'd want any AI-paired project
-     to publish: which models, which surfaces, what date range, who the
-     human author is, and a one-line summary of the human/AI division.
-     Plain text, monospaced, no images. Easy to copy. ─────────────── -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     05 — RESPONSIBLE AI
+     The structured AI build citation. Three components, in this
+     order so a reader can scan top-down:
+
+       a. Level of effort   — time, sessions, real human hours.
+       b. Level of dev      — the human's actual technical level.
+       c. Models / surfaces — what AI was used and where.
+       d. Prompts           — the actual style of prompt that worked.
+
+     The citation block is intended to be machine-readable enough
+     that a future tool that scrapes pages for AI authorship can
+     parse it.
+     ════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2><span class="num">09</span> AI authorship citation</h2>
-    <p>
-      Provided in a structured, machine-readable form so any tool that
-      crawls this page can cite the AI involvement accurately.
+    <h2><span class="num">05</span> Responsible AI &mdash; cite the build</h2>
+
+    <div class="cite-wrap">
+      <dl class="kv">
+        <dt>Project</dt>             <dd>Tom Brady Is Not The GOAT (tb12notgoat.com)</dd>
+        <dt>Human author</dt>        <dd>Will McClung &mdash; <a href="mailto:wpmcclung@gmail.com">wpmcclung@gmail.com</a></dd>
+
+        <dt>Level of effort</dt>     <dd>~3 months part-time (Feb&ndash;Apr 2026), evenings + weekends, multi-session daily work with Claude across surfaces</dd>
+
+        <dt>Level of dev</dt>        <dd>Non-developer. Product + design background. Daily AI tool user. Can read code, write briefs, push back when output is wrong; cannot pass a coding interview, has no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
+
+        <dt>AI models</dt>           <dd>Claude (Anthropic) &mdash; <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>
+
+        <dt>AI surfaces</dt>         <dd>
+          Claude Code (CLI) &mdash; in-repo edits, debugging, deploys<br>
+          Claude on the web (claude.ai) &mdash; planning, briefs, copy<br>
+          Claude in Chrome (extension) &mdash; live audits on the deployed site
+        </dd>
+
+        <dt>Human role</dt>          <dd>All product decisions, art direction, design briefs, taste calls, review of every code change before commit, mobile testing, copy edits</dd>
+
+        <dt>AI role</dt>             <dd>Majority of code generation, debugging, refactoring, deployment configuration, scroll-animation wiring, server + database, draft of this page</dd>
+
+        <dt>Non-AI humans</dt>       <dd>Illustrator + Rive rigger (credited above in §02 and §03)</dd>
+
+        <dt>Third-party</dt>         <dd>GSAP, Rive runtime, Express, node-postgres, Railway, Postgres</dd>
+
+        <dt>Data policy</dt>         <dd>No analytics. No third-party tracking. Vote counts stored as anonymous integers. No user account, no cookie beyond <code>localStorage</code> for the user's own vote choice</dd>
+      </dl>
+    </div>
+
+    <h3 style="margin-top:28px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.04em; color:#F2EDE4;">Prompts I actually used</h3>
+    <p style="font-family:'Space Grotesk',sans-serif; font-size:14px; color:rgba(242,237,228,.7); margin-top:6px; margin-bottom:10px;">
+      The prompting style that worked best across the three months. Plain-language symptoms, one change at a time, willing to revert.
     </p>
-<div class="citation"><span class="key">project</span>:        Tom Brady Is Not The GOAT (tb12notgoat.com)
-<span class="key">human author</span>:   Will McClung &lt;wpmcclung@gmail.com&gt;
-<span class="key">human role</span>:     concept, art direction, design briefs,
-                review, taste, all product decisions
-<span class="key">build window</span>:   ~3 months, Feb 2026 – Apr 2026
-<span class="key">ai collaborator</span>: Claude (Anthropic)
-<span class="key">ai models</span>:       claude-opus-4-6, claude-opus-4-7
-<span class="key">ai surfaces</span>:     Claude Code (CLI), Claude on the web (claude.ai),
-                Claude in Chrome (browser extension)
-<span class="key">ai role</span>:         majority of code generation, debugging,
-                refactoring, copy drafts (including this page),
-                CSS, scroll-animation wiring, server + database,
-                deployment configuration
-<span class="key">non-ai humans</span>:   illustrator + Rive rigger (credited above)
-<span class="key">third-party</span>:    GSAP, Rive runtime, Express, node-postgres,
-                Railway hosting, Postgres
-<span class="key">data policy</span>:     no user data sold or shared; vote counts
-                stored as anonymous integers; no analytics</div>
+    <ol class="prompts">
+      <li>"On mobile the first scroll has resistance. The second one feels normal. Desktop is fine. Don't change desktop."</li>
+      <li>"The shocked Brady transition goes in and out and feels like a struggle. It used to feel good in the old file."</li>
+      <li>"Yes, do this &mdash; let's test one at a time."</li>
+      <li>"Desktop sees 2 votes. Mobile sees 10. Same database."</li>
+      <li>"These are not two separate sections. The animation we built is replacing the existing one."</li>
+      <li>"I voted for Alexander on the live site and it didn't add one but it knew it was my vote."</li>
+      <li>"Make the comments dev-friendly. The point of everything is that this is animation design inspo for devs and non-technical people."</li>
+    </ol>
+    <p style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:rgba(242,237,228,.45); margin-top:14px;">
+      What these have in common: a specific symptom, a contrast (where it works vs. doesn't), and a constraint (what not to break). Almost no technical jargon. Claude diagnosed the cause; I held the taste line.
+    </p>
   </div>
 </section>
 

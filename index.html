@@ -171,7 +171,10 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
 #crown-svg {
   position:absolute;
   left:0; top:0; /* JS overrides via positionCrownOnHead() */
-  width:clamp(30px,9.7%,400px);
+  /* Reader feedback: crown was reading too large on typical
+     laptop screens at 100% zoom. 9.7% → 7% brings it to a size
+     proportional to Brady's head rather than overpowering it. */
+  width:clamp(22px,7%,260px);
   filter:brightness(1.4) drop-shadow(0 2px 8px rgba(0,0,0,.9)) drop-shadow(0 0 18px rgba(212,175,55,.6));
   z-index:10;
   opacity:0;
@@ -3469,15 +3472,35 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   var celebEl   = section.querySelector('.celebration-state');
   var resultsEl = section.querySelector('.results-state');
 
-  // ── localStorage / sessionStorage helpers ──
+  // ── Vote persistence ──
+  // Primary store: server (Postgres via /api). Shared across all visitors.
+  // Fallback: localStorage — used for optimistic UI render and when the
+  // API is unreachable. getVotes() returns a localStorage snapshot;
+  // fetchServerVotes() hits the API; writeVote() writes both.
   function getVotes() {
     try { return JSON.parse(localStorage.getItem('goat_votes') || '{}'); } catch(e) { return {}; }
   }
+  function setLocalVotes(v) {
+    try { localStorage.setItem('goat_votes', JSON.stringify(v)); } catch(e) {}
+  }
+  function fetchServerVotes() {
+    return fetch('/api/votes', { cache: 'no-store' })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .catch(function(e) { console.warn('[vote] fetchServerVotes failed:', e.message); return null; });
+  }
   function writeVote(pid) {
+    /* Optimistic local bump so the UI responds instantly even on slow
+       networks. If the server write fails we still show the vote locally
+       for this user — not ideal, but better than no feedback. */
     var v = getVotes();
     v[pid] = (v[pid] || 0) + 1;
-    localStorage.setItem('goat_votes', JSON.stringify(v));
-    /* SUPABASE: await supabase.from('votes').rpc('increment_vote', { player_id: pid }) */
+    setLocalVotes(v);
+    fetch('/api/vote', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ player_id: pid }),
+      keepalive: true,  /* finishes even if the page unloads mid-request */
+    }).catch(function(e) { console.warn('[vote] writeVote server failed:', e.message); });
   }
   function getSession() {
     try { return JSON.parse(sessionStore.getItem('goat_session') || 'null'); } catch(e) { return null; }
@@ -3878,8 +3901,10 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     var p = VOTE_PLAYERS.find(function(pl){ return pl.id === chosenPlayer; });
     if (!p) return;
 
+    /* Render immediately with localStorage so the UI doesn't blank while
+       the server fetch is in flight. We re-paint counts + bar widths
+       once /api/votes responds (see updateLeaderboardCounts below). */
     var votes = getVotes();
-    /* SUPABASE: const { data } = await supabase.from('votes').select('*') — merge with localStorage totals */
 
     resultsEl.innerHTML = '';
     gsap.set(resultsEl, { opacity: 0 });
@@ -3952,6 +3977,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       // Count
       var countEl = document.createElement('div');
       countEl.className   = 'vote-lb-count';
+      countEl.id          = 'vote-lb-count-' + pl.id;
       countEl.textContent = pl.id === 'brady' ? '0' : (votes[pl.id] || 0);
 
       row.appendChild(faceWrap);
@@ -3982,6 +4008,30 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
         var bar = document.getElementById('vote-bar-' + pl.id);
         if (bar) gsap.to(bar, { width: pct + '%', duration: 0.6, ease: 'power2.out', delay: 0.35 + idx * 0.05 });
       }
+    });
+
+    /* Server refresh: after the local snapshot is on screen, fetch the
+       shared counts and repaint. Keeps the display live across visitors
+       while also persisting the user's own vote into localStorage as a
+       fallback. If the fetch fails (503/offline) the local render stays. */
+    fetchServerVotes().then(function(serverVotes) {
+      if (!serverVotes) return;
+      if (voteState !== 'results') return;  /* user moved on; don't repaint */
+      setLocalVotes(serverVotes);            /* keep fallback in sync */
+      var newMax = Math.max.apply(null,
+        VOTE_PLAYERS.filter(function(pl){ return pl.id !== 'brady'; })
+                    .map(function(pl){ return serverVotes[pl.id] || 0; })
+                    .concat([1])
+      );
+      VOTE_PLAYERS.forEach(function(pl) {
+        var countEl = document.getElementById('vote-lb-count-' + pl.id);
+        if (countEl) countEl.textContent = pl.id === 'brady' ? '0' : (serverVotes[pl.id] || 0);
+        if (pl.id === 'brady') return;
+        var bar = document.getElementById('vote-bar-' + pl.id);
+        if (!bar) return;
+        var pct = newMax > 0 ? (serverVotes[pl.id] || 0) / newMax * 100 : 0;
+        gsap.to(bar, { width: pct + '%', duration: 0.5, ease: 'power2.out' });
+      });
     });
   }
 

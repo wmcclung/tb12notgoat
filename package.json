@@ -1,0 +1,16 @@
+{
+  "name": "tb12notgoat",
+  "version": "2.0.0",
+  "description": "Tom Brady Is Not The GOAT — static site + vote API",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.5"
+  }
+}

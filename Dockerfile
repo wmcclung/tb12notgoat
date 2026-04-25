@@ -1,20 +1,16 @@
-FROM nginx:alpine
+FROM node:20-alpine
 
-# Static site — everything in the repo root is served directly.
-COPY . /usr/share/nginx/html
+WORKDIR /app
 
-# Strip build-time artifacts from the served directory (they'd be
-# publicly reachable otherwise and have no business being served).
-RUN rm -f /usr/share/nginx/html/Dockerfile \
-          /usr/share/nginx/html/default.conf.template \
-          /usr/share/nginx/html/.gitignore \
-          /usr/share/nginx/html/.dockerignore
+# Install production deps first so layer caches independently of source changes
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev && npm cache clean --force
 
-# nginx config lists both ports (80 + 3000) so whichever Railway's
-# edge actually routes to, nginx answers. The template is copied into
-# /etc/nginx/templates so docker-entrypoint's envsubst step runs (it
-# still works fine even though this version has no ${VAR} placeholders
-# — keeps parity with the build stage nginx:alpine expects).
-COPY default.conf.template /etc/nginx/templates/default.conf.template
+# Copy the rest of the repo (static site + server.js)
+COPY . .
 
-EXPOSE 80 3000
+# Railway injects $PORT; server.js defaults to 3000 locally
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["node", "server.js"]

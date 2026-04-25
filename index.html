@@ -612,8 +612,14 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .accolade .a-stat  { font-size:clamp(38px, 10.5vw, 54px); }
   .accolade .a-label { font-size:10px; letter-spacing:.2em; }
   .accolade .a-note  { font-size:9px;  letter-spacing:.16em; line-height:1.35; }
-  .accolade[data-idx="1"] { --x: 28%; --y: 20%; }
-  .accolade[data-idx="2"] { --x: 72%; --y: 22%; }
+  /* Mobile party cards. Top row pushed up from --y:20-22% to ~9-10%
+     so the cards sit at the very top of the viewport and clear the
+     puppet's hands, which swing horizontally at roughly 25–45% from
+     the top of the stage. The hands are most of the puppet's motion,
+     so anything overlapping that band reads as "blocked". Bottom row
+     stays where it was — the puppet's feet barely move. */
+  .accolade[data-idx="1"] { --x: 24%; --y:  9%; }
+  .accolade[data-idx="2"] { --x: 76%; --y: 10%; }
   .accolade[data-idx="3"] { --x: 28%; --y: 76%; }
   .accolade[data-idx="4"] { --x: 72%; --y: 74%; }
   .party-spot { width:40vw; filter:blur(38px); opacity:.55; }
@@ -4809,8 +4815,14 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
      Called by the intro's onProgress every scroll tick. */
   function danceScrubGlobal(gp) {
     if (!danceInst || typeof danceInst.scrub !== 'function') return;
-    /* ~5 full cycles across the 2300vh intro — intro pace is ~460vh per loop. */
-    try { danceInst.scrub(DANCE_ANIM, gp * DANCE_DURATION * 5); } catch(e) {}
+    /* Multiplier was 5 (≈5 dance cycles across the 2300vh intro). Bumped
+       to 8.35 (~67% more movement per scroll) so the puppet shows more
+       motion through the dance phase without changing the scroll length —
+       reader feedback was "we already scroll a lot, there's just not a
+       lot of movement". The pre-party portion (gp 0 → 0.42) now plays
+       roughly 3.5 dance cycles instead of ~2, which feels closer to a
+       full dance move and a half before the party transition. */
+    try { danceInst.scrub(DANCE_ANIM, gp * DANCE_DURATION * 8.35); } catch(e) {}
   }
 
   /* Forced canvas resync — the center-card's shrink transform can cause

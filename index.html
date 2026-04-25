@@ -1989,18 +1989,30 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   padding:1px 5px; border-radius:3px;
 }
 
-/* Long URLs, code spans, and inline strings should always wrap inside
-   the modal — without this, a 60-char URL or an unbreakable token can
-   force horizontal overflow on narrow viewports and break the layout. */
+/* Modal must NEVER allow horizontal scroll. Setting overflow-y:auto
+   on the card implicitly enables overflow-x:auto in browsers, so a
+   too-wide child (long monospace label, unbreakable URL) makes the
+   card internally horizontally scrollable — and a touch glitch can
+   shift it sideways, hiding the start of every line. Explicitly
+   pinning overflow-x:hidden plus aggressive wrapping on every
+   text-bearing descendant makes that impossible. */
+.about-modal-card {
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+.about-modal-card * { min-width:0; }
 .about-modal-card a,
-.about-modal-card code {
+.about-modal-card code,
+.about-modal-card li,
+.about-modal-card dt,
+.about-modal-card dd,
+.about-modal-card p,
+.about-modal-card h2,
+.about-modal-card h3,
+.about-modal-card h4 {
   overflow-wrap:anywhere;
   word-break:break-word;
 }
-
-/* Smooth touch scrolling on iOS — without this the inner scroll feels
-   sticky on older Safari versions. */
-.about-modal-card { -webkit-overflow-scrolling:touch; }
 
 /* ── Tablet & narrow desktop (≤768px) ─────────────────────────────
    Tighten padding and reflow the credits dl so long labels like
@@ -2060,6 +2072,19 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   .about-ref h4       { font-size:14px; }
   .about-ref ul li    { font-size:14px; line-height:1.6; }
   .about-notes p      { font-size:15px; }
+  /* Tighter letter-spacing + smaller font on phone-sized credits
+     labels so "RIVE PUPPET ILLUSTRATION DRAWN BY" fits a 360px line
+     instead of trying to render at ~440px and forcing horizontal
+     overflow inside the card. */
+  .about-credits dt {
+    font-size:10px;
+    letter-spacing:.1em;
+  }
+  /* Same idea for the inline pattern labels in the references list. */
+  .about-ref ul strong {
+    letter-spacing:.08em;
+    font-size:10px;
+  }
 }
 
 /* ── Landscape phone (very short height) ────────────────────────

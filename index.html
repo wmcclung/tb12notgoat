@@ -2345,15 +2345,15 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile: +=1100. Slight bump from the original "perfect feel"
-         +=900 to give the impact zoom a touch more dwell room — user
-         testing flagged that the section was unpinning a hair too
-         soon. +=1100 still keeps every scroll pixel productive
-         (1px = 0.091% of timeline), nowhere near the +=5000 sluggish
-         range we tried earlier. Combined with timeScale(1.5) on the
-         impact timeline, the full impact lands cleanly inside the
-         dwell. Desktop stays +=1800 for mouse users. */
-      end:                 window.innerWidth <= 767 ? '+=1100' : '+=1800',
+      /* Mobile: +=1600. After the SVG swap eliminated first-scroll
+         re-raster cost, per-pixel snap is no longer the dominant
+         constraint — the zoom plays smoothly at any pin length, so
+         we can bias toward more dwell. +=1600 gives the impact
+         comfortable room to land before the section unpins on a
+         normal-paced scroll. Per-pixel feel: 1px = 0.0625% of
+         timeline (still well clear of the +=5000 sluggish range).
+         Desktop stays +=1800 for mouse users. */
+      end:                 window.innerWidth <= 767 ? '+=1600' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,

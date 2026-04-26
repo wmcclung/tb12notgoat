@@ -1,0 +1,68 @@
+MIT License — Source Code Only
+
+Copyright (c) 2026 Will McClung
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software's CODE (the HTML, CSS, JavaScript, and server-side files in
+this repository — index.html, about.html, server.js, Dockerfile, package.json,
+and related configuration) and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without
+limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to
+whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OF OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+================================================================================
+
+Artwork / Assets — All Rights Reserved
+
+The hand-illustrated artwork in /Assets is NOT covered by the MIT license
+above. These works are the original copyrighted material of their creators
+and are licensed to this project for use only on tb12notgoat.com. To use
+any of the artwork in another project, contact the creators directly.
+
+  Casey Rooney — https://thecitygoblin.myportfolio.com/
+    Candidate portraits (Walter Payton, Philip Rivers, Alan Page,
+    Shaun Alexander, Tom Brady), hero composition (throne, crown, goat,
+    shocked Brady illustration), and supporting illustrations.
+
+  Morgan Zavoral
+    Brady puppet rig — the layered character art and Rive state
+    machine (.riv files in Assets/puppet/) used for the dancing
+    Brady scene.
+
+================================================================================
+
+How to use this repository as a reference
+
+This project is intended as a working example of scroll-driven web
+animation for developers who want to build similar things. The MIT
+license above means you can:
+
+  - Copy and adapt the code patterns (GSAP ScrollTrigger usage,
+    Rive integration, Express + Postgres vote API, viewport-shim
+    technique, etc.)
+  - Use the file structure and architecture decisions
+  - Read the inline code comments as a tutorial
+  - Build your own version with your own artwork
+
+What you cannot do:
+
+  - Use the candidate portraits, hero composition, or puppet rig
+    in your own project without permission from Casey Rooney or
+    Morgan Zavoral
+  - Claim the design or art direction as your own
+  - Use Tom Brady's likeness in your own product
+
+If you build something inspired by this code, a link back is
+appreciated but not required.

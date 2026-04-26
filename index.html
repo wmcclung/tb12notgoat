@@ -2199,7 +2199,13 @@ window.addEventListener('load', function() {
     notEl.classList.add('struck');
 
     if (_impactTl) _impactTl.kill();
+    /* timeScale(1.5) compresses the whole impact sequence from ~1.6s
+       to ~1.07s real time — the short hero pin (~900px on mobile)
+       only gives ~1.5s of post-impact dwell at typical mobile scroll
+       speeds, so this makes the impact LAND fully before the pin
+       releases instead of getting cut off as the section unpins. */
     _impactTl = gsap.timeline();
+    _impactTl.timeScale(1.5);
 
     /* 1 — Crown tumbles bottom-left off screen */
     _impactTl.to('#crown-svg', {
@@ -2324,18 +2330,18 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile: +=1500. The original "perfect feel" hero used +=900 but
-         that was tuned against a simpler impact (no crown tumble + zoom
-         + subtext sequence). At +=900 the pin released before the
-         impact animation finished playing, so the user moved onto the
-         puppet section mid-zoom. +=1500 keeps the per-pixel snap
-         responsive (1px = 0.067% of the timeline) while extending the
-         hold phase to ~975px — enough for the ~1.6s impact to fully
-         land at typical mobile scroll speed. Earlier +=5000 was way
-         past this point and made the whole thing feel sluggish.
-         Desktop keeps +=1800 for mouse users. No anticipatePin — its
-         pre-prep on the first encounter was the "in and out" stutter. */
-      end:                 window.innerWidth <= 767 ? '+=1500' : '+=1800',
+      /* Mobile: +=900. The original "perfect feel" hero used this and
+         it was correct — short pin keeps every scroll pixel productive
+         (1px = 0.111% of timeline). The earlier "+=900 felt smooth but
+         the impact didn't finish before the pin released" complaint is
+         solved separately by compressing the impact timeline 1.5×
+         (see _impactTl.timeScale above) — the impact now plays in
+         ~1.07s instead of ~1.6s, which fits the post-impact dwell.
+         Bumping pin to +=1500 instead made every pixel less snappy AND
+         widened the wobble zone for fire/reverse hysteresis, producing
+         the "image goes in and out" flicker. Desktop stays +=1800 for
+         mouse users. No anticipatePin (was a first-encounter stutter). */
+      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,
@@ -2343,7 +2349,16 @@ window.addEventListener('load', function() {
       invalidateOnRefresh: true,
       onUpdate: self => {
         if (self.progress >= IMPACT && !_impactFired) fireImpact();
-        else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();
+        /* Reverse only when the user has scrolled most of the way back
+           toward the hero start — not a few pixels below IMPACT.
+           Earlier code reversed at IMPACT-0.04 (0.14), which on a longer
+           pin meant a small back-scroll wobble would re-fire the
+           fade-swap-fade cycle and produce a visible "in and out"
+           flicker. Reverse at 0.05 absolute means once the impact has
+           fired, the user has to scroll near the top of the hero to
+           undo it — the natural gesture for "go back", not the
+           accidental gesture of brief reverse-momentum. */
+        else if (self.progress < 0.05 && _impactFired) reverseImpact();
       },
     });
   }

@@ -185,6 +185,18 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   width:min(90vw,900px);
   height:clamp(240px, 48dvh, 720px);
   border:none; border-radius:0; overflow:visible;
+  /* will-change tells the browser to pre-allocate a GPU compositor
+     layer for this element NOW, before the first transform fires.
+     Without it, the first time the impact tween scales/translates
+     this wrapper, the browser must (a) create the layer, (b) raster
+     the contents, (c) composite — all on the same frame as the
+     user's scroll. That's the "shocked face zoom in struggles on
+     first scroll" symptom; second scroll is smooth because the
+     layer is now cached. This is the textbook use case for
+     will-change. We removed it earlier on a hunch; that was wrong.
+     The dominant first-scroll cost is layer creation, not anything
+     about will-change interfering with the compositor. */
+  will-change: transform, opacity;
 }
 .headline-lower {
   position:relative; z-index:10; text-align:center; line-height:.88;
@@ -2373,9 +2385,63 @@ window.addEventListener('load', function() {
     _createHeroST();
   };
 
+  /* ── HERO PRE-WARM ──────────────────────────────────────────────
+     The hero feels janky on the FIRST scroll-down and smooth on
+     subsequent scrolls because the browser pays one-time costs the
+     first time the impact tween fires:
+       1. GPU compositor layer creation for #illo-wrap
+       2. Bitmap re-rasterization at scale 2.2 (the zoom factor)
+       3. PNG decode for tom-brady-shocked.png (preload only fetches
+          bytes; decode is deferred until first display)
+     We pay all three costs here, once, before the user can scroll
+     into the impact zone. After this runs, fireImpact()'s tweens
+     hit warm caches.
+
+     Visual safety: the illo-wrap is briefly opacity:0 during the
+     pre-warm tween so the user never sees the scale-2.2 state.
+     ─────────────────────────────────────────────────────────────── */
+  function prewarmHero() {
+    /* (3) Force-decode the shocked PNG. Without this, the first
+           bi.src='...shocked.png' inside fireImpact() pays decode
+           cost on the same frame as the zoom tween starts. */
+    if (typeof HTMLImageElement !== 'undefined' &&
+        'decode' in HTMLImageElement.prototype) {
+      var preDecode = new Image();
+      preDecode.src = 'Assets/tom-brady-shocked.png';
+      preDecode.decode().catch(function(){ /* fine if it fails */ });
+    }
+
+    /* (1) + (2) Run a real tween that exercises the same transform
+           pattern the impact will use. Hide the wrapper for the few
+           frames it takes the browser to create the layer + raster.
+           The tween scales up, then snaps back to scale 1 before
+           opacity is restored. Total perceived flash: zero. */
+    var illoEl = document.getElementById('illo-wrap');
+    if (!illoEl) return;
+    var prevOpacity = illoEl.style.opacity;
+    illoEl.style.opacity = '0';
+
+    /* Force the larger scale to render at least once, then reset.
+       Two RAFs: first to commit the scale, second to reset, third
+       to restore opacity once the reset has committed. */
+    requestAnimationFrame(function() {
+      gsap.set('#illo-wrap', { scale: 2.2, y: 40, transformOrigin: '50% 16%' });
+      requestAnimationFrame(function() {
+        gsap.set('#illo-wrap', { scale: 1, y: 0, transformOrigin: '50% 28%' });
+        requestAnimationFrame(function() {
+          illoEl.style.opacity = prevOpacity || '';
+        });
+      });
+    });
+  }
+
   window.addEventListener('load', function() {
     showInitial();
     _createHeroST();
+    /* Run pre-warm after the hero is set up. setTimeout 0 yields
+       to the browser so it can paint the initial state cleanly
+       before we start the imperceptible scale flash. */
+    setTimeout(prewarmHero, 0);
   });
 
 })();

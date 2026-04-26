@@ -2324,16 +2324,18 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile: shorter pin (+=900) so 2–3 swipes trigger the crown
-         drop and shocked zoom — this is the value the original
-         "perfect feel" hero used. Earlier versions of this file
-         pushed it to +=5000 to keep a thumb-flick from blowing past
-         the dwell phase, but every pixel of scroll then moved the
-         timeline 1/5.5 as much, which made the whole hero feel
-         sluggish on first scroll. Desktop keeps the longer hold for
-         mouse users. No anticipatePin — its pre-prep on the first
-         encounter was the visible "in and out" stutter on mobile. */
-      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
+      /* Mobile: +=1500. The original "perfect feel" hero used +=900 but
+         that was tuned against a simpler impact (no crown tumble + zoom
+         + subtext sequence). At +=900 the pin released before the
+         impact animation finished playing, so the user moved onto the
+         puppet section mid-zoom. +=1500 keeps the per-pixel snap
+         responsive (1px = 0.067% of the timeline) while extending the
+         hold phase to ~975px — enough for the ~1.6s impact to fully
+         land at typical mobile scroll speed. Earlier +=5000 was way
+         past this point and made the whole thing feel sluggish.
+         Desktop keeps +=1800 for mouse users. No anticipatePin — its
+         pre-prep on the first encounter was the "in and out" stutter. */
+      end:                 window.innerWidth <= 767 ? '+=1500' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,

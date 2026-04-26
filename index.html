@@ -177,11 +177,13 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   /* Reader feedback: crown was reading too large on typical
      laptop screens at 100% zoom. 9.7% → 7% brings it to a size
      proportional to Brady's head rather than overpowering it. */
-  width:clamp(22px,7%,260px);
+  width:clamp(28px,11%,120px);
   filter:brightness(1.4) drop-shadow(0 2px 8px rgba(0,0,0,.9)) drop-shadow(0 0 18px rgba(212,175,55,.6));
   z-index:10;
   opacity:0;
 }
+@media (max-width:480px)  { #crown-svg { width:clamp(28px,13%,60px);  } }
+@media (min-width:1200px) { #crown-svg { width:clamp(60px,9%,120px);  } }
 .illo-wrap {
   position:relative; z-index:8; margin-top:clamp(2px,1vh,12px);
   /* Illustration height keys to dynamic viewport height so NOT always has room to drop */
@@ -2180,6 +2182,11 @@ window.addEventListener('load', function() {
     positionGoatOnImage();
   });
 
+  (function() {
+    var bi = document.getElementById('hero-brady-img');
+    if (bi) bi.addEventListener('load', positionCrownOnHead);
+  })();
+
   function spawnParticles() {
     const crown = document.getElementById('crown-svg');
     const rect  = crown.getBoundingClientRect();
@@ -3632,8 +3639,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     /* Map each player to their large hero illustration — on hover, the
        corresponding portrait swaps into the orbit's center with an
-       accent-colored radial glow. Brady gets the "shocked" variant to
-       reinforce the overall gag. */
+       accent-colored radial glow. Brady gets the "shocked" variant  */
     var HOVER_IMG = {
       brady:     'Assets/tom-brady-shocked.svg',
       rivers:    'Assets/phillip-rivers.png',

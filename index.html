@@ -4813,12 +4813,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
      finale) holds on its own for a longer beat before everyone exits
      — gives the reader time to register it as the payoff stat. */
   var CARD_SCHED = [
-    { in:0.43, out:0.82 },
-    { in:0.55, out:0.83 },
-    { in:0.67, out:0.85 },
-    { in:0.78, out:0.91 },  /* 286 card holds nearly all the way to wind-down */
+    { in:0.43, out:0.88 },
+    { in:0.60, out:0.89 },
+    { in:0.75, out:0.91 },
+    { in:0.87, out:0.95 },
   ];
-  var PARTY_START = 0.42, PARTY_END = 0.92;
+  var PARTY_START = 0.42, PARTY_END = 0.95;
   var lightningFired = false;
 
   /* Called by the intro's onProgress each scroll tick. gpLocal is the

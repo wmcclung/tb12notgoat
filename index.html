@@ -94,7 +94,7 @@
 /* ═══ GLOBAL ═══ */
 * { margin:0; padding:0; box-sizing:border-box; }
 html { background:#07090C; }
-body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
+body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touch-action:pan-y; overscroll-behavior-y:none; }
 
 /* ── Global focus-visible (keyboard affordance) ── */
 :focus { outline: none; }
@@ -2216,6 +2216,16 @@ window.addEventListener('load', function() {
   function fireImpact() {
     if (_impactFired) return;
     _impactFired = true;
+
+    /* Absorb flick momentum on touch so the kinetic scroll from the NOT-drop
+       flick can't immediately carry the user past the reveal into puppet.
+       Blocks touchmove for 750ms then releases — intentional scroll resumes. */
+    if ('ontouchstart' in window) {
+      var _tBlock = function(e) { e.preventDefault(); };
+      document.addEventListener('touchmove', _tBlock, {passive:false});
+      setTimeout(function() { document.removeEventListener('touchmove', _tBlock); }, 750);
+    }
+
     shake();
     spawnParticles();
     notEl.classList.add('struck');

@@ -79,11 +79,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Preload hero impact assets so first-scroll transition is smooth.
-     Without these, the browser starts fetching tom-brady-shocked.png
-     (3.2 MB) only when the impact fires, producing a visible stutter
-     on first play. Subsequent plays are smooth because the image is
-     cached. Preload moves that fetch to initial page load. -->
-<link rel="preload" as="image" href="Assets/tom-brady-shocked.png">
+     The shocked Brady SVG (~700 KB) is fetched at page load instead
+     of when the impact tween fires, so the src swap inside the
+     opacity-zero window is instant and the zoom never stutters
+     waiting on bytes. SVGs are vector — they scale without
+     re-rasterization, so the zoom-up to 2.2× has no first-paint
+     cost (this is why we're back on SVG instead of PNG; PNG
+     re-raster on first scale was the dominant first-scroll lag). -->
+<link rel="preload" as="image" href="Assets/tom-brady-shocked.svg">
 <link rel="preload" as="image" href="Assets/goat.svg">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -1902,7 +1905,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
     <div class="line-preamble" id="line-preamble">Tom Brady is</div>
   </div>
   <div class="illo-wrap" id="illo-wrap">
-    <img id="hero-brady-img" src="Assets/tom-brady.png" alt="Tom Brady" style="width:100%;height:100%;object-fit:contain;display:block;">
+    <img id="hero-brady-img" src="Assets/tom-brady.svg" alt="Tom Brady" style="width:100%;height:100%;object-fit:contain;display:block;">
     <img id="crown-svg" src="Assets/crown.png" alt="crown">
     <img id="hero-goat" src="Assets/goat.svg" alt="goat">
   </div>
@@ -2235,7 +2238,7 @@ window.addEventListener('load', function() {
     _impactTl.to('#hero-brady-img', { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.05);
     _impactTl.call(function() {
       var bi = document.getElementById('hero-brady-img');
-      if (bi) bi.src = 'Assets/tom-brady-shocked.png';
+      if (bi) bi.src = 'Assets/tom-brady-shocked.svg';
     }, null, 0.17);
     _impactTl.to('#hero-brady-img', { opacity: 1, duration: 0.18, ease: 'power1.out' }, 0.17);
 
@@ -2271,7 +2274,7 @@ window.addEventListener('load', function() {
       opacity: 0, duration: 0.12, ease: 'power1.in',
       onComplete: function() {
         var bi = document.getElementById('hero-brady-img');
-        if (bi) bi.src = 'Assets/tom-brady.png';
+        if (bi) bi.src = 'Assets/tom-brady.svg';
         positionCrownOnHead();
         positionGoatOnImage();
         gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1, opacity: 0 });
@@ -2308,7 +2311,7 @@ window.addEventListener('load', function() {
        starts from a clean state. */
     gsap.set('#hero-brady-img', {opacity:1});
     var _bi = document.getElementById('hero-brady-img');
-    if (_bi) _bi.src = 'Assets/tom-brady.png';
+    if (_bi) _bi.src = 'Assets/tom-brady.svg';
     positionCrownOnHead();
     gsap.set('#subtext',       {opacity:0});
     gsap.set('#scroll-hint',   {opacity:1});
@@ -2342,18 +2345,15 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile: +=900. The original "perfect feel" hero used this and
-         it was correct — short pin keeps every scroll pixel productive
-         (1px = 0.111% of timeline). The earlier "+=900 felt smooth but
-         the impact didn't finish before the pin released" complaint is
-         solved separately by compressing the impact timeline 1.5×
-         (see _impactTl.timeScale above) — the impact now plays in
-         ~1.07s instead of ~1.6s, which fits the post-impact dwell.
-         Bumping pin to +=1500 instead made every pixel less snappy AND
-         widened the wobble zone for fire/reverse hysteresis, producing
-         the "image goes in and out" flicker. Desktop stays +=1800 for
-         mouse users. No anticipatePin (was a first-encounter stutter). */
-      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
+      /* Mobile: +=1100. Slight bump from the original "perfect feel"
+         +=900 to give the impact zoom a touch more dwell room — user
+         testing flagged that the section was unpinning a hair too
+         soon. +=1100 still keeps every scroll pixel productive
+         (1px = 0.091% of timeline), nowhere near the +=5000 sluggish
+         range we tried earlier. Combined with timeScale(1.5) on the
+         impact timeline, the full impact lands cleanly inside the
+         dwell. Desktop stays +=1800 for mouse users. */
+      end:                 window.innerWidth <= 767 ? '+=1100' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,
@@ -2385,63 +2385,9 @@ window.addEventListener('load', function() {
     _createHeroST();
   };
 
-  /* ── HERO PRE-WARM ──────────────────────────────────────────────
-     The hero feels janky on the FIRST scroll-down and smooth on
-     subsequent scrolls because the browser pays one-time costs the
-     first time the impact tween fires:
-       1. GPU compositor layer creation for #illo-wrap
-       2. Bitmap re-rasterization at scale 2.2 (the zoom factor)
-       3. PNG decode for tom-brady-shocked.png (preload only fetches
-          bytes; decode is deferred until first display)
-     We pay all three costs here, once, before the user can scroll
-     into the impact zone. After this runs, fireImpact()'s tweens
-     hit warm caches.
-
-     Visual safety: the illo-wrap is briefly opacity:0 during the
-     pre-warm tween so the user never sees the scale-2.2 state.
-     ─────────────────────────────────────────────────────────────── */
-  function prewarmHero() {
-    /* (3) Force-decode the shocked PNG. Without this, the first
-           bi.src='...shocked.png' inside fireImpact() pays decode
-           cost on the same frame as the zoom tween starts. */
-    if (typeof HTMLImageElement !== 'undefined' &&
-        'decode' in HTMLImageElement.prototype) {
-      var preDecode = new Image();
-      preDecode.src = 'Assets/tom-brady-shocked.png';
-      preDecode.decode().catch(function(){ /* fine if it fails */ });
-    }
-
-    /* (1) + (2) Run a real tween that exercises the same transform
-           pattern the impact will use. Hide the wrapper for the few
-           frames it takes the browser to create the layer + raster.
-           The tween scales up, then snaps back to scale 1 before
-           opacity is restored. Total perceived flash: zero. */
-    var illoEl = document.getElementById('illo-wrap');
-    if (!illoEl) return;
-    var prevOpacity = illoEl.style.opacity;
-    illoEl.style.opacity = '0';
-
-    /* Force the larger scale to render at least once, then reset.
-       Two RAFs: first to commit the scale, second to reset, third
-       to restore opacity once the reset has committed. */
-    requestAnimationFrame(function() {
-      gsap.set('#illo-wrap', { scale: 2.2, y: 40, transformOrigin: '50% 16%' });
-      requestAnimationFrame(function() {
-        gsap.set('#illo-wrap', { scale: 1, y: 0, transformOrigin: '50% 28%' });
-        requestAnimationFrame(function() {
-          illoEl.style.opacity = prevOpacity || '';
-        });
-      });
-    });
-  }
-
   window.addEventListener('load', function() {
     showInitial();
     _createHeroST();
-    /* Run pre-warm after the hero is set up. setTimeout 0 yields
-       to the browser so it can paint the initial state cleanly
-       before we start the imperceptible scale flash. */
-    setTimeout(prewarmHero, 0);
   });
 
 })();
@@ -3689,7 +3635,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        accent-colored radial glow. Brady gets the "shocked" variant to
        reinforce the overall gag. */
     var HOVER_IMG = {
-      brady:     'Assets/tom-brady-shocked.png',
+      brady:     'Assets/tom-brady-shocked.svg',
       rivers:    'Assets/phillip-rivers.png',
       alexander: 'Assets/shaun-alexander.png',
       page:      'Assets/alan-page.png',
@@ -4322,7 +4268,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
           gsap.set('#subtext',    { opacity: 0 });
           gsap.set('#line-bottom',{ y: 0 });
           var bi = document.getElementById('hero-brady-img');
-          if (bi) bi.src = 'Assets/tom-brady.png';
+          if (bi) bi.src = 'Assets/tom-brady.svg';
           if (window._positionCrown) window._positionCrown();
           if (window._positionGoat)  window._positionGoat();
         },
@@ -4340,7 +4286,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
           scrollToHero();
           if (window._heroShowInitial) window._heroShowInitial();
           var bi = document.getElementById('hero-brady-img');
-          if (bi) bi.src = 'Assets/tom-brady-shocked.png';
+          if (bi) bi.src = 'Assets/tom-brady-shocked.svg';
           gsap.set('#hero-brady-img', { opacity: 1 });
           gsap.set('#crown-svg',      { opacity: 0 });
           gsap.set('#hero-goat',      { opacity: 0, x: 0 });

@@ -3713,6 +3713,15 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     if (pid === 'brady') {
       if (window.dataLayer) window.dataLayer.push({ event: 'brady_click', section: 'vote' });
+      /* Track the Brady vote in the DB before redirecting. The
+         leaderboard always renders Brady as 0 (hard-coded in
+         buildResults) and his count is excluded from the bar-width
+         max, so this row never visually leaks — but the underlying
+         count is real and queryable from Postgres for offline
+         analysis. writeVote uses fetch(..., { keepalive: true }),
+         which lets the POST complete even after window.location
+         navigates the page away. */
+      writeVote('brady');
       /* Using www variant because the apex (riversgoat.com) currently
          has a DNS configuration issue; www resolves correctly. */
       window.location.href = 'https://www.riversgoat.com/';

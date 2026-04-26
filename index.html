@@ -183,7 +183,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   opacity:0;
 }
 @media (max-width:480px)  { #crown-svg { width:clamp(28px,13%,60px); } }
-@media (min-width:1200px) { #crown-svg { width:clamp(36px,6%,72px);  } }
+@media (min-width:1200px) { #crown-svg { width:clamp(30px,5%,58px);  } }
 .illo-wrap {
   position:relative; z-index:8; margin-top:clamp(2px,1vh,12px);
   /* Illustration height keys to dynamic viewport height so NOT always has room to drop */
@@ -2338,16 +2338,21 @@ window.addEventListener('load', function() {
     const wrapH = _notWrapH || 220;
 
     const startY = _notStartY || -window.innerHeight;
-    const LAND   = 0.35; /* progress where NOT fully lands */
-    const IMPACT = 0.18; /* progress where NOT passes the crown — fires impact mid-fall */
+    const LAND   = 0.35; /* fraction of timeline the NOT fall occupies */
+    /* Mobile dead-zone: pin activates but NOT stays frozen for the first DEAD
+       of scroll progress. A quick flick stalls here so momentum drains before
+       the drop begins, preventing accidental skip-to-puppet. */
+    const DEAD   = window.innerWidth <= 767 ? 0.20 : 0;
+    const IMPACT = DEAD + 0.18; /* fires mid-fall regardless of dead-zone size */
 
     _notDropTl = gsap.timeline({paused:true})
-      /* phase 1 (0 → LAND): NOT falls + wrapper expands */
-      .fromTo(notEl,   {y:startY, opacity:0}, {y:0, opacity:1, ease:'power2.in', duration:LAND},   0)
-      .fromTo(notWrap, {height:0},             {height:wrapH,  ease:'power2.in', duration:LAND},   0)
-      /* phase 2 (LAND → 1.0): hold — hero stays pinned while impact animation
-         (crown drop + shocked crossfade + illo zoom) plays out, then reads */
-      .to({}, {duration:1 - LAND});
+      /* phase 0 (0 → DEAD): dead zone — nothing moves */
+      .to({}, {duration: DEAD})
+      /* phase 1 (DEAD → DEAD+LAND): NOT falls + wrapper expands */
+      .fromTo(notEl,   {y:startY, opacity:0}, {y:0, opacity:1, ease:'power2.in', duration:LAND}, DEAD)
+      .fromTo(notWrap, {height:0},             {height:wrapH,  ease:'power2.in', duration:LAND}, DEAD)
+      /* phase 2 (DEAD+LAND → 1.0): hold while impact plays out, then reads */
+      .to({}, {duration: 1 - DEAD - LAND});
 
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,

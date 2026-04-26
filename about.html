@@ -282,39 +282,32 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
 .prompts {
   list-style:none;
   padding:14px 16px;
-  margin:0 0 18px;
+  margin:0;
   border:1px dashed rgba(242,237,228,.15);
   border-radius:8px;
   background:#0E1218;
 }
-.prompts:last-child { margin-bottom:0; }
 .prompts li {
   font-family:'JetBrains Mono', ui-monospace, monospace;
   font-size:13px;
   color:rgba(242,237,228,.85);
-  padding:5px 0;
+  padding:10px 0;
   border-bottom:1px solid rgba(242,237,228,.05);
 }
-.prompts li:last-child { border-bottom:none; }
+.prompts li:last-child { border-bottom:none; padding-bottom:4px; }
+.prompts li:first-child { padding-top:4px; }
 .prompts li::before {
   content:'> ';
   color:rgba(200,16,46,.85);
 }
-.prompt-cat {
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  font-size:11px;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  color:rgba(200,16,46,.85);
-  margin:22px 0 6px;
-  font-weight:700;
-}
-.prompt-cat:first-of-type { margin-top:14px; }
-.prompt-cat-note {
+.prompts .why {
+  display:block;
   font-family:'Space Grotesk', system-ui, sans-serif;
-  font-size:13px;
+  font-size:12.5px;
+  line-height:1.5;
   color:rgba(242,237,228,.55);
-  margin:0 0 8px;
+  margin-top:6px;
+  padding-left:14px;          /* indent under the > prefix */
 }
 
 @media (max-width: 600px) {
@@ -570,56 +563,37 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
   <div class="wrap">
     <h2><span class="num">05</span> Prompts that pushed the needle</h2>
     <p class="prompts-stand">
-      Verbatim from the build, curated to the ones that actually moved the work forward. Five patterns kept showing up: precise bug reports with a contrast, direction-setting prompts that defined the goal, course-corrections that saved a wrong direction, meta-prompts that broke a stuck loop, and release-readiness prompts that surfaced gaps. Almost no technical jargon &mdash; Claude diagnosed the cause, I held the taste line.
+      Verbatim from the build. The seven that did the most work, with a note on why each one was effective. Almost no technical jargon &mdash; Claude diagnosed the cause, I held the taste line.
     </p>
-
-    <p class="prompt-cat">Bug reports that gave Claude enough to diagnose</p>
-    <p class="prompt-cat-note">Symptom + where-it-works-vs-doesn't + what-not-to-break.</p>
     <ol class="prompts">
-      <li>"On mobile the first scroll has resistance. The second one feels normal. Desktop is fine. Don't change desktop."</li>
-      <li>"Desktop sees 2 votes. Mobile sees 10. Same database."</li>
-      <li>"I voted for Alexander on the live site and it didn't add one but it knew it was my vote."</li>
-      <li>"The two are brady shocked and crown in the hero and brady shocked in the vote. Just appears as silhouettes."</li>
-      <li>"The shocked Brady transition goes in and out and feels like a struggle. It used to feel good in the old file."</li>
-      <li>"Now it's choppy again either I didn't notice earlier or this pin is what's doing it. The zoom in on shocked it happening slowly and the image goes in and out."</li>
-    </ol>
-
-    <p class="prompt-cat">Direction-setting prompts that defined what to build</p>
-    <p class="prompt-cat-note">A clear goal in plain language, sized like a brief instead of a ticket.</p>
-    <ol class="prompts">
-      <li>"Make the comments dev-friendly. The point of everything is that this is animation design inspo for devs and non-technical people."</li>
-      <li>"We swung way too big with an about page. After you vote I want an about with a module that pops up that says Created by, Illustrations by, Rive puppet illustration drawn by..."</li>
-      <li>"I'd like when someone votes for Brady same experience goes to riversgoat, doesn't ever show a vote tally for him it stays at 0 but we actually track it in the db so I can ask you how many votes does Brady have."</li>
-      <li>"Module isn't formatted for mobile. Make it formatted for all devices."</li>
-      <li>"Make every section every functionality clear and helpful links are good."</li>
-    </ol>
-
-    <p class="prompt-cat">Course-corrections that saved a wrong direction</p>
-    <p class="prompt-cat-note">Direct rejection without softening, plus the redirection. Saves entire loops of polishing the wrong thing.</p>
-    <ol class="prompts">
-      <li>"I hate the voice and attitude of the document."</li>
-      <li>"Actually I do like the about page more than the module."</li>
-      <li>"These are not two separate sections. The animation we built is replacing the existing one."</li>
-      <li>"I don't like that the solution was on mobile force to the bottom poll, it also doesn't work. It should be formatted upon voting that both the poll and the sticker show on mobile screens."</li>
-      <li>"This is still such the opposite of what I want."</li>
-    </ol>
-
-    <p class="prompt-cat">Meta-prompts that broke a stuck loop</p>
-    <p class="prompt-cat-note">Pause-and-reset signals when iteration was making things worse, not better. The most valuable category.</p>
-    <ol class="prompts">
-      <li>"We have about perfected the experience in desktop and mobile. There is one issue left and we should save state now because every time we attempt this we come up short. Let's think differently."</li>
-      <li>"Wait is the only issue SVG is a silhouette? If that works that's a cleaner solve."</li>
-      <li>"Are you using git to roll back or are you manually making changes? Isn't git the right thing to use for rollback?"</li>
-      <li>"Evaluate shortcomings and do better."</li>
-    </ol>
-
-    <p class="prompt-cat">Release-readiness prompts that surfaced gaps</p>
-    <p class="prompt-cat-note">Asked at the end of the build to find the things that weren't obviously broken but weren't actually ready.</p>
-    <ol class="prompts">
-      <li>"Is this app ready for people to fill out on different devices? Me to work off another computer with git pull current version?"</li>
-      <li>"What are the security concerns with putting a public email and the GitHub project link here?"</li>
-      <li>"Give a prompt to share with another agent if it doesn't work and same issue of jank, transition to clean up and it will keep testing to find answer."</li>
-      <li>"What about a readme in GitHub, shouldn't we have that and it be the most digestible but most comprehensive summary for a dev how to use pieces of this for their own."</li>
+      <li>
+        "Desktop sees 2 votes. Mobile sees 10. Same database."
+        <span class="why">Symptom + contrast + same source. Three short clauses told Claude where the bug had to be (between DB and client) without me knowing what a CDN cache was. Diagnosis came back inside one turn.</span>
+      </li>
+      <li>
+        "On mobile the first scroll has resistance. The second one feels normal. Desktop is fine. Don't change desktop."
+        <span class="why">Symptom, contrast, and an explicit constraint on what NOT to break. The constraint is the part most bug reports skip and it's what kept Claude from "fixing" the working desktop hero in the process.</span>
+      </li>
+      <li>
+        "I voted for Alexander on the live site and it didn't add one but it knew it was my vote."
+        <span class="why">Two paired observations: behavior A happened, behavior B didn't, both witnessed. The pairing localized the bug to the gap between local state and the server write &mdash; exactly where it was.</span>
+      </li>
+      <li>
+        "We have about perfected the experience. There is one issue left and we should save state now because every time we attempt this we come up short. Let's think differently."
+        <span class="why">A meta-prompt that broke a loop. We'd been iterating on the same hero bug across six commits with no progress. This paused the cadence and forced a different framing &mdash; which led to actually finding the cause. The most valuable shape of prompt in the whole build.</span>
+      </li>
+      <li>
+        "Wait is the only issue SVG is a silhouette? If that works that's a cleaner solve."
+        <span class="why">A course-correction with a hypothesis embedded. Not "you're wrong, try again" &mdash; a specific alternative theory that turned out to be the actual fix (PNG re-rasterization on transform). Hypothesis-bearing prompts are far stronger than open-ended rejections.</span>
+      </li>
+      <li>
+        "Make the comments dev-friendly. The point of everything is that this is animation design inspo for devs and non-technical people."
+        <span class="why">Defined the project's audience and intent in one sentence. Every code comment, the About page tone, and the README structure flowed from this prompt afterward. A single line that set the standard for everything downstream.</span>
+      </li>
+      <li>
+        "I hate the voice and attitude of the document."
+        <span class="why">Direct rejection without softening. No "this is good but..." preamble. That bluntness saved several rounds of incremental polishing on a draft that needed to be rewritten from scratch &mdash; and signaled a different draft was wanted, not edits to this one.</span>
+      </li>
     </ol>
   </div>
 </section>

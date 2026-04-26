@@ -935,12 +935,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   /* Hide the sticky 5-portrait header (we put portraits inline in each row) */
   .table-header { display: none; }
 
-  /* Section-by-section scroll snap through the chart rows.
-     proximity (not mandatory) so fast flicks pass through freely
-     and upward scroll doesn't hard-lock at each row. */
-  html { scroll-snap-type: y proximity; }
-  .cat-row { scroll-snap-align: start; scroll-snap-stop: normal; }
-
   /* Vertical row */
   .cat-row {
     display: flex !important;

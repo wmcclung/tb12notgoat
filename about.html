@@ -381,7 +381,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
       all hand-illustrated.
     </p>
     <p>
-      The product idea, the gag, the animation moments, and the taste calls
+      The product idea, the animation moments, and the taste calls
       are mine. The scroll wiring, the database, the deploy configuration,
       and most of the CSS are where Claude did the heavy lifting. The
       references below are what a developer would need to rebuild any
@@ -473,23 +473,6 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
       </article>
 
       <article class="ref">
-        <h3>Vote API <span class="tag">shared real-time totals</span></h3>
-        <ul>
-          <li><strong>Server</strong> Node + Express &mdash; <a href="https://expressjs.com/en/4x/api.html" target="_blank" rel="noopener">expressjs.com</a></li>
-          <li><strong>Database</strong> Postgres via <code>pg</code> (node-postgres) &mdash; <a href="https://node-postgres.com/" target="_blank" rel="noopener">node-postgres.com</a></li>
-          <li><strong>Hosting</strong> Railway (Node service + managed Postgres on the same project) &mdash; <a href="https://docs.railway.app/" target="_blank" rel="noopener">docs.railway.app</a></li>
-          <li><strong>Schema</strong> <code>votes (player_id TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMPTZ)</code> &mdash; one row per candidate, count incremented atomically</li>
-          <li><strong>Pattern</strong>
-            Two endpoints. <code>POST /api/vote</code> performs an UPSERT (<code>INSERT ... ON CONFLICT ... DO UPDATE SET count = count + 1</code>) so concurrent voters can't lose writes. <code>GET /api/votes</code> returns the full tally. Express middleware sets <code>Cache-Control: no-store</code> on <code>/api/*</code> so the edge CDN can't serve stale totals (without it, desktop and mobile users saw different counts). A small in-memory rate limiter (Map keyed on <code>X-Forwarded-For</code>) blocks trivial spam.
-          </li>
-          <li><strong>Why this approach</strong> A relational database is overkill for five integers, but it gives correct concurrent writes for free and lets any SQL tool inspect the table.</li>
-          <li><strong>In repo</strong> <code>server.js</code> &middot; <code>index.html</code> &mdash; <code>writeVote()</code>, <code>fetchServerVotes()</code>, <code>buildResults()</code></li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
-        </ul>
-      </article>
-
-      <article class="ref">
         <h3>Mobile viewport <span class="tag">URL-bar jitter fix</span></h3>
         <ul>
           <li><strong>APIs</strong> <code>window.visualViewport</code>, dynamic viewport units (<code>dvh</code> / <code>svh</code> / <code>lvh</code>)</li>
@@ -501,8 +484,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           </li>
           <li><strong>Why this approach</strong> Without the shim, the URL bar's transition between expanded and collapsed states makes <code>svh</code>/<code>dvh</code> resolve to wildly different values on the same load &mdash; producing the "everything in the corner of the screen" mobile bug. <code>visualViewport</code> is the only API that reports the actually-visible region rather than the layout viewport.</li>
           <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+          <li><strong>Your inspiration</strong> <a href="https://css-tricks.com/the-trick-to-viewport-units-on-mobile/" target="_blank" rel="noopener">CSS-Tricks: The trick to viewport units on mobile</a> — using a CSS custom property synced to <code>visualViewport.height</code> to prevent URL-bar jitter</li>
         </ul>
       </article>
 
@@ -534,7 +516,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
         <dd>~8 days of active git history (Apr 19&ndash;26, 2026), ~50 commits, ~300+ Claude exchanges across three surfaces. Earlier planning and design conversations in claude.ai are not measurable from the codebase but added several weeks to the wall-clock total</dd>
 
         <dt>Level of dev</dt>
-        <dd>Non-developer. Northwestern bootcamp certificate, not practiced since. Builds more with AI now than without it. Daily AI tool user. Can read code, write briefs, push back when output is wrong; no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
+        <dd>Non-developer. Northwestern bootcamp certificate, not practiced. Builds more with AI now than without it. Daily AI tool user. Can read code, write briefs, push back when output is wrong; no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
 
         <dt>AI models</dt>
         <dd>Claude (Anthropic) &mdash; <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>

@@ -420,8 +420,11 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           </li>
           <li><strong>Why this approach</strong> Stacked images cross-fade more cheaply than swapping <code>src</code> (no re-layout, no network round-trip). Sharing one timeline keeps the three tweens in lockstep regardless of scroll speed.</li>
           <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>_createHeroST()</code> (scroll trigger), <code>_impactTl()</code> (timeline), <code>.line-not</code> CSS, the two <code>&lt;img&gt;</code> elements <code>#hero-brady-img</code> and <code>#hero-brady-img-shocked</code></li>
-          <!-- TODO: paste your specific inspiration link (codepen, tutorial, blog post). -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+          <li><strong>Your inspiration</strong>
+            <ul>
+              <li>Motion SVG animation docs (starting point for SVG path animation): <a href="https://motion.dev/docs/react-svg-animation" target="_blank" rel="noopener">motion.dev/docs/react-svg-animation</a></li>
+            </ul>
+          </li>
         </ul>
       </article>
 
@@ -438,8 +441,13 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           </li>
           <li><strong>Why this approach</strong> Pinning + scrub is far more reliable than <code>position: sticky</code> for orchestrated multi-element sequences &mdash; it gives precise control over when within the scroll each element fires.</li>
           <li><strong>In repo</strong> <code>index.html</code> &mdash; <code>.section-stage</code> ScrollTrigger and the <code>.word-slot</code> / <code>.cards-col</code> markup it drives</li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+          <li><strong>Your inspiration</strong>
+            <ul>
+              <li>Awwwards zoom-out scroll effect: <a href="https://www.awwwards.com/inspiration/zoom-out-effect-by-scrolling" target="_blank" rel="noopener">awwwards.com/inspiration/zoom-out-effect-by-scrolling</a></li>
+              <li>GSAP ScrollTrigger Image Zoom (CodePen): <a href="https://codepen.io/GreenSock/pen/YzbPYMx" target="_blank" rel="noopener">codepen.io/GreenSock/pen/YzbPYMx</a></li>
+              <li>Shrink image on scroll (CodePen): <a href="https://codepen.io/destal/pen/vYvmLLz" target="_blank" rel="noopener">codepen.io/destal/pen/vYvmLLz</a></li>
+            </ul>
+          </li>
         </ul>
       </article>
 
@@ -455,8 +463,12 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           </li>
           <li><strong>Why this approach</strong> A full Rive character is ~50 KB versus 5+ MB for a comparable GIF, stays sharp at any size because it's vector, and can respond to multiple inputs (scroll, click, hover) without re-rigging.</li>
           <li><strong>In repo</strong> <code>index.html</code> Rive init + scrub loop &middot; <code>Assets/puppet/*.riv</code> (rigged source files)</li>
-          <!-- TODO: inspiration link -->
-          <li><strong>Your inspiration</strong> <span class="todo">[ paste your specific source link here ]</span></li>
+          <li><strong>Your inspiration</strong>
+            <ul>
+              <li>Rive Silly Little Kitty (rigging style reference): <a href="https://editor.rive.app/preview/13862-26228-interactive-cat/12191544?mode=animate&artboard=Silly%20Little%20Kitty&animation=State%20Machine%201" target="_blank" rel="noopener">editor.rive.app — Silly Little Kitty</a></li>
+              <li>Brady dance reference (what we were recreating): <a href="https://www.youtube.com/watch?v=q90q7UNY4W8" target="_blank" rel="noopener">youtube.com/watch?v=q90q7UNY4W8</a></li>
+            </ul>
+          </li>
         </ul>
       </article>
 
@@ -522,7 +534,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
         <dd>~8 days of active git history (Apr 19&ndash;26, 2026), ~50 commits, ~300+ Claude exchanges across three surfaces. Earlier planning and design conversations in claude.ai are not measurable from the codebase but added several weeks to the wall-clock total</dd>
 
         <dt>Level of dev</dt>
-        <dd>Non-developer. Product + design background. Daily AI tool user. Can read code, write briefs, push back when output is wrong; no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
+        <dd>Non-developer. Northwestern bootcamp certificate, not practiced since. Builds more with AI now than without it. Daily AI tool user. Can read code, write briefs, push back when output is wrong; no CS degree, had not used GSAP, Rive, Express, or Postgres before this project</dd>
 
         <dt>AI models</dt>
         <dd>Claude (Anthropic) &mdash; <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>

@@ -185,17 +185,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   width:min(90vw,900px);
   height:clamp(240px, 48dvh, 720px);
   border:none; border-radius:0; overflow:visible;
-  /* Pre-promote to a compositor layer so the first hero impact runs
-     smoothly. Without this, GSAP's first scale+translate tween pays a
-     one-time cost to create the layer (~100-200ms stall), which showed
-     up as a visible stutter on first scroll. Subsequent plays are
-     smooth because the layer persists. */
-  will-change:transform, opacity;
-  transform:translateZ(0);
-}
-#hero-brady-img, #hero-brady-img-shocked {
-  will-change:opacity;
-  backface-visibility:hidden;
 }
 .headline-lower {
   position:relative; z-index:10; text-align:center; line-height:.88;
@@ -1902,11 +1891,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; }
   </div>
   <div class="illo-wrap" id="illo-wrap">
     <img id="hero-brady-img" src="Assets/tom-brady.png" alt="Tom Brady" style="width:100%;height:100%;object-fit:contain;display:block;">
-    <!-- Shocked variant pre-rendered at opacity:0. Cross-fading between
-         two <img> elements is much smoother than swapping .src on a
-         single element (which forces a layout recalc / first-paint
-         stall on first trigger even with the image cached). -->
-    <img id="hero-brady-img-shocked" src="Assets/tom-brady-shocked.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;opacity:0;will-change:opacity;">
     <img id="crown-svg" src="Assets/crown.png" alt="crown">
     <img id="hero-goat" src="Assets/goat.svg" alt="goat">
   </div>
@@ -2225,12 +2209,17 @@ window.addEventListener('load', function() {
       duration: 0.9, ease: 'power2.in'
     }, 0);
 
-    /* 2 — Brady crossfades to shocked via opacity on a pre-rendered
-       duplicate img element. No .src swap → no layout recalc, no
-       first-play stutter. Both images are rendered in the DOM at
-       load time; only opacity changes. */
-    _impactTl.to('#hero-brady-img',         { opacity: 0, duration: 0.22, ease: 'power1.inOut' }, 0.05);
-    _impactTl.to('#hero-brady-img-shocked', { opacity: 1, duration: 0.22, ease: 'power1.inOut' }, 0.05);
+    /* 2 — Brady crossfades to shocked via .src swap inside the
+       opacity-0 window. The shocked.png is preloaded in <head>
+       so the swap is instant; no network round-trip, no layout
+       recalc visible to the user. This is the same pattern the
+       early "perfect feel" hero used. */
+    _impactTl.to('#hero-brady-img', { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.05);
+    _impactTl.call(function() {
+      var bi = document.getElementById('hero-brady-img');
+      if (bi) bi.src = 'Assets/tom-brady-shocked.png';
+    }, null, 0.17);
+    _impactTl.to('#hero-brady-img', { opacity: 1, duration: 0.18, ease: 'power1.out' }, 0.17);
 
     /* 3 — Illustration zooms into shocked face after NOT lands */
     _impactTl.to('#illo-wrap', {
@@ -2257,13 +2246,21 @@ window.addEventListener('load', function() {
     gsap.to('#illo-wrap', { y: 0, scale: 1, transformOrigin: '50% 28%', duration: DUR, ease: 'power2.out' });
     gsap.set('#hero-goat', { x: 0, opacity: 0 });
 
-    /* Cross-fade back: shocked img out, normal img in. No src swap. */
-    gsap.to('#hero-brady-img-shocked', { opacity: 0, duration: DUR, ease: 'power1.inOut' });
-    gsap.to('#hero-brady-img',         { opacity: 1, duration: DUR, ease: 'power1.inOut' });
-    positionCrownOnHead();
-    positionGoatOnImage();
-    gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1 });
-    gsap.to('#crown-svg',  { opacity: 1, duration: 0.3, ease: 'power2.out' });
+    /* Reverse impact: fade hero-brady out, swap src back to normal,
+       fade in. Mirrors the OLD "perfect feel" hero's reverse pattern —
+       single img, src swap inside the opacity-0 window. */
+    gsap.to('#hero-brady-img', {
+      opacity: 0, duration: 0.12, ease: 'power1.in',
+      onComplete: function() {
+        var bi = document.getElementById('hero-brady-img');
+        if (bi) bi.src = 'Assets/tom-brady.png';
+        positionCrownOnHead();
+        positionGoatOnImage();
+        gsap.set('#crown-svg', { x: 0, y: 0, rotation: CROWN_ROT, scale: 1, opacity: 0 });
+        gsap.to('#hero-brady-img', { opacity: 1, duration: 0.2, ease: 'power1.out' });
+        gsap.to('#crown-svg',      { opacity: 1, duration: 0.3, ease: 'power2.out' });
+      }
+    });
   }
 
   function showInitial() {
@@ -2287,10 +2284,13 @@ window.addEventListener('load', function() {
     gsap.set('#line-bottom', {y:0});
     gsap.set('#hero-goat',   {x:0, scaleX:1, opacity:0});
     gsap.set('#crown-svg',   {x:0, y:0, rotation:CROWN_ROT, opacity:1, scale:1});
-    /* Both Brady images visible state: normal=opaque, shocked=transparent.
-       Cross-fade approach replaces the old src-swap. */
-    gsap.set('#hero-brady-img',         {opacity:1});
-    gsap.set('#hero-brady-img-shocked', {opacity:0});
+    /* Reset Brady to the normal portrait at full opacity. If the user
+       scrolled into impact and back to top, the src still points at
+       the shocked variant — restore it here so the next first-scroll
+       starts from a clean state. */
+    gsap.set('#hero-brady-img', {opacity:1});
+    var _bi = document.getElementById('hero-brady-img');
+    if (_bi) _bi.src = 'Assets/tom-brady.png';
     positionCrownOnHead();
     gsap.set('#subtext',       {opacity:0});
     gsap.set('#scroll-hint',   {opacity:1});
@@ -2324,19 +2324,21 @@ window.addEventListener('load', function() {
     _heroST = ScrollTrigger.create({
       trigger:             heroEl,
       start:               'top top',
-      /* Mobile pin duration — bumped hard to +=5000 (was +=2400). A
-         mobile thumb-flick carries ~2000-3500px of inertia; at +=3800
-         a firm flick still reached the pin end. +=5000 pushes the
-         dwell zone past typical flick inertia so the user reliably
-         stops inside the hold phase instead of rocketing past. */
-      end:                 window.innerWidth <= 767 ? '+=5000' : '+=1800',
+      /* Mobile: shorter pin (+=900) so 2–3 swipes trigger the crown
+         drop and shocked zoom — this is the value the original
+         "perfect feel" hero used. Earlier versions of this file
+         pushed it to +=5000 to keep a thumb-flick from blowing past
+         the dwell phase, but every pixel of scroll then moved the
+         timeline 1/5.5 as much, which made the whole hero feel
+         sluggish on first scroll. Desktop keeps the longer hold for
+         mouse users. No anticipatePin — its pre-prep on the first
+         encounter was the visible "in and out" stutter on mobile. */
+      end:                 window.innerWidth <= 767 ? '+=900' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,
       animation:           _notDropTl,
       invalidateOnRefresh: true,
-      /* Smooths the pin release into the intro section below. */
-      anticipatePin:       1,
       onUpdate: self => {
         if (self.progress >= IMPACT && !_impactFired) fireImpact();
         else if (self.progress < IMPACT - 0.04 && _impactFired) reverseImpact();

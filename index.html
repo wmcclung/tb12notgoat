@@ -3839,21 +3839,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       celebName.appendChild(sp);
     });
 
-    /* Vote counter — shows total votes for this player after writeVote
-       has run (it runs in handleVote before transitionTo('celebration')) */
-    var counter = document.createElement('div');
-    counter.className = 'celeb-counter';
-    counter.id = 'celeb-counter';
-    var countNum = document.createElement('span');
-    countNum.className = 'celeb-counter-num';
-    countNum.id = 'celeb-counter-num';
-    countNum.textContent = '0';
-    var countLabel = document.createElement('span');
-    countLabel.className = 'celeb-counter-label';
-    countLabel.textContent = 'vote' + (0 === 1 ? '' : 's') + ' for ' + p.name.split(' ').slice(-1)[0];
-    counter.appendChild(countNum);
-    counter.appendChild(document.createTextNode(' '));
-    counter.appendChild(countLabel);
 
     /* Timer bar — hairline at bottom of the wrap, fills over the auto-advance
        duration. Replaces the "tap to continue" text. */
@@ -3867,7 +3852,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 
     wrap.appendChild(stickerShell);
     wrap.appendChild(celebName);
-    wrap.appendChild(counter);
     wrap.appendChild(timer);
     celebEl.appendChild(wrap);
 
@@ -3900,13 +3884,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
             stagger: 0.03 },
           0.55);
 
-    /* 5. Counter fades in + ticks up AFTER the name lands */
-    var totalVotes = (getVotes()[p.id]) || 1;
-    tl.to(counter, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 1.15);
-    tl.add(function(){
-      countLabel.textContent = 'vote' + (totalVotes === 1 ? '' : 's') + ' for ' + p.name.split(' ').slice(-1)[0];
-      tickCounter(countNum, totalVotes, 800);
-    }, 1.15);
 
     /* 6. Timer bar fills over the auto-advance window */
     var AUTO_MS = 3400;

@@ -2071,7 +2071,26 @@ ScrollTrigger.normalizeScroll(true);
    once the user scrolls into the vote section; re-enable if they
    scroll back up past it. */
 window.addEventListener('load', function() {
-  var vote = document.getElementById('vote-section');
+  var vote  = document.getElementById('vote-section');
+  var chart = document.getElementById('chart-section');
+
+  /* Chart section: lower momentum so a single flick doesn't race through
+     multiple rows. On real touch devices normalizeScroll defaults to 0.8
+     (very kinetic); 0.3 matches the feel of a trackpad in mobile mode.
+     Restore full momentum above/below the chart where fast scrolling
+     through the tall intro pin is expected. */
+  if (chart) {
+    ScrollTrigger.create({
+      trigger: chart,
+      start: 'top bottom',
+      end: 'bottom top',
+      onEnter:      function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll({momentum:0.3}); },
+      onLeave:      function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll(true); },
+      onEnterBack:  function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll({momentum:0.3}); },
+      onLeaveBack:  function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll(true); }
+    });
+  }
+
   if (!vote) return;
   ScrollTrigger.create({
     trigger: vote,

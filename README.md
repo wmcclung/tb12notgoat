@@ -48,7 +48,7 @@ No framework, no build step, no transpilation. The browser opens `index.html` di
 | [Railway](https://railway.app/) | Hosting (Node + managed Postgres) | docs.railway.app |
 | [MDN: Visual Viewport API](https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API) | Mobile URL-bar handling | MDN |
 
-Hand illustration is the thing that isn't a library — Casey Rooney drew the candidate portraits and hero composition, Morgan Zavoral rigged the Brady puppet in Rive.
+Hand illustration is the thing that isn't a library — Casey Rooney drew the candidate portraits and hero composition, Morgan Zavoral drew the Brady puppet layers, and Will McClung assembled the Rive rig.
 
 ---
 
@@ -466,4 +466,3 @@ The intent: copy the code patterns freely, substitute your own art.
 
 [rivers@riversgoat.com](mailto:rivers@riversgoat.com)
 
-If you build something inspired by this, a link back is appreciated but not required.

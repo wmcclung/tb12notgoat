@@ -3167,15 +3167,16 @@ function setupChartInView() {
           gsap.fromTo(rowEl.querySelector('.cat-label-col'),
             { opacity: 0, y: 8 },
             { opacity: 1, y: 0, duration: .35, ease: 'power2.out' });
-          /* Cells DROP + BOUNCE from above — elastic so they feel like they
-             got dropped there, not settled into place. */
+          /* Cells drop from above with a single smooth overshoot.
+             back.out runs on simple cubic math — no multi-reversal
+             repaints like bounce.out, so iOS stays at 60fps. */
           cells.forEach(function(cel, i) {
             var pid = cel.getAttribute('data-pid');
             var cd  = row.cells[pid];
             gsap.fromTo(cel,
-              { opacity: 0, y: -60 },
-              { opacity: 1, y: 0, duration: .75, ease: 'bounce.out',
-                delay: i * 0.08,
+              { opacity: 0, y: -28 },
+              { opacity: 1, y: 0, duration: .55, ease: 'back.out(1.4)',
+                delay: i * 0.07,
                 onComplete: function() {
                   if (cd.counter) {
                     var valEl = document.getElementById('val-' + row.id + '-' + pid);

@@ -2064,37 +2064,25 @@ gsap.registerPlugin(ScrollTrigger);
    during URL bar retract, GSAP measures at one of them, and the pin
    locks at the wrong size until the user scrolls back (which forces
    a re-measure). */
-ScrollTrigger.normalizeScroll(true);
+/* momentum:0.35 instead of the default 0.8 — keeps normalizeScroll active
+   everywhere (intro pin needs it for correct release) while reducing how
+   far a single flick carries through the chart. Shorter wind-down also
+   eliminates the jump-back where 0.8 momentum's tail conflicted with the
+   real scroll position mid-chart. */
+ScrollTrigger.normalizeScroll({ momentum: 0.35 });
 /* BUT: normalizeScroll also blocks native scrolling past the last
    trigger on the page, which was trapping mobile users inside the
    vote section (couldn't reach the full leaderboard). Release it
    once the user scrolls into the vote section; re-enable if they
    scroll back up past it. */
 window.addEventListener('load', function() {
-  var vote  = document.getElementById('vote-section');
-  var chart = document.getElementById('chart-section');
-
-  /* Chart section: release normalizeScroll so the chart uses native
-     touch scroll. normalizeScroll's synthetic momentum caused two
-     problems here — over-flicking through rows and occasional jump-backs
-     when its wind-down conflicted with the real scroll position.
-     Restore it on the way back up so the intro pin still benefits. */
-  if (chart) {
-    ScrollTrigger.create({
-      trigger: chart,
-      start: 'top top',
-      onEnter:     function() { ScrollTrigger.normalizeScroll(false); },
-      onLeaveBack: function() { ScrollTrigger.normalizeScroll(true);  },
-      onEnterBack: function() { ScrollTrigger.normalizeScroll(false); }
-    });
-  }
-
+  var vote = document.getElementById('vote-section');
   if (!vote) return;
   ScrollTrigger.create({
     trigger: vote,
     start: 'top 85%',
     onEnter:     function() { ScrollTrigger.normalizeScroll(false); },
-    onLeaveBack: function() { ScrollTrigger.normalizeScroll(true);  }
+    onLeaveBack: function() { ScrollTrigger.normalizeScroll({ momentum: 0.35 }); }
   });
 });
 </script>

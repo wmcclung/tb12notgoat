@@ -2672,7 +2672,7 @@ function onProgress(gp) {
      (dance → lightning → rocker + cards + lights → wind-down). Past
      that, effective progress (egp) drives the existing intro
      choreography (puppet shrink + word reveals + chart handoff). */
-  const DWELL_END=0.55;
+  const DWELL_END=0.60;
   const egp=clamp((gp-DWELL_END)/(1-DWELL_END),0,1);
 
   /* Drive the party sub-module (dance/rock scrub, lights, cards,
@@ -4849,15 +4849,17 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
      finale) holds on its own for a longer beat before everyone exits
      — gives the reader time to register it as the payoff stat. */
   var CARD_SCHED = [
-    { in:0.43, out:0.99 },
-    { in:0.60, out:0.99 },
-    { in:0.80, out:0.99 },
-    { in:0.88, out:0.99 },
+    { in:0.43, out:0.92 },
+    { in:0.58, out:0.92 },
+    { in:0.73, out:0.92 },
+    { in:0.82, out:0.92 },
   ];
   /* PARTY_START moved from 0.42 to 0.38 — starts the dance→rock cross-fade
      at the same time as the lightning flash, eliminating the dead zone
-     where the flash fired but Brady appeared frozen before the party lit up. */
-  var PARTY_START = 0.38, PARTY_END = 0.99;
+     where the flash fired but Brady appeared frozen before the party lit up.
+     All cards exit at 0.92 (not 0.99) so the 0.35s CSS transition finishes
+     within the dwell window before gpLocal > 1 would strip the class mid-play. */
+  var PARTY_START = 0.38, PARTY_END = 0.96;
   var lightningFired = false;
 
   /* Called by the intro's onProgress each scroll tick. gpLocal is the

@@ -611,9 +611,15 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 .intro-section {
   position:relative;
   /* 2300vh = ~700vh for the party phase + 1600vh for the original intro
-     choreography (dwell, shrink, words, chart handoff). */
+     choreography (dwell, shrink, words, chart handoff).
+     On mobile (normalizeScroll momentum 0.35 vs desktop 0.8) the section
+     is scaled to ~1000vh so the same physical flick effort drives the
+     same animation progress — 2300 × (0.35/0.8) ≈ 1006. */
   height:2300vh;
   background:#F5F1EB;
+}
+@media (max-width: 767px) {
+  .intro-section { height:1000vh; }
 }
 .section-stage {
   position:relative; top:0; width:100%;
@@ -2347,7 +2353,7 @@ window.addEventListener('load', function() {
        original 0.35 × 1600 — but the hold phase is now 2640px, so a flick can't
        carry the user into the puppet section. Desktop keeps original proportions. */
     const LAND   = isMobile ? 0.175 : 0.35;
-    const IMPACT = isMobile ? 0.09  : 0.18; /* NOT passes crown mid-fall */
+    const IMPACT = isMobile ? 0.24  : 0.18; /* NOT passes crown mid-fall */
 
     _notDropTl = gsap.timeline({paused:true})
       /* phase 1 (0 → LAND): NOT falls + wrapper expands */
@@ -2367,7 +2373,7 @@ window.addEventListener('load', function() {
          normal-paced scroll. Per-pixel feel: 1px = 0.0625% of
          timeline (still well clear of the +=5000 sluggish range).
          Desktop stays +=1800 for mouse users. */
-      end:                 isMobile ? '+=3200' : '+=1800',
+      end:                 isMobile ? '+=1200' : '+=1800',
       pin:                 true,
       pinSpacing:          true,
       scrub:               true,

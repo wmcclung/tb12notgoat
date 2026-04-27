@@ -4851,10 +4851,13 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   var CARD_SCHED = [
     { in:0.43, out:0.88 },
     { in:0.60, out:0.89 },
-    { in:0.75, out:0.91 },
-    { in:0.82, out:0.98 },
+    { in:0.80, out:0.91 },
+    { in:0.88, out:0.98 },
   ];
-  var PARTY_START = 0.42, PARTY_END = 0.98;
+  /* PARTY_START moved from 0.42 to 0.38 — starts the dance→rock cross-fade
+     at the same time as the lightning flash, eliminating the dead zone
+     where the flash fired but Brady appeared frozen before the party lit up. */
+  var PARTY_START = 0.38, PARTY_END = 0.98;
   var lightningFired = false;
 
   /* Called by the intro's onProgress each scroll tick. gpLocal is the

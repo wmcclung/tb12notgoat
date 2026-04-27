@@ -750,9 +750,13 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
    intro cream↔club, chart dark). Hidden via JS once the vote
    section enters the viewport (the bottom of the experience).
 ═══════════════════════════════════════════ */
+@keyframes hint-pulse {
+  0%, 100% { opacity:.9; }
+  50%       { opacity:.45; }
+}
 .keep-scrolling {
   position:fixed;
-  bottom:clamp(48px, 8vh, 72px);
+  bottom:clamp(28px, 5vh, 48px);
   left:50%;
   transform:translateX(-50%);
   font-family:'JetBrains Mono', ui-monospace, monospace;
@@ -768,9 +772,10 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   z-index:9999;
   pointer-events:none;
   white-space:nowrap;
+  animation:hint-pulse 2.2s ease-in-out infinite;
   transition:opacity .3s ease;
 }
-.keep-scrolling.hide { opacity:0; }
+.keep-scrolling.hide { opacity:0; animation:none; }
 
 /* ═══════════════════════════════════════════
    BRIDGE — #F5F1EB → #07090C
@@ -4665,7 +4670,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       var vv      = window.visualViewport;
       var pageTop = vv ? vv.pageTop : window.scrollY;
       var vh      = vv ? vv.height  : window.innerHeight;
-      hint.style.top = (pageTop + vh - 72) + 'px';
+      hint.style.top = (pageTop + vh - 32) + 'px';
     }
 
     if (window.visualViewport) {
@@ -4684,7 +4689,9 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       entries.forEach(function(en) {
         hint.classList.toggle('hide', en.isIntersecting);
       });
-    }, { threshold: 0.15 }).observe(vote);
+    /* rootMargin shifts bottom inward 50% so hint hides only when
+       the poll is well into view, not when it barely peeks in */
+    }, { rootMargin: '0px 0px -50% 0px' }).observe(vote);
   }
 
   /* Defer until after window.load so GSAP pin spacers exist before the

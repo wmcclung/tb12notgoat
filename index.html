@@ -757,8 +757,8 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 .keep-scrolling {
   position:fixed;
   bottom:clamp(28px, 5vh, 48px);
-  left:50%;
-  transform:translateX(-50%);
+  right:clamp(16px, 3vw, 32px);
+  left:auto;
   font-family:'JetBrains Mono', ui-monospace, monospace;
   font-size:10px;
   letter-spacing:.26em;
@@ -4663,8 +4663,9 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   if ('ontouchstart' in window) {
     hint.style.position = 'absolute';
     hint.style.bottom   = 'auto';
-    hint.style.left     = '50%';
-    hint.style.transform = 'translateX(-50%)';
+    hint.style.right    = 'clamp(16px, 3vw, 32px)';
+    hint.style.left     = 'auto';
+    hint.style.transform = '';
 
     function syncPos() {
       var vv      = window.visualViewport;

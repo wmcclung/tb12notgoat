@@ -3502,11 +3502,14 @@ window.replay = function() {
 window.addEventListener('load',()=>{
   renderTable();
   renderChartSummary();
-  window._chartCleanup = setupChartInView();
-  window._chartSummaryCleanup = setupChartSummaryInView();
-  setupFaceTransition();
   setTimeout(()=>{
+    /* Refresh first so hero-pin spacer is in place before chart triggers
+       calculate their scroll positions — avoids once:true triggers firing
+       at the wrong scroll depth on mobile (intermittent invisible rows). */
     ScrollTrigger.refresh();
+    window._chartCleanup = setupChartInView();
+    window._chartSummaryCleanup = setupChartSummaryInView();
+    setupFaceTransition();
     if(window.__scrollToVote){
       window.__scrollToVote=false;
       setTimeout(()=>{

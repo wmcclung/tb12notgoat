@@ -770,6 +770,11 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   white-space:nowrap;
   transition:opacity .3s ease;
 }
+/* Brave/Chrome Android bottom tab bar overlaps the viewport —
+   raise the hint above it on mobile */
+@media (max-width: 767px) {
+  .keep-scrolling { bottom: 96px; }
+}
 .keep-scrolling.hide { opacity:0; }
 
 /* ═══════════════════════════════════════════

@@ -2829,7 +2829,7 @@ const ROWS = [
     order:['rivers','payton','alexander','page','brady'],
     /* Mobile: worst→best (numerically ascending), gold lands last */
     mobileOrder:['alexander','payton','page','rivers','brady'],
-    cells:{ brady:{val:'23',color:'cg-gold'}, rivers:{val:'17',color:'cg-faint'}, payton:{val:'13',color:'cg-faint'}, alexander:{val:'9',color:'neutral'}, page:{val:'15',color:'cg-faint'} }
+    cells:{ brady:{val:'23',color:'cg-gold'}, rivers:{val:'18',color:'cg-faint'}, payton:{val:'13',color:'cg-faint'}, alexander:{val:'9',color:'neutral'}, page:{val:'15',color:'cg-faint'} }
   },
   { id:'award', label:"NFL'S HIGHEST OFF-FIELD HONOR", sub:'community impact + excellence on and off the field',
     order:['rivers','alexander','page','brady','payton'],
@@ -2851,7 +2851,7 @@ const ROWS = [
     cells:{
       brady:{val:'TB12 Foundation',color:'cg-mid',flavor:'athlete wellness'},
       rivers:{val:'Rivers of Hope',color:'cg-mid',flavor:'$1M+ for foster children'},
-      payton:{val:'Walter Payton Foundation',color:'cg-strong',flavor:'Still running today'},
+      payton:{val:'Walter & Connie Payton Foundation',color:'cg-strong',flavor:'Run by Connie Payton · holiday toy drives · organ donation advocacy'},
       alexander:{val:'Harvest Covenant',color:'cg-mid',flavor:'Co-op + Shaun Alexander Foundation'},
       page:{val:'Page Education Foundation',color:'cg-strong',flavor:'$16M+ · 8,000+ scholarships',dramatic:true},
     }
@@ -2865,7 +2865,7 @@ const ROWS = [
       /* Rivers note removed per request — "coaching his own son" read like
          a footnote. The HS coach role speaks for itself. */
       rivers:{val:'HS Football Coach',color:'cg-mid'},
-      payton:{val:'Foundation + Board',color:'cg-strong',flavor:'Bears board · pursued NFL ownership'},
+      payton:{val:'Entrepreneur',color:'cg-strong',flavor:'IndyCar co-owner · Trans-Am racer · Roundhouse brewpub · pursued NFL ownership'},
       alexander:{val:'Harvest Covenant + VC',color:'cg-strong',flavor:'Co-op · author · investor'},
       /* Page: re-formatted as a stacked bulleted list — these are the
          most impressive accolades in the chart and deserve legible
@@ -2884,19 +2884,19 @@ const ROWS = [
     /* Synchronized count-up: every cell reveals its number as a count from
        0 to target. All cells start counting at the same time after the row
        label finishes typing, so the reveal plays like a scoreboard race —
-       Payton (2) and Brady (3) finish almost instantly, Alexander (14)
+       Payton (2) and Brady (3) finish almost instantly, Alexander (13+)
        keeps ticking past everyone, making his gold payoff feel earned.
        syncCount flag tells revealRow to skip its default per-cell clip-in
        animation and use the shared count-up group instead. */
     order:['payton','page','brady','rivers','alexander'],
-    /* Mobile: strict numeric ascending — payton(2), brady(3), page(4), rivers(10), alexander(14) */
+    /* Mobile: strict numeric ascending — payton(2), brady(3), page(4), rivers(10), alexander(13+) */
     mobileOrder:['payton','brady','page','rivers','alexander'],
     syncCount: true,
     cells:{
       brady:{val:'3',color:'cg-faint',counter:true},
       rivers:{val:'10',color:'cg-strong',counter:true},
       payton:{val:'2',color:'cg-faint',counter:true},
-      alexander:{val:'14',color:'cg-gold',counter:true,dramatic:true},
+      alexander:{val:'13+',color:'cg-gold',dramatic:true},
       page:{val:'4',color:'cg-faint',counter:true},
     }
   },

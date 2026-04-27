@@ -227,24 +227,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 .subtext, .scroll-hint { display: none !important; }
 .particle { position:fixed; border-radius:50%; pointer-events:none; z-index:100; }
 
-/* Scroll cue — hidden by default, enabled on mobile via media query */
-.hero-scroll-cue { display: none; }
-.hero-scroll-cue .cue-chev {
-  width: 26px; height: 26px;
-  color: rgba(242,237,228,.55);
-  animation: cueBob 1.8s ease-in-out infinite;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
-}
-.hero-scroll-cue .cue-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; letter-spacing: .24em; text-transform: uppercase;
-  color: rgba(242,237,228,.38);
-  margin-right: 10px; align-self: center;
-}
-@keyframes cueBob {
-  0%,100% { transform: translateY(0); opacity: .55; }
-  50%     { transform: translateY(6px); opacity: .95; }
-}
 
 /* ── NOT text is hidden until JS fires (prevents FOUC) ── */
 #not-text { opacity:0; }
@@ -285,8 +267,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 /* ── Mobile (≤ 480px) — intentional mobile layout, not scaled desktop ── */
 @media (max-width: 480px) {
   .hero {
-    /* Center the composition vertically so there's no big gap beneath "THE GOAT".
-       Also shrink the bottom padding — the scroll cue handles wayfinding. */
+    /* Center the composition vertically so there's no big gap beneath "THE GOAT". */
     justify-content: center;
     padding-top:  max(8px, env(safe-area-inset-top));
     padding-bottom: clamp(48px, 9dvh, 80px);
@@ -315,18 +296,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   /* Tighten gap between illo and lower headline */
   .headline-lower { margin-top: 0; }
 
-  /* Scroll cue — small pulsing chevron anchored to the hero bottom so users
-     know there's more below, since the centered composition no longer fills
-     the full viewport. */
-  .hero-scroll-cue {
-    display: flex !important;
-    position: absolute;
-    left: 0; right: 0;
-    bottom: calc(14px + env(safe-area-inset-bottom));
-    justify-content: center;
-    pointer-events: none;
-    z-index: 11;
-  }
 }
 
 /* Short viewports (laptops 540–720px tall) — tighten stacking */
@@ -1944,12 +1913,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
       <span>The</span>
       <span id="crown-anchor">GOAT</span>
     </div>
-  </div>
-  <div class="hero-scroll-cue" aria-hidden="true">
-    <span class="cue-label">SCROLL</span>
-    <svg class="cue-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
   </div>
 </section>
 

@@ -4081,16 +4081,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       lb.appendChild(row);
     });
 
-    resultsEl.appendChild(lb);
-
-    /* "About this project" link — navigates to the standalone /about page
-       (about.html). Hidden in kiosk mode so the conference setup keeps the
-       screen on the vote loop. The .vote-about-btn class works for either
-       <a> or <button>, so we keep the same styling. */
+    /* "All done." + CTA appear BEFORE the leaderboard so they're always
+       on-screen when results first render — leaderboard scrolls below. */
     if (!isKiosk) {
       var thankYou = document.createElement('p');
       thankYou.className = 'vote-thank-you';
-      thankYou.textContent = "All done.";
+      thankYou.textContent = 'All done.';
       resultsEl.appendChild(thankYou);
 
       var thankYouSub = document.createElement('p');
@@ -4101,10 +4097,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       var aboutLink = document.createElement('a');
       aboutLink.className = 'vote-about-btn';
       aboutLink.href      = '/about';
-      aboutLink.innerHTML = 'Learn more about the project <span aria-hidden="true">→</span>';
+      aboutLink.innerHTML = 'Learn more about the project <span aria-hidden="true">&#8594;</span>';
       aboutLink.setAttribute('aria-label', 'Learn more about the project — read credits and how it was built');
       resultsEl.appendChild(aboutLink);
     }
+
+    resultsEl.appendChild(lb);
 
     // Reset button (kiosk only)
     var resetBtn = document.createElement('button');

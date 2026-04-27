@@ -3470,18 +3470,25 @@ function setupChartSummaryInView() {
     return function cleanup() { deactivate(); };
   }
 
-  const st = ScrollTrigger.create({
-    id: 'chart-summary',
-    trigger: section,
-    start: 'top 100%',   /* fire as summary enters bottom of viewport */
-    end:   'bottom 25%',
-    onEnter:     activate,
-    onLeaveBack: deactivate,
-    onEnterBack: activate,
-  });
+  /* IntersectionObserver instead of ScrollTrigger — same reason as chart
+     row reveals: GSAP's normalizeScroll proxy lags native scroll on real
+     mobile devices, causing onEnter to fire at the wrong visual moment.
+     boundingClientRect.top > 0 means section is still below the viewport
+     (user scrolled back up), so we deactivate; top < 0 means user passed
+     it going down, no reset needed. */
+  var summaryObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        activate();
+      } else if (entry.boundingClientRect.top > 0) {
+        deactivate();
+      }
+    });
+  }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
+  summaryObs.observe(section);
 
   return function cleanup() {
-    try { st.kill(); } catch(e){}
+    summaryObs.disconnect();
     deactivate();
   };
 }

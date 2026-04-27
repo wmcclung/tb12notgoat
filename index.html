@@ -752,28 +752,22 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 ═══════════════════════════════════════════ */
 .keep-scrolling {
   position:fixed;
-  bottom:clamp(20px, 3.5vh, 36px);
+  bottom:clamp(48px, 8vh, 72px);
   left:50%;
-  /* translateZ(0) forces own GPU compositing layer — prevents mobile
-     rendering glitch where position:fixed elements disappear at GSAP
-     pin boundaries when normalizeScroll(true) is active */
-  transform:translateX(-50%) translateZ(0);
+  transform:translateX(-50%);
   font-family:'JetBrains Mono', ui-monospace, monospace;
   font-size:10px;
   letter-spacing:.26em;
   font-weight:600;
   text-transform:uppercase;
   color:#FFFFFF;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.7);
   padding:5px 14px 4px;
   border-radius:20px;
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  opacity:.85;
+  opacity:.9;
   z-index:9999;
   pointer-events:none;
   white-space:nowrap;
-  will-change:opacity;
   transition:opacity .3s ease;
 }
 .keep-scrolling.hide { opacity:0; }

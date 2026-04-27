@@ -465,8 +465,8 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           <li><strong>In repo</strong> <code>index.html</code> Rive init + scrub loop &middot; <code>Assets/puppet/*.riv</code> (rigged source files)</li>
           <li><strong>Your inspiration</strong>
             <ul>
-              <li>Rive Silly Little Kitty (rigging style reference): <a href="https://editor.rive.app/preview/13862-26228-interactive-cat/12191544?mode=animate&artboard=Silly%20Little%20Kitty&animation=State%20Machine%201" target="_blank" rel="noopener">editor.rive.app — Silly Little Kitty</a></li>
-              <li>Brady dance reference (what we were recreating): <a href="https://www.youtube.com/watch?v=q90q7UNY4W8" target="_blank" rel="noopener">youtube.com/watch?v=q90q7UNY4W8</a></li>
+              <li>Rive Silly Little Kitty (how-to rigging reference — the Brady puppet dance is this): <a href="https://editor.rive.app/preview/13862-26228-interactive-cat/12191544?mode=animate&artboard=Silly%20Little%20Kitty&animation=State%20Machine%201" target="_blank" rel="noopener">editor.rive.app — Silly Little Kitty</a></li>
+              <li>Brady dance source video (what we were recreating): <a href="https://www.youtube.com/watch?v=dgi2lY62Hto" target="_blank" rel="noopener">youtube.com/watch?v=dgi2lY62Hto</a></li>
             </ul>
           </li>
         </ul>
@@ -485,6 +485,19 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
           <li><strong>Why this approach</strong> Without the shim, the URL bar's transition between expanded and collapsed states makes <code>svh</code>/<code>dvh</code> resolve to wildly different values on the same load &mdash; producing the "everything in the corner of the screen" mobile bug. <code>visualViewport</code> is the only API that reports the actually-visible region rather than the layout viewport.</li>
           <li><strong>In repo</strong> <code>index.html</code> &mdash; first <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code></li>
           <li><strong>Your inspiration</strong> <a href="https://css-tricks.com/the-trick-to-viewport-units-on-mobile/" target="_blank" rel="noopener">CSS-Tricks: The trick to viewport units on mobile</a> — using a CSS custom property synced to <code>visualViewport.height</code> to prevent URL-bar jitter</li>
+        </ul>
+      </article>
+
+      <article class="ref">
+        <h3>riversgoat.com <span class="tag">canvas 2d lightning + character reveal</span></h3>
+        <ul>
+          <li><strong>What it is</strong> Vote for Brady on tb12notgoat.com and you're ejected here — no warning, no modal. Full-bleed Philip Rivers silhouette, procedural lightning, drifting spark particles, and a "vote again" link back. Live at <a href="https://www.riversgoat.com/" target="_blank" rel="noopener">riversgoat.com</a>.</li>
+          <li><strong>Library</strong> None. Canvas 2D, vanilla JS, Google Fonts. Zero dependencies.</li>
+          <li><strong>Pattern</strong>
+            Bolts are drawn in two passes per segment: a wide low-alpha glow stroke, then a bright core stroke. Each bolt carries an array of branch sub-paths drawn the same way. Lifetime is an alpha curve — fast flash in, slow afterglow out. 70 spark particles drift upward continuously and get velocity-kicked when a bolt strikes near them. A 25% flurry chance fires a second bolt 120ms after the first. Clicking/tapping anywhere spawns a bolt at the cursor &mdash; the user is the weather. Rivers sits on top as a PNG with a <code>data-mode</code> attribute on the stage toggling four reveal states: silhouette, flash, outline, lit.
+          </li>
+          <li><strong>Why this approach</strong> Zero-dependency Canvas 2D means no load overhead. The branching bolt algorithm and the particle kick system came back correct on the first pass with a detailed brief &mdash; no debugging loop. This was the clearest example in the project of a thorough brief producing accurate output in few exchanges.</li>
+          <li><strong>In repo</strong> <code>rivers-goat.html</code> &mdash; self-contained, no imports, everything inline</li>
         </ul>
       </article>
 
@@ -519,7 +532,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
         <dd>Northwestern full stack bootcamp certificate. No CS degree, and hadn't used GSAP, Rive, Express, or Postgres before this project. Can read code, write briefs, and push back when the output is wrong. Daily AI tool user. The build required an AI partner to ship.</dd>
 
         <dt>AI models</dt>
-        <dd>Claude (Anthropic) &mdash; <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>
+        <dd>Claude (Anthropic) &mdash; <code>claude-sonnet-4-6</code>, <code>claude-opus-4-6</code>, <code>claude-opus-4-7</code></dd>
 
         <dt>AI surfaces</dt>
         <dd>
@@ -534,7 +547,7 @@ dl.kv dd a:hover { border-color:#F2EDE4; }
         <dt>AI role</dt>
         <dd>Majority of code generation, debugging, refactoring, deployment configuration, scroll-animation wiring, server + database, draft of this page</dd>
 
-        <dt>Non-AI humans</dt>
+        <dt>Illustrators</dt>
         <dd>Casey Rooney (illustrations), Morgan Zavoral (puppet layers)</dd>
 
         <dt>Third-party</dt>

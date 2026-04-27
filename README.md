@@ -2,8 +2,7 @@
 
 This is a scroll-driven animated marketing site built as an open
 reference — for marketers who want to see what's possible, and
-developers who want to know how it works. The subject matter is
-deliberately polarizing lorem ipsum. The method is the point.
+developers who want to know how it works.
 
 Every animation pattern is documented. The AI collaboration is
 cited honestly. Right-click, View Source, you have everything.
@@ -469,7 +468,7 @@ The `Dockerfile` is set up for `node:20-alpine`. No CI/CD config needed beyond t
 
 - **Code, design direction, product:** [Will McClung](https://github.com/wmcclung) — built collaboratively with [Claude](https://claude.ai) (Anthropic) across Claude Code, claude.ai, and Claude in Chrome. See the [About page](https://www.tb12notgoat.com/about) for the full AI-collaboration citation.
 - **Illustrations** (candidate portraits, hero composition, shocked Brady, crown, goat): [Casey Rooney](https://thecitygoblin.myportfolio.com/)
-- **Brady puppet rig** (12-bone Rive character, dance + celebration animations): Morgan Zavoral
+- **Brady puppet rig design** (12-bone Rive character): Morgan Zavoral
 
 ---
 

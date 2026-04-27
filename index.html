@@ -761,7 +761,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   font-weight:600;
   text-transform:uppercase;
   color:#FFFFFF;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 4px rgba(0,0,0,.75);
   opacity:.72;
   z-index:9999;
   pointer-events:none;
@@ -1858,6 +1858,15 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 /* "About this project" button on the post-vote results screen.
    Used as an <a href="/about"> in JS; class works for either <a>
    or <button> so we don't need a separate selector. */
+.vote-thank-you {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:clamp(10px,1.05vw,12px);
+  letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(242,237,228,.55);
+  margin-top:clamp(12px,2vh,22px);
+  margin-bottom:4px;
+  opacity:0;
+}
 .vote-about-btn {
   display:inline-flex; align-items:center; gap:10px;
   margin-top:clamp(8px,1.5vh,16px);
@@ -4066,11 +4075,16 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        screen on the vote loop. The .vote-about-btn class works for either
        <a> or <button>, so we keep the same styling. */
     if (!isKiosk) {
+      var thankYou = document.createElement('p');
+      thankYou.className = 'vote-thank-you';
+      thankYou.textContent = 'Thank you for voting.';
+      resultsEl.appendChild(thankYou);
+
       var aboutLink = document.createElement('a');
       aboutLink.className = 'vote-about-btn';
       aboutLink.href      = '/about';
-      aboutLink.innerHTML = 'About this project <span aria-hidden="true">→</span>';
-      aboutLink.setAttribute('aria-label', 'About this project — read credits and how it was built');
+      aboutLink.innerHTML = 'Learn more about the project <span aria-hidden="true">→</span>';
+      aboutLink.setAttribute('aria-label', 'Learn more about the project — read credits and how it was built');
       resultsEl.appendChild(aboutLink);
     }
 
@@ -4087,12 +4101,18 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        leaderboard rows have landed. Slight upward drift makes it feel
        like the page settles rather than appears all at once. */
     if (!isKiosk) {
-      var aboutEl = resultsEl.querySelector('.vote-about-btn');
+      var ctaDelay = 0.35 + ranked.length * 0.06 + 0.15;
+      var thankEl  = resultsEl.querySelector('.vote-thank-you');
+      var aboutEl  = resultsEl.querySelector('.vote-about-btn');
+      if (thankEl) {
+        gsap.fromTo(thankEl,
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: ctaDelay });
+      }
       if (aboutEl) {
         gsap.fromTo(aboutEl,
           { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
-            delay: 0.35 + ranked.length * 0.06 + 0.15 });
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: ctaDelay + 0.1 });
       }
     }
 

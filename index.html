@@ -619,7 +619,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   background:#F5F1EB;
 }
 @media (max-width: 767px) {
-  .intro-section { height:1000vh; }
+  .intro-section { height:650vh; }
 }
 .section-stage {
   position:relative; top:0; width:100%;
@@ -2070,12 +2070,12 @@ gsap.registerPlugin(ScrollTrigger);
    during URL bar retract, GSAP measures at one of them, and the pin
    locks at the wrong size until the user scrolls back (which forces
    a re-measure). */
-/* momentum:0.35 instead of the default 0.8 — keeps normalizeScroll active
+/* momentum:0.5 instead of the default 0.8 — keeps normalizeScroll active
    everywhere (intro pin needs it for correct release) while reducing how
    far a single flick carries through the chart. Shorter wind-down also
    eliminates the jump-back where 0.8 momentum's tail conflicted with the
    real scroll position mid-chart. */
-ScrollTrigger.normalizeScroll({ momentum: 0.35 });
+ScrollTrigger.normalizeScroll({ momentum: 0.5 });
 /* BUT: normalizeScroll also blocks native scrolling past the last
    trigger on the page, which was trapping mobile users inside the
    vote section (couldn't reach the full leaderboard). Release it

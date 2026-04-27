@@ -752,16 +752,19 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
 ═══════════════════════════════════════════ */
 .keep-scrolling {
   position:fixed;
-  bottom:clamp(14px, 2.5vh, 28px);
+  bottom:clamp(20px, 3.5vh, 36px);
   left:50%;
-  transform:translateX(-50%);
+  /* translateZ(0) forces own GPU compositing layer — prevents mobile
+     rendering glitch where position:fixed elements disappear at GSAP
+     pin boundaries when normalizeScroll(true) is active */
+  transform:translateX(-50%) translateZ(0);
   font-family:'JetBrains Mono', ui-monospace, monospace;
   font-size:10px;
   letter-spacing:.26em;
   font-weight:600;
   text-transform:uppercase;
   color:#FFFFFF;
-  background:rgba(0,0,0,.38);
+  background:rgba(0,0,0,.55);
   padding:5px 14px 4px;
   border-radius:20px;
   backdrop-filter:blur(6px);
@@ -770,6 +773,7 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   z-index:9999;
   pointer-events:none;
   white-space:nowrap;
+  will-change:opacity;
   transition:opacity .3s ease;
 }
 .keep-scrolling.hide { opacity:0; }
@@ -4654,11 +4658,25 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   var hint = document.getElementById('keep-scrolling');
   var vote = document.getElementById('vote-section');
   if (!hint || !vote || !('IntersectionObserver' in window)) return;
-  new IntersectionObserver(function(entries) {
-    entries.forEach(function(en) {
-      hint.classList.toggle('hide', en.isIntersecting);
-    });
-  }, { threshold: 0.15 }).observe(vote);
+
+  function initObserver() {
+    new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        hint.classList.toggle('hide', en.isIntersecting);
+      });
+    }, { threshold: 0.15 }).observe(vote);
+  }
+
+  /* Defer until after window.load + a short pause so GSAP has added all
+     pin spacers. Without this, the observer can fire during the initial
+     layout pass (before spacers exist), briefly see #vote-section in the
+     viewport, add .hide, and never remove it once spacers push the vote
+     section far down the page. */
+  if (document.readyState === 'complete') {
+    setTimeout(initObserver, 600);
+  } else {
+    window.addEventListener('load', function() { setTimeout(initObserver, 600); });
+  }
 })();
 </script>
 

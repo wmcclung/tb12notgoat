@@ -2863,7 +2863,7 @@ const ROWS = [
       brady:{val:'TB12 Foundation',color:'cg-mid',flavor:'athlete wellness'},
       rivers:{val:'Rivers of Hope',color:'cg-mid',flavor:'$1M+ for foster children'},
       payton:{val:'Walter & Connie Payton Foundation',color:'cg-strong',flavor:'Run by Connie Payton · holiday toy drives · organ donation advocacy'},
-      alexander:{val:'Harvest Covenant',color:'cg-mid',flavor:'Co-op + Shaun Alexander Foundation'},
+      alexander:{val:'Harvest Covenant',color:'cg-mid',flavor:'After-school football co-op'},
       page:{val:'Page Education Foundation',color:'cg-strong',flavor:'$16M+ · 8,000+ scholarships',dramatic:true},
     }
   },
@@ -2877,7 +2877,7 @@ const ROWS = [
          a footnote. The HS coach role speaks for itself. */
       rivers:{val:'HS Football Coach',color:'cg-mid'},
       payton:{val:'Entrepreneur',color:'cg-strong',flavor:'IndyCar co-owner · Trans-Am racer · Roundhouse brewpub'},
-      alexander:{val:'Harvest Covenant',color:'cg-strong',flavor:'After-school football co-op · author · speaker'},
+      alexander:{val:'Philanthropy',color:'cg-strong',flavor:'author · speaker'},
       /* Page: re-formatted as a stacked bulleted list — these are the
          most impressive accolades in the chart and deserve legible
          top-billing rather than run-on commas. flavorList renders each
@@ -4921,7 +4921,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        lot of movement". The pre-party portion (gp 0 → 0.42) now plays
        roughly 3.5 dance cycles instead of ~2, which feels closer to a
        full dance move and a half before the party transition. */
-    try { danceInst.scrub(DANCE_ANIM, gp * DANCE_DURATION * 16.7); } catch(e) {}
+    try { danceInst.scrub(DANCE_ANIM, (gp * DANCE_DURATION * 16.7) % DANCE_DURATION); } catch(e) {}
   }
 
   /* Forced canvas resync — the center-card's shrink transform can cause

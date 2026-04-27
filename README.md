@@ -1,6 +1,12 @@
 # Tom Brady Is Not The GOAT
 
-A scroll-driven animated voting site arguing against Tom Brady's "GOAT" status. **Built as a working reference** for developers who want to ship animated marketing-style sites without a framework or a build pipeline.
+This is a scroll-driven animated marketing site built as an open
+reference — for marketers who want to see what's possible, and
+developers who want to know how it works. The subject matter is
+deliberately polarizing lorem ipsum. The method is the point.
+
+Every animation pattern is documented. The AI collaboration is
+cited honestly. Right-click, View Source, you have everything.
 
 🌐 **Live:** [tb12notgoat.com](https://www.tb12notgoat.com)
 📄 **About:** [tb12notgoat.com/about](https://www.tb12notgoat.com/about)
@@ -10,11 +16,24 @@ A scroll-driven animated voting site arguing against Tom Brady's "GOAT" status. 
 
 ## Why this repo exists
 
-Most "scroll-driven animated landing pages" you see are locked behind a build pipeline, a design system, and an agency. This one is **one HTML file, one Node server, two animation libraries, and hand-illustrated art**. The whole thing is open and readable — right-click, View Source, you have everything.
+**For marketers:** Scroll-driven animation, pinned sections, a
+rigged vector character, real-time shared vote counts — this is
+what a modern animated marketing moment looks like without an
+agency budget.
 
-If you're a developer wanting to build something similar — pinned scroll sections, scrub timelines, a Rive character, a small shared API — copy the pieces you want. Each animation moment is self-contained and documented in the code. The [About page](https://www.tb12notgoat.com/about) and the per-pattern sections below explain the *why* alongside the *what*.
+**For developers:** The About page is the useful part — each
+animation moment is documented with the library, the canonical
+docs, the design pattern in plain language, and the file it lives
+in. Less "here's the code" and more "here's how to think about
+this class of problem." The format itself is reusable for any
+scroll-driven project you want to document or hand off.
 
-This repo is also an example of what's now possible without a senior engineer on the team — see the [About page citation](https://www.tb12notgoat.com/about) for the honest AI-collaboration breakdown.
+**For anyone using AI to build:** This project was built in
+collaboration with Claude (Anthropic). The [About page](https://www.tb12notgoat.com/about)
+documents exactly what that means — which decisions were human,
+which were AI, what the prompts looked like, and the effort split
+per section. There should be more conversation around how we cite
+AI in creative and technical work. This is one attempt to model it.
 
 ---
 

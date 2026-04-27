@@ -3147,46 +3147,60 @@ function setupChartInView() {
     lateEl.classList.add('in');
   }
 
-  /* ── Mobile row-enter + count-up triggers ── */
-  var mobileTriggers = [];
+  /* ── Mobile row-enter + count-up triggers ──
+     Uses IntersectionObserver (native browser API) instead of
+     ScrollTrigger so the trigger fires against the real viewport
+     position, not GSAP's normalizeScroll proxy. The proxy lags
+     native scroll on fast flicks, causing once:true ScrollTriggers
+     to fire at the wrong visual moment or not at all on real devices. */
+  var mobileObs = null;
   if (isMobile && !reduced) {
+    var rowAnimMap = {};
     ROWS.forEach(function(row) {
       var rowEl = document.getElementById('row-' + row.id);
       if (!rowEl) return;
       var cells = row.order.map(function(pid) {
         return document.getElementById('cell-' + row.id + '-' + pid);
       }).filter(Boolean);
+      rowAnimMap[row.id] = { rowEl: rowEl, cells: cells, row: row };
+    });
 
-      var st = ScrollTrigger.create({
-        trigger: rowEl,
-        start: 'top 120%',
-        once: true,
-        onEnter: function() {
-          /* Row-label fade — no typewriter on mobile, just clean fade-up */
-          gsap.fromTo(rowEl.querySelector('.cat-label-col'),
-            { opacity: 0, y: 8 },
-            { opacity: 1, y: 0, duration: .35, ease: 'power2.out' });
-          /* Cells drop from above with a single smooth overshoot.
-             back.out runs on simple cubic math — no multi-reversal
-             repaints like bounce.out, so iOS stays at 60fps. */
-          cells.forEach(function(cel, i) {
-            var pid = cel.getAttribute('data-pid');
-            var cd  = row.cells[pid];
-            gsap.fromTo(cel,
-              { opacity: 0, y: -28 },
-              { opacity: 1, y: 0, duration: .55, ease: 'back.out(1.4)',
-                delay: i * 0.07,
-                onComplete: function() {
-                  if (cd.counter) {
-                    var valEl = document.getElementById('val-' + row.id + '-' + pid);
-                    if (valEl) countUp(valEl, parseInt(cd.val), 700);
-                  }
+    mobileObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting) return;
+        mobileObs.unobserve(entry.target);
+        var rowId = entry.target.id.replace('row-', '');
+        var data = rowAnimMap[rowId];
+        if (!data) return;
+        var rowEl = data.rowEl, cells = data.cells, row = data.row;
+        /* Row-label fade — no typewriter on mobile, just clean fade-up */
+        gsap.fromTo(rowEl.querySelector('.cat-label-col'),
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: .35, ease: 'power2.out' });
+        /* Cells drop from above with a single smooth overshoot.
+           back.out runs on simple cubic math — no multi-reversal
+           repaints like bounce.out, so iOS stays at 60fps. */
+        cells.forEach(function(cel, i) {
+          var pid = cel.getAttribute('data-pid');
+          var cd  = row.cells[pid];
+          gsap.fromTo(cel,
+            { opacity: 0, y: -28 },
+            { opacity: 1, y: 0, duration: .55, ease: 'back.out(1.4)',
+              delay: i * 0.07,
+              onComplete: function() {
+                if (cd && cd.counter) {
+                  var valEl = document.getElementById('val-' + row.id + '-' + pid);
+                  if (valEl) countUp(valEl, parseInt(cd.val), 700);
                 }
-              });
-          });
-        }
+              }
+            });
+        });
       });
-      mobileTriggers.push(st);
+    }, { rootMargin: '0px 0px 20% 0px', threshold: 0 });
+
+    ROWS.forEach(function(row) {
+      var data = rowAnimMap[row.id];
+      if (data) mobileObs.observe(data.rowEl);
     });
   } else if (isMobile && reduced) {
     /* Reduced motion: show everything immediately, no scroll triggers */
@@ -3196,7 +3210,7 @@ function setupChartInView() {
 
   /* ── Cleanup for replay() ── */
   return function cleanup() {
-    mobileTriggers.forEach(function(t) { try { t.kill(); } catch(e){} });
+    if (mobileObs) { mobileObs.disconnect(); mobileObs = null; }
     lpTriggers.forEach(function(t) { try { t.kill(); } catch(e){} });
     if (lateEl) lateEl.classList.remove('in');
     if (ph) ph.classList.remove('lit');

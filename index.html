@@ -2074,20 +2074,18 @@ window.addEventListener('load', function() {
   var vote  = document.getElementById('vote-section');
   var chart = document.getElementById('chart-section');
 
-  /* Chart section: lower momentum so a single flick doesn't race through
-     multiple rows. On real touch devices normalizeScroll defaults to 0.8
-     (very kinetic); 0.3 matches the feel of a trackpad in mobile mode.
-     Restore full momentum above/below the chart where fast scrolling
-     through the tall intro pin is expected. */
+  /* Chart section: release normalizeScroll so the chart uses native
+     touch scroll. normalizeScroll's synthetic momentum caused two
+     problems here — over-flicking through rows and occasional jump-backs
+     when its wind-down conflicted with the real scroll position.
+     Restore it on the way back up so the intro pin still benefits. */
   if (chart) {
     ScrollTrigger.create({
       trigger: chart,
       start: 'top bottom',
-      end: 'bottom top',
-      onEnter:      function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll({momentum:0.3}); },
-      onLeave:      function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll(true); },
-      onEnterBack:  function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll({momentum:0.3}); },
-      onLeaveBack:  function() { ScrollTrigger.normalizeScroll(false); ScrollTrigger.normalizeScroll(true); }
+      onEnter:     function() { ScrollTrigger.normalizeScroll(false); },
+      onLeaveBack: function() { ScrollTrigger.normalizeScroll(true);  },
+      onEnterBack: function() { ScrollTrigger.normalizeScroll(false); }
     });
   }
 

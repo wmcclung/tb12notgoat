@@ -770,11 +770,6 @@ body { font-family:'Space Grotesk',system-ui,sans-serif; overflow-x:hidden; touc
   white-space:nowrap;
   transition:opacity .3s ease;
 }
-/* Brave/Chrome Android bottom tab bar overlaps the viewport —
-   raise the hint above it on mobile */
-@media (max-width: 767px) {
-  .keep-scrolling { bottom: 96px; }
-}
 .keep-scrolling.hide { opacity:0; }
 
 /* ═══════════════════════════════════════════
@@ -4656,10 +4651,31 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   var vote = document.getElementById('vote-section');
   if (!hint || !vote) return;
 
-  /* ScrollTrigger.normalizeScroll(true) sets body{overflow:hidden} on touch
-     devices, which in some Chromium builds clips position:fixed children of
-     body. Moving the hint to <html> puts it outside that constraint. */
-  document.documentElement.appendChild(hint);
+  /* On touch devices, position:fixed is unreliable inside GSAP's
+     normalizeScroll context. Use visualViewport to drive absolute
+     positioning instead — always places the hint at the visible bottom
+     regardless of URL bars, Brave chrome, or browser layout quirks. */
+  if ('ontouchstart' in window) {
+    hint.style.position = 'absolute';
+    hint.style.bottom   = 'auto';
+    hint.style.left     = '50%';
+    hint.style.transform = 'translateX(-50%)';
+
+    function syncPos() {
+      var vv      = window.visualViewport;
+      var pageTop = vv ? vv.pageTop : window.scrollY;
+      var vh      = vv ? vv.height  : window.innerHeight;
+      hint.style.top = (pageTop + vh - 72) + 'px';
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('scroll', syncPos);
+      window.visualViewport.addEventListener('resize', syncPos);
+    }
+    window.addEventListener('scroll', syncPos, {passive: true});
+    if (window.gsap) gsap.ticker.add(syncPos);
+    syncPos();
+  }
 
   if (!('IntersectionObserver' in window)) return;
 

@@ -3808,9 +3808,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
        and ~30 tiny accent-colored particles burst outward briefly
      - The player's name cascades in letter-by-letter with a small overshoot
        ("nameplate slam") instead of a plain fade
-     - A small counter ticks up showing "1 vote logged" (total count, from
-       localStorage) so the reveal feels like you contributed to a thing
-     - On desktop, the sticker gets a mousemove 3D tilt/parallax
+   
      - Tap anywhere still skips forward to results                          */
   function buildCelebration() {
     var p = VOTE_PLAYERS.find(function(pl){ return pl.id === chosenPlayer; });
@@ -4651,7 +4649,14 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
 (function() {
   var hint = document.getElementById('keep-scrolling');
   var vote = document.getElementById('vote-section');
-  if (!hint || !vote || !('IntersectionObserver' in window)) return;
+  if (!hint || !vote) return;
+
+  /* ScrollTrigger.normalizeScroll(true) sets body{overflow:hidden} on touch
+     devices, which in some Chromium builds clips position:fixed children of
+     body. Moving the hint to <html> puts it outside that constraint. */
+  document.documentElement.appendChild(hint);
+
+  if (!('IntersectionObserver' in window)) return;
 
   function initObserver() {
     new IntersectionObserver(function(entries) {
@@ -4661,11 +4666,8 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     }, { threshold: 0.15 }).observe(vote);
   }
 
-  /* Defer until after window.load + a short pause so GSAP has added all
-     pin spacers. Without this, the observer can fire during the initial
-     layout pass (before spacers exist), briefly see #vote-section in the
-     viewport, add .hide, and never remove it once spacers push the vote
-     section far down the page. */
+  /* Defer until after window.load so GSAP pin spacers exist before the
+     observer fires — prevents false-positive .hide during initial layout. */
   if (document.readyState === 'complete') {
     setTimeout(initObserver, 600);
   } else {

@@ -89,6 +89,12 @@
 <link rel="preload" as="image" href="Assets/tom-brady-shocked.svg">
 <link rel="preload" as="image" href="Assets/goat.svg">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Germania+One&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>html.fonts-loading{opacity:0}html{transition:opacity .15s ease}</style>
+<script>
+  document.documentElement.classList.add('fonts-loading');
+  document.fonts.ready.then(function(){document.documentElement.classList.remove('fonts-loading');});
+  setTimeout(function(){document.documentElement.classList.remove('fonts-loading');},2500);
+</script>
 <style>
 
 /* ═══ GLOBAL ═══ */
@@ -4803,11 +4809,8 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
   if (!danceCanvas || !rockCanvas) return;
 
   var danceInst = null, rockInst = null;
-  /* Scroll-scrub contract: both puppets load with autoplay:false, SM paused,
-     and we call r.scrub(animName, time) each tick so the dance tracks scroll
-     position. Per Rive file author the dance_v2 animation is ~1.5s; we use
-     heavier loop multipliers for the party (8×) so Brady visibly dances
-     harder once the lights come on. */
+  /* Both puppets autoplay and loop continuously while visible.
+     Scroll drives section phases (party lights, cards, lightning) but not the puppet animation. */
   var DANCE_ANIM = 'dance_v2';
   var DANCE_DURATION = 1.5;
   /* Loop counts scaled so the party scrubs at ~intro's pace (400vh/loop).
@@ -4841,12 +4844,12 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
       var r = new rive.Rive({
         buffer: buf, canvas: canvas,
         animations: DANCE_ANIM,
-        autoplay: false,
+        autoplay: true,
         fit: rive.Fit.Cover,
         alignment: rive.Alignment.TopCenter,
         onLoad: function() {
           r.resizeDrawingSurfaceToCanvas();
-          try { r.scrub(DANCE_ANIM, 0); } catch(e) { console.warn('[Rive] scrub not supported on', src, e); }
+          r.on(rive.EventType.Stop, function() { r.play(DANCE_ANIM); });
           setter(r);
           try {
             console.log('[Rive loaded]', src,
@@ -4896,12 +4899,6 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
     var lightning = document.getElementById('party-lightning');
     var cards     = [].slice.call(document.querySelectorAll('.accolade'));
 
-    /* Scrub rock to local party progress so it fully cycles through the
-       party phase regardless of how long the rest of the intro is. */
-    if (rockInst && typeof rockInst.scrub === 'function') {
-      try { rockInst.scrub(DANCE_ANIM, p * DANCE_DURATION * ROCK_LOOPS_PARTY); } catch(e) {}
-    }
-
     /* Lightning one-shot at the flash window. */
     if (lightning) {
       if (p >= 0.38 && p <= 0.42 && !lightningFired) {
@@ -4939,15 +4936,7 @@ document.addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R') window.repl
      party phase) so it stays alive through the shrink + words beats too.
      Called by the intro's onProgress every scroll tick. */
   function danceScrubGlobal(gp) {
-    if (!danceInst || typeof danceInst.scrub !== 'function') return;
-    /* Multiplier was 5 (≈5 dance cycles across the 2300vh intro). Bumped
-       to 8.35 (~67% more movement per scroll) so the puppet shows more
-       motion through the dance phase without changing the scroll length —
-       reader feedback was "we already scroll a lot, there's just not a
-       lot of movement". The pre-party portion (gp 0 → 0.42) now plays
-       roughly 3.5 dance cycles instead of ~2, which feels closer to a
-       full dance move and a half before the party transition. */
-    try { danceInst.scrub(DANCE_ANIM, (gp * DANCE_DURATION * 16.7) % DANCE_DURATION); } catch(e) {}
+    /* Dance puppet now autoplays continuously — no scroll scrub needed. */
   }
 
   /* Forced canvas resync — the center-card's shrink transform can cause
